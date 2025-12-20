@@ -3,6 +3,9 @@ import type {
   User,
   Course,
   Lesson,
+  Slide,
+  Video,
+  Reference,
   Exercise,
   Quiz,
   StudentProgress,
@@ -66,6 +69,138 @@ export const saveCourses = (courses: Course[]): void => {
   setItem(STORAGE_KEYS.COURSES, courses);
 };
 
+export const addCourse = (course: Course): void => {
+  const courses = getCourses();
+  courses.push(course);
+  saveCourses(courses);
+};
+
+export const updateCourse = (id: string, updatedCourse: Partial<Course>): void => {
+  const courses = getCourses();
+  const index = courses.findIndex(c => c.id === id);
+  if (index >= 0) {
+    courses[index] = { ...courses[index], ...updatedCourse };
+    saveCourses(courses);
+  }
+};
+
+export const deleteCourse = (id: string): void => {
+  const courses = getCourses();
+  const filtered = courses.filter(c => c.id !== id);
+  saveCourses(filtered);
+};
+
+export const addLesson = (courseId: string, lesson: Lesson): void => {
+  const courses = getCourses();
+  const courseIndex = courses.findIndex(c => c.id === courseId);
+  if (courseIndex >= 0) {
+    courses[courseIndex].lessons.push(lesson);
+    saveCourses(courses);
+  }
+};
+
+export const updateLesson = (courseId: string, lessonId: string, updatedLesson: Partial<Lesson>): void => {
+  const courses = getCourses();
+  const courseIndex = courses.findIndex(c => c.id === courseId);
+  if (courseIndex >= 0) {
+    const lessonIndex = courses[courseIndex].lessons.findIndex(l => l.id === lessonId);
+    if (lessonIndex >= 0) {
+      courses[courseIndex].lessons[lessonIndex] = { ...courses[courseIndex].lessons[lessonIndex], ...updatedLesson };
+      saveCourses(courses);
+    }
+  }
+};
+
+export const deleteLesson = (courseId: string, lessonId: string): void => {
+  const courses = getCourses();
+  const courseIndex = courses.findIndex(c => c.id === courseId);
+  if (courseIndex >= 0) {
+    courses[courseIndex].lessons = courses[courseIndex].lessons.filter(l => l.id !== lessonId);
+    saveCourses(courses);
+  }
+};
+
+export const addSlide = (courseId: string, lessonId: string, slide: Slide): void => {
+  const courses = getCourses();
+  const courseIndex = courses.findIndex(c => c.id === courseId);
+  if (courseIndex >= 0) {
+    const lessonIndex = courses[courseIndex].lessons.findIndex(l => l.id === lessonId);
+    if (lessonIndex >= 0) {
+      if (!courses[courseIndex].lessons[lessonIndex].slides) {
+        courses[courseIndex].lessons[lessonIndex].slides = [];
+      }
+      courses[courseIndex].lessons[lessonIndex].slides!.push(slide);
+      saveCourses(courses);
+    }
+  }
+};
+
+export const deleteSlide = (courseId: string, lessonId: string, slideId: string): void => {
+  const courses = getCourses();
+  const courseIndex = courses.findIndex(c => c.id === courseId);
+  if (courseIndex >= 0) {
+    const lessonIndex = courses[courseIndex].lessons.findIndex(l => l.id === lessonId);
+    if (lessonIndex >= 0 && courses[courseIndex].lessons[lessonIndex].slides) {
+      courses[courseIndex].lessons[lessonIndex].slides = courses[courseIndex].lessons[lessonIndex].slides!.filter(s => s.id !== slideId);
+      saveCourses(courses);
+    }
+  }
+};
+
+export const addVideo = (courseId: string, lessonId: string, video: Video): void => {
+  const courses = getCourses();
+  const courseIndex = courses.findIndex(c => c.id === courseId);
+  if (courseIndex >= 0) {
+    const lessonIndex = courses[courseIndex].lessons.findIndex(l => l.id === lessonId);
+    if (lessonIndex >= 0) {
+      if (!courses[courseIndex].lessons[lessonIndex].videos) {
+        courses[courseIndex].lessons[lessonIndex].videos = [];
+      }
+      courses[courseIndex].lessons[lessonIndex].videos!.push(video);
+      saveCourses(courses);
+    }
+  }
+};
+
+export const deleteVideo = (courseId: string, lessonId: string, videoId: string): void => {
+  const courses = getCourses();
+  const courseIndex = courses.findIndex(c => c.id === courseId);
+  if (courseIndex >= 0) {
+    const lessonIndex = courses[courseIndex].lessons.findIndex(l => l.id === lessonId);
+    if (lessonIndex >= 0 && courses[courseIndex].lessons[lessonIndex].videos) {
+      courses[courseIndex].lessons[lessonIndex].videos = courses[courseIndex].lessons[lessonIndex].videos!.filter(v => v.id !== videoId);
+      saveCourses(courses);
+    }
+  }
+};
+
+export const addReference = (courseId: string, lessonId: string, reference: Reference): void => {
+  const courses = getCourses();
+  const courseIndex = courses.findIndex(c => c.id === courseId);
+  if (courseIndex >= 0) {
+    const lessonIndex = courses[courseIndex].lessons.findIndex(l => l.id === lessonId);
+    if (lessonIndex >= 0) {
+      if (!courses[courseIndex].lessons[lessonIndex].references) {
+        courses[courseIndex].lessons[lessonIndex].references = [];
+      }
+      courses[courseIndex].lessons[lessonIndex].references!.push(reference);
+      saveCourses(courses);
+    }
+  }
+};
+
+export const deleteReference = (courseId: string, lessonId: string, referenceId: string): void => {
+  const courses = getCourses();
+  const courseIndex = courses.findIndex(c => c.id === courseId);
+  if (courseIndex >= 0) {
+    const lessonIndex = courses[courseIndex].lessons.findIndex(l => l.id === lessonId);
+    if (lessonIndex >= 0 && courses[courseIndex].lessons[lessonIndex].references) {
+      courses[courseIndex].lessons[lessonIndex].references = courses[courseIndex].lessons[lessonIndex].references!.filter(r => r.id !== referenceId);
+      saveCourses(courses);
+    }
+  }
+};
+
 // Exercises
 export const getExercises = (): Exercise[] => {
   return getItem<Exercise[]>(STORAGE_KEYS.EXERCISES, []);
@@ -104,6 +239,19 @@ export const saveQuizzes = (quizzes: Quiz[]): void => {
   setItem(STORAGE_KEYS.QUIZZES, quizzes);
 };
 
+// Helper function for admin - delete quiz (used in admin pages)
+export const deleteQuiz = (id: string): void => {
+  const quizzes = getQuizzes();
+  const filtered = quizzes.filter(q => q.id !== id);
+  saveQuizzes(filtered);
+};
+
+export const deleteExercise = (id: string): void => {
+  const exercises = getExercises();
+  const filtered = exercises.filter(e => e.id !== id);
+  saveExercises(filtered);
+};
+
 // Progress
 export const getStudentProgress = (studentId: string, courseId: string): StudentProgress | null => {
   const allProgress = getItem<StudentProgress[]>(STORAGE_KEYS.PROGRESS, []);
@@ -137,7 +285,7 @@ export const saveExerciseAttempt = (attempt: ExerciseAttempt): void => {
 
 export const getExerciseAttempts = (studentId: string, exerciseId?: string): ExerciseAttempt[] => {
   const attempts = getItem<ExerciseAttempt[]>(STORAGE_KEYS.EXERCISE_ATTEMPTS, []);
-  let filtered = attempts.filter(a => a.studentId === studentId);
+  let filtered = studentId ? attempts.filter(a => a.studentId === studentId) : attempts;
   if (exerciseId) {
     filtered = filtered.filter(a => a.exerciseId === exerciseId);
   }
@@ -153,7 +301,7 @@ export const saveQuizAttempt = (attempt: QuizAttempt): void => {
 
 export const getQuizAttempts = (studentId: string, quizId?: string): QuizAttempt[] => {
   const attempts = getItem<QuizAttempt[]>(STORAGE_KEYS.QUIZ_ATTEMPTS, []);
-  let filtered = attempts.filter(a => a.studentId === studentId);
+  let filtered = studentId ? attempts.filter(a => a.studentId === studentId) : attempts;
   if (quizId) {
     filtered = filtered.filter(a => a.quizId === quizId);
   }

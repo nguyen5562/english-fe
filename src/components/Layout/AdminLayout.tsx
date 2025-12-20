@@ -15,33 +15,33 @@ import {
   ListItemText,
   useTheme,
   useMediaQuery,
+  Chip,
 } from '@mui/material';
 import {
   Menu as MenuIcon,
   Dashboard as DashboardIcon,
-  MenuBook as MenuBookIcon,
+  School as SchoolIcon,
   Assignment as AssignmentIcon,
   Quiz as QuizIcon,
-  Assessment as AssessmentIcon,
+  People as PeopleIcon,
   BarChart as BarChartIcon,
-  AccountCircle as AccountCircleIcon,
-  School as SchoolIcon,
   Settings as SettingsIcon,
+  ArrowBack as ArrowBackIcon,
 } from '@mui/icons-material';
 import { getUser, logout } from '../../services/storage';
 
-const drawerWidth = 240;
+const drawerWidth = 260;
 
-const menuItems = [
-  { text: 'Trang chủ', icon: <DashboardIcon />, path: '/' },
-  { text: 'Tài liệu học tập', icon: <MenuBookIcon />, path: '/materials' },
-  { text: 'Bài tập', icon: <AssignmentIcon />, path: '/exercises' },
-  { text: 'Quiz & Kiểm tra', icon: <QuizIcon />, path: '/quizzes' },
-  { text: 'Tiến độ học tập', icon: <AssessmentIcon />, path: '/progress' },
-  { text: 'Thống kê (GV)', icon: <BarChartIcon />, path: '/statistics' },
+const adminMenuItems = [
+  { text: 'Dashboard', icon: <DashboardIcon />, path: '/admin' },
+  { text: 'Quản lý Nội dung', icon: <SchoolIcon />, path: '/admin/content' },
+  { text: 'Quản lý Bài tập', icon: <AssignmentIcon />, path: '/admin/exercises' },
+  { text: 'Quản lý Quiz', icon: <QuizIcon />, path: '/admin/quizzes' },
+  { text: 'Quản lý Sinh viên', icon: <PeopleIcon />, path: '/admin/students' },
+  { text: 'Thống kê', icon: <BarChartIcon />, path: '/admin/statistics' },
 ];
 
-export default function MainLayout() {
+export default function AdminLayout() {
   const [mobileOpen, setMobileOpen] = useState(false);
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('md'));
@@ -65,59 +65,47 @@ export default function MainLayout() {
     navigate('/login');
   };
 
+  const handleBackToMain = () => {
+    navigate('/');
+  };
+
   const drawer = (
     <Box>
-      <Toolbar sx={{ bgcolor: 'primary.main', color: 'white' }}>
-        <SchoolIcon sx={{ mr: 2 }} />
-        <Typography variant="h6" noWrap component="div">
-          Học Tiếng Anh
-        </Typography>
+      <Toolbar sx={{ bgcolor: 'secondary.main', color: 'white' }}>
+        <SettingsIcon sx={{ mr: 2 }} />
+        <Box>
+          <Typography variant="h6" noWrap component="div">
+            Admin Panel
+          </Typography>
+          <Typography variant="caption" sx={{ opacity: 0.8 }}>
+            Quản trị hệ thống
+          </Typography>
+        </Box>
       </Toolbar>
       <Divider />
       <List>
-        {menuItems.map((item) => {
-          // Hide teacher-only items for students
-          if (user?.role === 'student' && item.path === '/statistics') {
-            return null;
-          }
-          return (
-            <ListItem key={item.text} disablePadding>
-              <ListItemButton
-                selected={location.pathname === item.path}
-                onClick={() => handleNavigation(item.path)}
-              >
-                <ListItemIcon sx={{ color: location.pathname === item.path ? 'primary.main' : 'inherit' }}>
-                  {item.icon}
-                </ListItemIcon>
-                <ListItemText primary={item.text} />
-              </ListItemButton>
-            </ListItem>
-          );
-        })}
+        {adminMenuItems.map((item) => (
+          <ListItem key={item.text} disablePadding>
+            <ListItemButton
+              selected={location.pathname === item.path}
+              onClick={() => handleNavigation(item.path)}
+            >
+              <ListItemIcon sx={{ color: location.pathname === item.path ? 'secondary.main' : 'inherit' }}>
+                {item.icon}
+              </ListItemIcon>
+              <ListItemText primary={item.text} />
+            </ListItemButton>
+          </ListItem>
+        ))}
       </List>
-      {user?.role === 'teacher' && (
-        <>
-          <Divider />
-          <List>
-            <ListItem disablePadding>
-              <ListItemButton onClick={() => navigate('/admin')}>
-                <ListItemIcon>
-                  <SettingsIcon />
-                </ListItemIcon>
-                <ListItemText primary="Admin Panel" />
-              </ListItemButton>
-            </ListItem>
-          </List>
-        </>
-      )}
       <Divider />
       <List>
         <ListItem disablePadding>
-          <ListItemButton onClick={() => handleNavigation('/profile')}>
+          <ListItemButton onClick={handleBackToMain}>
             <ListItemIcon>
-              <AccountCircleIcon />
+              <ArrowBackIcon />
             </ListItemIcon>
-            <ListItemText primary={user?.name || 'Tài khoản'} />
+            <ListItemText primary="Về trang chính" />
           </ListItemButton>
         </ListItem>
         <ListItem disablePadding>
@@ -136,6 +124,7 @@ export default function MainLayout() {
         sx={{
           width: { md: `calc(100% - ${drawerWidth}px)` },
           ml: { md: `${drawerWidth}px` },
+          bgcolor: 'secondary.main',
         }}
       >
         <Toolbar>
@@ -149,11 +138,13 @@ export default function MainLayout() {
             <MenuIcon />
           </IconButton>
           <Typography variant="h6" noWrap component="div" sx={{ flexGrow: 1 }}>
-            Hệ thống Học Tiếng Anh Đại học
+            Hệ thống Quản trị - Học Tiếng Anh Đại học
           </Typography>
-          <Typography variant="body2" sx={{ mr: 2 }}>
-            {user?.role === 'teacher' ? 'Giảng viên' : 'Sinh viên'}
-          </Typography>
+          <Chip
+            label={user?.name || 'Admin'}
+            color="default"
+            sx={{ bgcolor: 'rgba(255,255,255,0.2)', color: 'white', mr: 2 }}
+          />
         </Toolbar>
       </AppBar>
       <Box
@@ -165,7 +156,7 @@ export default function MainLayout() {
           open={mobileOpen}
           onClose={handleDrawerToggle}
           ModalProps={{
-            keepMounted: true, // Better open performance on mobile.
+            keepMounted: true,
           }}
           sx={{
             display: { xs: 'block', md: 'none' },

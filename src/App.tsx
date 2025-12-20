@@ -14,6 +14,12 @@ import QuizDetail from './pages/QuizDetail';
 import Progress from './pages/Progress';
 import Statistics from './pages/Statistics';
 import Profile from './pages/Profile';
+import AdminLayout from './components/Layout/AdminLayout';
+import AdminDashboard from './pages/admin/AdminDashboard';
+import AdminContent from './pages/admin/AdminContent';
+import AdminExercises from './pages/admin/AdminExercises';
+import AdminQuizzes from './pages/admin/AdminQuizzes';
+import AdminStudents from './pages/admin/AdminStudents';
 import { getUser } from './services/storage';
 import { initializeMockData } from './services/mockData';
 
@@ -21,6 +27,18 @@ import { initializeMockData } from './services/mockData';
 function ProtectedRoute({ children }: { children: React.ReactNode }) {
   const user = getUser();
   return user ? <>{children}</> : <Navigate to="/login" replace />;
+}
+
+// Admin Protected Route - chỉ cho phép teacher
+function AdminProtectedRoute({ children }: { children: React.ReactNode }) {
+  const user = getUser();
+  if (!user) {
+    return <Navigate to="/login" replace />;
+  }
+  if (user.role !== 'teacher') {
+    return <Navigate to="/" replace />;
+  }
+  return <>{children}</>;
 }
 
 function App() {
@@ -55,6 +73,22 @@ function App() {
             <Route path="progress" element={<Progress />} />
             <Route path="statistics" element={<Statistics />} />
             <Route path="profile" element={<Profile />} />
+          </Route>
+          <Route
+            path="/admin"
+            element={
+              <AdminProtectedRoute>
+                <AdminLayout />
+              </AdminProtectedRoute>
+            }
+          >
+            <Route index element={<AdminDashboard />} />
+            <Route path="content" element={<AdminContent />} />
+            <Route path="exercises" element={<AdminExercises />} />
+            <Route path="quizzes" element={<AdminQuizzes />} />
+            <Route path="students" element={<AdminStudents />} />
+            <Route path="statistics" element={<Statistics />} />
+            <Route path="content" element={<AdminContent />} />
           </Route>
         </Routes>
       </BrowserRouter>
