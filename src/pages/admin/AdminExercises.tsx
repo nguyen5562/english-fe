@@ -16,8 +16,7 @@ import {
   Delete as DeleteIcon,
   Assignment as AssignmentIcon,
 } from '@mui/icons-material';
-import { getExercises, getCourses, deleteExercise, saveExercises } from '../../services/storage';
-import type { Exercise } from '../../types';
+import { getExercises, getCourses, saveExercises } from '../../services/storage';
 
 export default function AdminExercises() {
   const [exercises, setExercises] = useState(() => getExercises());

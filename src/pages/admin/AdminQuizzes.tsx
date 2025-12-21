@@ -16,8 +16,7 @@ import {
   Delete as DeleteIcon,
   Quiz as QuizIcon,
 } from '@mui/icons-material';
-import { getQuizzes, getCourses, deleteQuiz, saveQuizzes } from '../../services/storage';
-import type { Quiz } from '../../types';
+import { getQuizzes, getCourses, saveQuizzes } from '../../services/storage';
 
 export default function AdminQuizzes() {
   const [quizzes, setQuizzes] = useState(() => getQuizzes());
