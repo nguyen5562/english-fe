@@ -15,7 +15,9 @@ import {
   ListItemText,
   useTheme,
   useMediaQuery,
-  Chip,
+  Menu,
+  MenuItem,
+  Avatar,
 } from '@mui/material';
 import {
   Menu as MenuIcon,
@@ -27,6 +29,9 @@ import {
   BarChart as BarChartIcon,
   Settings as SettingsIcon,
   ArrowBack as ArrowBackIcon,
+  AccountCircle as AccountCircleIcon,
+  Logout as LogoutIcon,
+  Person as PersonIcon,
 } from '@mui/icons-material';
 import { getUser, logout } from '../../services/storage';
 
@@ -43,6 +48,7 @@ const adminMenuItems = [
 
 export default function AdminLayout() {
   const [mobileOpen, setMobileOpen] = useState(false);
+  const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('md'));
   const navigate = useNavigate();
@@ -60,14 +66,31 @@ export default function AdminLayout() {
     }
   };
 
+  const handleMenuOpen = (event: React.MouseEvent<HTMLElement>) => {
+    setAnchorEl(event.currentTarget);
+  };
+
+  const handleMenuClose = () => {
+    setAnchorEl(null);
+  };
+
+  const handleProfileClick = () => {
+    handleMenuClose();
+    navigate('/profile');
+  };
+
+  const handleBackToMain = () => {
+    handleMenuClose();
+    navigate('/');
+  };
+
   const handleLogout = () => {
+    handleMenuClose();
     logout();
     navigate('/login');
   };
 
-  const handleBackToMain = () => {
-    navigate('/');
-  };
+  const isMenuOpen = Boolean(anchorEl);
 
   const drawer = (
     <Box>
@@ -98,22 +121,6 @@ export default function AdminLayout() {
           </ListItem>
         ))}
       </List>
-      <Divider />
-      <List>
-        <ListItem disablePadding>
-          <ListItemButton onClick={handleBackToMain}>
-            <ListItemIcon>
-              <ArrowBackIcon />
-            </ListItemIcon>
-            <ListItemText primary="Về trang chính" />
-          </ListItemButton>
-        </ListItem>
-        <ListItem disablePadding>
-          <ListItemButton onClick={handleLogout}>
-            <ListItemText primary="Đăng xuất" />
-          </ListItemButton>
-        </ListItem>
-      </List>
     </Box>
   );
 
@@ -140,11 +147,87 @@ export default function AdminLayout() {
           <Typography variant="h6" noWrap component="div" sx={{ flexGrow: 1 }}>
             Hệ thống Quản trị - Học Tiếng Anh Đại học
           </Typography>
-          <Chip
-            label={user?.name || 'Admin'}
-            color="default"
-            sx={{ bgcolor: 'rgba(255,255,255,0.2)', color: 'white', mr: 2 }}
-          />
+          <IconButton
+            size="large"
+            edge="end"
+            aria-label="account menu"
+            aria-controls={isMenuOpen ? 'account-menu' : undefined}
+            aria-haspopup="true"
+            onClick={handleMenuOpen}
+            color="inherit"
+          >
+            <Avatar sx={{ width: 32, height: 32, bgcolor: 'rgba(255,255,255,0.2)' }}>
+              {user?.name?.charAt(0).toUpperCase() || 'A'}
+            </Avatar>
+          </IconButton>
+          <Menu
+            id="account-menu"
+            anchorEl={anchorEl}
+            open={isMenuOpen}
+            onClose={handleMenuClose}
+            onClick={handleMenuClose}
+            PaperProps={{
+              elevation: 0,
+              sx: {
+                overflow: 'visible',
+                filter: 'drop-shadow(0px 2px 8px rgba(0,0,0,0.32))',
+                mt: 1.5,
+                '& .MuiAvatar-root': {
+                  width: 32,
+                  height: 32,
+                  ml: -0.5,
+                  mr: 1,
+                },
+                '&:before': {
+                  content: '""',
+                  display: 'block',
+                  position: 'absolute',
+                  top: 0,
+                  right: 14,
+                  width: 10,
+                  height: 10,
+                  bgcolor: 'background.paper',
+                  transform: 'translateY(-50%) rotate(45deg)',
+                  zIndex: 0,
+                },
+              },
+            }}
+            transformOrigin={{ horizontal: 'right', vertical: 'top' }}
+            anchorOrigin={{ horizontal: 'right', vertical: 'bottom' }}
+          >
+            <MenuItem onClick={handleProfileClick}>
+              <Avatar sx={{ bgcolor: 'secondary.main' }}>
+                <PersonIcon />
+              </Avatar>
+              <Box sx={{ flexGrow: 1 }}>
+                <Typography variant="body1" sx={{ fontWeight: 500 }}>
+                  {user?.name || 'Admin'}
+                </Typography>
+                <Typography variant="body2" color="text.secondary">
+                  {user?.email || ''}
+                </Typography>
+              </Box>
+            </MenuItem>
+            <Divider />
+            <MenuItem onClick={handleBackToMain}>
+              <ListItemIcon>
+                <ArrowBackIcon fontSize="small" />
+              </ListItemIcon>
+              Về trang chủ
+            </MenuItem>
+            <MenuItem onClick={handleProfileClick}>
+              <ListItemIcon>
+                <AccountCircleIcon fontSize="small" />
+              </ListItemIcon>
+              Thông tin cá nhân
+            </MenuItem>
+            <MenuItem onClick={handleLogout}>
+              <ListItemIcon>
+                <LogoutIcon fontSize="small" />
+              </ListItemIcon>
+              Đăng xuất
+            </MenuItem>
+          </Menu>
         </Toolbar>
       </AppBar>
       <Box

@@ -16,6 +16,7 @@ import type {
 
 const STORAGE_KEYS = {
   USER: 'english_learning_user',
+  USERS: 'english_learning_users', // Danh sách users với password
   COURSES: 'english_learning_courses',
   EXERCISES: 'english_learning_exercises',
   QUIZZES: 'english_learning_quizzes',
@@ -23,6 +24,11 @@ const STORAGE_KEYS = {
   EXERCISE_ATTEMPTS: 'english_learning_exercise_attempts',
   QUIZ_ATTEMPTS: 'english_learning_quiz_attempts',
 };
+
+// Interface cho user với password (lưu trong danh sách users)
+interface UserWithPassword extends User {
+  password: string;
+}
 
 // Helper functions
 const getItem = <T>(key: string, defaultValue: T): T => {
@@ -53,6 +59,40 @@ export const setUser = (user: User): void => {
 
 export const logout = (): void => {
   localStorage.removeItem(STORAGE_KEYS.USER);
+};
+
+// User authentication with password
+export const getUsers = (): UserWithPassword[] => {
+  return getItem<UserWithPassword[]>(STORAGE_KEYS.USERS, []);
+};
+
+export const registerUser = (user: UserWithPassword): boolean => {
+  const users = getUsers();
+  // Kiểm tra email đã tồn tại chưa
+  if (users.some(u => u.email === user.email)) {
+    return false; // Email đã tồn tại
+  }
+  users.push(user);
+  setItem(STORAGE_KEYS.USERS, users);
+  return true; // Đăng ký thành công
+};
+
+export const loginUser = (email: string, password: string): User | null => {
+  const users = getUsers();
+  const user = users.find(u => u.email === email && u.password === password);
+  if (user) {
+    // Lưu user đã đăng nhập (không có password)
+    const userWithoutPassword: User = {
+      id: user.id,
+      name: user.name,
+      email: user.email,
+      role: user.role,
+      ...(user.studentId && { studentId: user.studentId }),
+    };
+    setUser(userWithoutPassword);
+    return userWithoutPassword;
+  }
+  return null; // Đăng nhập thất bại
 };
 
 // Courses

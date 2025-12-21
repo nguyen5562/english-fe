@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, Link } from 'react-router-dom';
 import {
   Container,
   Paper,
@@ -8,44 +8,41 @@ import {
   Typography,
   Box,
   Alert,
-  FormControl,
-  InputLabel,
-  Select,
-  MenuItem,
+  InputAdornment,
+  IconButton,
 } from '@mui/material';
-import { School as SchoolIcon } from '@mui/icons-material';
-import { setUser } from '../services/storage';
-import type { User } from '../types';
+import {
+  School as SchoolIcon,
+  Visibility,
+  VisibilityOff,
+} from '@mui/icons-material';
+import { loginUser } from '../services/storage';
 
 export default function Login() {
-  const [name, setName] = useState('');
   const [email, setEmail] = useState('');
-  const [role, setRole] = useState<'student' | 'teacher'>('student');
-  const [studentId, setStudentId] = useState('');
+  const [password, setPassword] = useState('');
+  const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState('');
   const navigate = useNavigate();
 
   const handleLogin = () => {
-    if (!name || !email) {
+    if (!email || !password) {
       setError('Vui lòng điền đầy đủ thông tin');
       return;
     }
 
-    if (role === 'student' && !studentId) {
-      setError('Vui lòng nhập mã sinh viên');
-      return;
+    const user = loginUser(email, password);
+    if (user) {
+      navigate('/');
+    } else {
+      setError('Email hoặc mật khẩu không đúng');
     }
+  };
 
-    const user: User = {
-      id: Date.now().toString(),
-      name,
-      email,
-      role,
-      ...(role === 'student' && { studentId }),
-    };
-
-    setUser(user);
-    navigate('/');
+  const handleKeyPress = (e: React.KeyboardEvent) => {
+    if (e.key === 'Enter') {
+      handleLogin();
+    }
   };
 
   return (
@@ -77,37 +74,36 @@ export default function Login() {
               margin="normal"
               required
               fullWidth
-              label="Họ và tên"
-              value={name}
-              onChange={(e) => setName(e.target.value)}
+              label="Email"
+              type="email"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
               autoFocus
+              onKeyPress={handleKeyPress}
             />
             <TextField
               margin="normal"
               required
               fullWidth
-              label="Email"
-              type="email"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
+              label="Mật khẩu"
+              type={showPassword ? 'text' : 'password'}
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              onKeyPress={handleKeyPress}
+              InputProps={{
+                endAdornment: (
+                  <InputAdornment position="end">
+                    <IconButton
+                      aria-label="toggle password visibility"
+                      onClick={() => setShowPassword(!showPassword)}
+                      edge="end"
+                    >
+                      {showPassword ? <VisibilityOff /> : <Visibility />}
+                    </IconButton>
+                  </InputAdornment>
+                ),
+              }}
             />
-            <FormControl fullWidth margin="normal" required>
-              <InputLabel>Vai trò</InputLabel>
-              <Select value={role} label="Vai trò" onChange={(e) => setRole(e.target.value as 'student' | 'teacher')}>
-                <MenuItem value="student">Sinh viên</MenuItem>
-                <MenuItem value="teacher">Giảng viên</MenuItem>
-              </Select>
-            </FormControl>
-            {role === 'student' && (
-              <TextField
-                margin="normal"
-                required
-                fullWidth
-                label="Mã sinh viên"
-                value={studentId}
-                onChange={(e) => setStudentId(e.target.value)}
-              />
-            )}
             <Button
               type="button"
               fullWidth
@@ -117,9 +113,14 @@ export default function Login() {
             >
               Đăng nhập
             </Button>
-            <Typography variant="body2" color="text.secondary" align="center">
-              Lưu ý: Đây là phiên bản demo, không cần xác thực thật
-            </Typography>
+            <Box sx={{ textAlign: 'center', mt: 2 }}>
+              <Typography variant="body2" color="text.secondary">
+                Chưa có tài khoản?{' '}
+                <Link to="/register" style={{ color: 'inherit', textDecoration: 'underline' }}>
+                  Đăng ký ngay
+                </Link>
+              </Typography>
+            </Box>
           </Box>
         </Paper>
       </Box>
