@@ -18,6 +18,13 @@ import {
   Menu,
   MenuItem,
   Avatar,
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  DialogActions,
+  TextField,
+  Button,
+  Alert,
 } from '@mui/material';
 import {
   Menu as MenuIcon,
@@ -32,8 +39,10 @@ import {
   AccountCircle as AccountCircleIcon,
   Logout as LogoutIcon,
   Person as PersonIcon,
+  Lock as LockIcon,
 } from '@mui/icons-material';
-import { getUser, logout } from '../../services/storage';
+import { getUser, logout, updateUserProfile, changePassword } from '../../services/storage';
+import type { User } from '../../types';
 
 const drawerWidth = 260;
 
@@ -43,12 +52,17 @@ const adminMenuItems = [
   { text: 'Quản lý Bài tập', icon: <AssignmentIcon />, path: '/admin/exercises' },
   { text: 'Quản lý Quiz', icon: <QuizIcon />, path: '/admin/quizzes' },
   { text: 'Quản lý Sinh viên', icon: <PeopleIcon />, path: '/admin/students' },
-  { text: 'Thống kê', icon: <BarChartIcon />, path: '/admin/statistics' },
+  { text: 'Báo cáo thống kê', icon: <BarChartIcon />, path: '/admin/statistics' },
 ];
 
 export default function AdminLayout() {
   const [mobileOpen, setMobileOpen] = useState(false);
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
+  const [profileOpen, setProfileOpen] = useState(false);
+  const [changePasswordOpen, setChangePasswordOpen] = useState(false);
+  const [formData, setFormData] = useState({ name: '', email: '', studentId: '' });
+  const [passwordData, setPasswordData] = useState({ oldPassword: '', newPassword: '', confirmPassword: '' });
+  const [passwordError, setPasswordError] = useState('');
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('md'));
   const navigate = useNavigate();
@@ -76,7 +90,97 @@ export default function AdminLayout() {
 
   const handleProfileClick = () => {
     handleMenuClose();
-    navigate('/profile');
+    if (user) {
+      setFormData({
+        name: user.name || '',
+        email: user.email || '',
+        studentId: user.studentId || '',
+      });
+      setProfileOpen(true);
+    }
+  };
+
+  const handleProfileClose = () => {
+    setProfileOpen(false);
+    // Reset form data to original values
+    if (user) {
+      setFormData({
+        name: user.name || '',
+        email: user.email || '',
+        studentId: user.studentId || '',
+      });
+    }
+  };
+
+  const handleProfileCancel = () => {
+    // Reset form data to original values
+    if (user) {
+      setFormData({
+        name: user.name || '',
+        email: user.email || '',
+        studentId: user.studentId || '',
+      });
+    }
+    setProfileOpen(false);
+  };
+
+  const handleProfileSave = () => {
+    if (user) {
+      const updatedUser: User = {
+        ...user,
+        name: formData.name,
+        email: formData.email,
+        ...(user.role === 'student' && { studentId: formData.studentId }),
+      };
+      updateUserProfile(updatedUser);
+      setProfileOpen(false);
+      // Reload page to update user info
+      window.location.reload();
+    }
+  };
+
+  const handleChangePasswordClick = () => {
+    handleMenuClose();
+    setPasswordData({ oldPassword: '', newPassword: '', confirmPassword: '' });
+    setPasswordError('');
+    setChangePasswordOpen(true);
+  };
+
+  const handleChangePasswordClose = () => {
+    setChangePasswordOpen(false);
+    setPasswordData({ oldPassword: '', newPassword: '', confirmPassword: '' });
+    setPasswordError('');
+  };
+
+  const handleChangePasswordSave = () => {
+    setPasswordError('');
+    
+    if (!passwordData.oldPassword || !passwordData.newPassword || !passwordData.confirmPassword) {
+      setPasswordError('Vui lòng điền đầy đủ thông tin');
+      return;
+    }
+
+    if (passwordData.newPassword.length < 6) {
+      setPasswordError('Mật khẩu mới phải có ít nhất 6 ký tự');
+      return;
+    }
+
+    if (passwordData.newPassword !== passwordData.confirmPassword) {
+      setPasswordError('Mật khẩu xác nhận không khớp');
+      return;
+    }
+
+    if (user) {
+      const result = changePassword(user.id, passwordData.oldPassword, passwordData.newPassword);
+      if (result.success) {
+        setChangePasswordOpen(false);
+        setPasswordData({ oldPassword: '', newPassword: '', confirmPassword: '' });
+        setPasswordError('');
+        alert('Đổi mật khẩu thành công!');
+      } else {
+        setPasswordError(result.message);
+      }
+    }
   };
 
   const handleBackToMain = () => {
@@ -221,6 +325,12 @@ export default function AdminLayout() {
               </ListItemIcon>
               Thông tin cá nhân
             </MenuItem>
+            <MenuItem onClick={handleChangePasswordClick}>
+              <ListItemIcon>
+                <LockIcon fontSize="small" />
+              </ListItemIcon>
+              Đổi mật khẩu
+            </MenuItem>
             <MenuItem onClick={handleLogout}>
               <ListItemIcon>
                 <LogoutIcon fontSize="small" />
@@ -272,6 +382,97 @@ export default function AdminLayout() {
         <Toolbar />
         <Outlet />
       </Box>
+
+      {/* Profile Dialog */}
+      <Dialog open={profileOpen} onClose={handleProfileClose} maxWidth="sm" fullWidth>
+        <DialogTitle>Thông tin cá nhân</DialogTitle>
+        <DialogContent>
+          <Box sx={{ pt: 2 }}>
+            <TextField
+              fullWidth
+              label="Họ và tên"
+              value={formData.name}
+              onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+              margin="normal"
+            />
+            <TextField
+              fullWidth
+              label="Email"
+              type="email"
+              value={formData.email}
+              onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+              margin="normal"
+            />
+            {user?.role === 'student' && (
+              <TextField
+                fullWidth
+                label="Mã sinh viên"
+                value={formData.studentId}
+                onChange={(e) => setFormData({ ...formData, studentId: e.target.value })}
+                margin="normal"
+              />
+            )}
+            <TextField
+              fullWidth
+              label="Vai trò"
+              value={user?.role === 'teacher' ? 'Giảng viên' : 'Sinh viên'}
+              disabled
+              margin="normal"
+            />
+          </Box>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={handleProfileCancel}>Hủy</Button>
+          <Button onClick={handleProfileSave} variant="contained">
+            Lưu
+          </Button>
+        </DialogActions>
+      </Dialog>
+
+      {/* Change Password Dialog */}
+      <Dialog open={changePasswordOpen} onClose={handleChangePasswordClose} maxWidth="sm" fullWidth>
+        <DialogTitle>Đổi mật khẩu</DialogTitle>
+        <DialogContent>
+          <Box sx={{ pt: 2 }}>
+            {passwordError && (
+              <Alert severity="error" sx={{ mb: 2 }} onClose={() => setPasswordError('')}>
+                {passwordError}
+              </Alert>
+            )}
+            <TextField
+              fullWidth
+              label="Mật khẩu cũ"
+              type="password"
+              value={passwordData.oldPassword}
+              onChange={(e) => setPasswordData({ ...passwordData, oldPassword: e.target.value })}
+              margin="normal"
+            />
+            <TextField
+              fullWidth
+              label="Mật khẩu mới"
+              type="password"
+              value={passwordData.newPassword}
+              onChange={(e) => setPasswordData({ ...passwordData, newPassword: e.target.value })}
+              margin="normal"
+              helperText="Mật khẩu phải có ít nhất 6 ký tự"
+            />
+            <TextField
+              fullWidth
+              label="Nhập lại mật khẩu mới"
+              type="password"
+              value={passwordData.confirmPassword}
+              onChange={(e) => setPasswordData({ ...passwordData, confirmPassword: e.target.value })}
+              margin="normal"
+            />
+          </Box>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={handleChangePasswordClose}>Hủy</Button>
+          <Button onClick={handleChangePasswordSave} variant="contained">
+            Lưu
+          </Button>
+        </DialogActions>
+      </Dialog>
     </Box>
   );
 }

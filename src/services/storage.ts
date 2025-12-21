@@ -95,6 +95,45 @@ export const loginUser = (email: string, password: string): User | null => {
   return null; // Đăng nhập thất bại
 };
 
+export const updateUserProfile = (updatedUser: User): boolean => {
+  const users = getUsers();
+  const userIndex = users.findIndex(u => u.id === updatedUser.id);
+  if (userIndex >= 0) {
+    // Giữ nguyên password
+    users[userIndex] = {
+      ...users[userIndex],
+      name: updatedUser.name,
+      email: updatedUser.email,
+      ...(updatedUser.studentId && { studentId: updatedUser.studentId }),
+    };
+    setItem(STORAGE_KEYS.USERS, users);
+    // Cập nhật user đã đăng nhập
+    setUser(updatedUser);
+    return true;
+  }
+  return false;
+};
+
+export const changePassword = (userId: string, oldPassword: string, newPassword: string): { success: boolean; message: string } => {
+  const users = getUsers();
+  const userIndex = users.findIndex(u => u.id === userId);
+  if (userIndex < 0) {
+    return { success: false, message: 'Không tìm thấy người dùng' };
+  }
+  
+  if (users[userIndex].password !== oldPassword) {
+    return { success: false, message: 'Mật khẩu cũ không đúng' };
+  }
+  
+  if (newPassword.length < 6) {
+    return { success: false, message: 'Mật khẩu mới phải có ít nhất 6 ký tự' };
+  }
+  
+  users[userIndex].password = newPassword;
+  setItem(STORAGE_KEYS.USERS, users);
+  return { success: true, message: 'Đổi mật khẩu thành công' };
+};
+
 // Courses
 export const getCourses = (): Course[] => {
   return getItem<Course[]>(STORAGE_KEYS.COURSES, []);
