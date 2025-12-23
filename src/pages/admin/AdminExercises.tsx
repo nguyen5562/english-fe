@@ -88,21 +88,18 @@ export default function AdminExercises() {
                   </Box>
                   <Box sx={{ display: 'flex', gap: 1, flexWrap: 'wrap' }}>
                     <Chip
-                      label={exercise.type === 'multiple-choice' ? 'Trắc nghiệm' : exercise.type}
+                      label={`${exercise.sections.length} phần`}
                       size="small"
                       color="primary"
                       variant="outlined"
                     />
                     <Chip
-                      label={`${exercise.questions.length} câu hỏi`}
+                      label={`${exercise.sections.reduce(
+                        (total, section) => total + section.questions.length,
+                        0
+                      )} câu hỏi`}
                       size="small"
                     />
-                    {exercise.timeLimit && (
-                      <Chip
-                        label={`${exercise.timeLimit} phút`}
-                        size="small"
-                      />
-                    )}
                   </Box>
                 </CardContent>
               </Card>

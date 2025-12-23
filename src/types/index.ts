@@ -4,7 +4,7 @@ export interface User {
   id: string;
   name: string;
   email: string;
-  role: 'student' | 'teacher';
+  role: "student" | "teacher";
   studentId?: string;
 }
 
@@ -47,29 +47,71 @@ export interface Reference {
   id: string;
   lessonId: string;
   title: string;
-  type: 'pdf' | 'link' | 'document';
+  type: "pdf" | "link" | "document";
   url: string;
+}
+
+export type QuestionType =
+  | "multiple-choice"
+  | "fill-sentence"
+  | "listening"
+  | "word-order" // sắp xếp lại từ
+  | "word-bank" // chọn từ trong hộp
+  | "picture-choice" // chọn tranh đúng
+  | "reading-mcq" // đọc hiểu – trắc nghiệm
+  | "pronunciation" // luyện âm / ghi âm
+  | "writing" // bài viết dài
+  | "paragraph-fill" // điền vào đoạn văn (nhiều chỗ trống trong 1 đoạn)
+  | "fill-blank" // điền từ vào chỗ trống (mỗi câu nhiều chỗ trống)
+  | "dropdown-choice" // chọn từ dropdown (ví dụ: Choose the correct verbs)
+  | "video-recording"; // xem video rồi ghi âm lại
+
+export interface ExerciseSection {
+  id: string;
+  title: string;
+  description?: string;
+  audioUrl?: string; // audio chung cho cả phần (ví dụ bài nghe dài)
+  videoUrl?: string; // video chung cho cả phần (cho video-recording)
+  imageUrl?: string; // hình minh họa cho phần
+  wordBank?: string[]; // word bank dùng chung cho cả phần (nếu có)
+  passage?: string; // đoạn văn để đọc (cho reading-mcq, paragraph-fill)
+  // Kỹ năng chính của phần (grammar / vocabulary / listening / ...)
+  sectionType:
+    | "grammar"
+    | "vocabulary"
+    | "listening"
+    | "reading"
+    | "speaking"
+    | "writing"
+    | "pronunciation"
+    | "mixed";
+  // Kiểu câu hỏi hiển thị (tất cả câu trong phần nên cùng 1 kiểu)
+  questionType: QuestionType;
+  questions: Question[];
 }
 
 export interface Exercise {
   id: string;
-  lessonId: string;
   courseId: string;
   title: string;
-  type: 'multiple-choice' | 'fill-blank' | 'essay' | 'listening';
-  questions: Question[];
-  timeLimit?: number; // minutes
+  sections: ExerciseSection[];
 }
 
 export interface Question {
   id: string;
   exerciseId: string;
   question: string;
-  type: 'multiple-choice' | 'fill-blank' | 'essay' | 'listening';
+  // Trong thiết kế mới, type chủ yếu lấy từ ExerciseSection.questionType.
+  // Trường này là optional để vẫn hỗ trợ các câu hỏi đặc biệt nếu cần.
+  type?: QuestionType;
   options?: string[]; // For multiple choice
   correctAnswer: string | string[];
   points: number;
-  audioUrl?: string; // For listening questions
+  // Media / extra data cho các dạng đặc biệt
+  audioUrl?: string; // listening, pronunciation, social phrases
+  videoUrl?: string; // video-recording, video bài học
+  imageUrl?: string; // picture-choice, mô tả bằng hình
+  wordBank?: string[]; // word-bank, gợi ý từ cho điền chỗ trống
 }
 
 export interface Quiz {
@@ -132,4 +174,3 @@ export interface CourseStatistics {
   completionRate: number;
   topPerformers: { studentId: string; name: string; score: number }[];
 }
-

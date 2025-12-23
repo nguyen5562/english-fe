@@ -168,7 +168,7 @@ export default function QuizDetail() {
             </RadioGroup>
           </FormControl>
         );
-      case 'fill-blank':
+      case 'fill-sentence':
         return (
           <Box>
             <Typography variant="body1" gutterBottom>

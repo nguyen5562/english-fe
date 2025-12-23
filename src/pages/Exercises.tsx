@@ -16,7 +16,6 @@ import {
 } from '@mui/material';
 import {
   Assignment as AssignmentIcon,
-  AccessTime as AccessTimeIcon,
   PlayArrow as PlayArrowIcon,
 } from '@mui/icons-material';
 import { getExercises, getCourses, getExerciseAttempts, getUser } from '../services/storage';
@@ -96,22 +95,18 @@ export default function Exercises() {
                     </Box>
                     <Box sx={{ display: 'flex', gap: 1, mb: 2, flexWrap: 'wrap' }}>
                       <Chip
-                        label={exercise.type === 'multiple-choice' ? 'Trắc nghiệm' : exercise.type}
+                        label={`${(exercise.sections ?? []).length} phần`}
                         size="small"
                         color="primary"
                         variant="outlined"
                       />
                       <Chip
-                        label={`${exercise.questions.length} câu hỏi`}
+                        label={`${(exercise.sections ?? []).reduce(
+                          (total, section) => total + (section.questions?.length ?? 0),
+                          0
+                        )} câu hỏi`}
                         size="small"
                       />
-                      {exercise.timeLimit && (
-                        <Chip
-                          icon={<AccessTimeIcon />}
-                          label={`${exercise.timeLimit} phút`}
-                          size="small"
-                        />
-                      )}
                     </Box>
                     {bestScore !== null && (
                       <Typography variant="body2" color="success.main" sx={{ mb: 1 }}>
