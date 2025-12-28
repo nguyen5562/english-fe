@@ -1,5 +1,4 @@
 // Types cho ứng dụng học tiếng Anh
-
 export interface User {
   id: string;
   name: string;
