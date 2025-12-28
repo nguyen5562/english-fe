@@ -60,6 +60,7 @@ export default function ExerciseDetail() {
   const [recordings, setRecordings] = useState<Record<string, string | null>>({});
   const mediaRecordersRef = useRef<Record<string, MediaRecorder | null>>({});
   const user = getUser();
+  const userId = user?.id;
 
   // Last saved attempt for the current section (if any)
   const [lastAttempt, setLastAttempt] = useState<ExerciseAttempt | null>(null);
@@ -115,7 +116,7 @@ export default function ExerciseDetail() {
       return;
     }
 
-    if (!exercise || !user) {
+    if (!exercise || !userId) {
       clearLoadedState();
       return;
     }
@@ -123,7 +124,7 @@ export default function ExerciseDetail() {
     const section = exercise.sections[currentSectionIndex];
     if (!section) return;
 
-    const attempts = getExerciseAttempts(user.id, exercise.id).filter((a) => a.sectionIndex === currentSectionIndex);
+    const attempts = getExerciseAttempts(userId, exercise.id).filter((a) => a.sectionIndex === currentSectionIndex);
     if (attempts.length === 0) {
       clearLoadedState();
       return;
@@ -188,7 +189,7 @@ export default function ExerciseDetail() {
         setViewingSaved(false);
       }
     }, 0);
-  }, [currentSectionIndex, user, exercise, ignoringSaved, isSectionGraded]);
+  }, [currentSectionIndex, exercise, ignoringSaved, isSectionGraded, userId]);
 
   // Reset ignoringSaved when user navigates to another section so saved attempts load again
   useEffect(() => {
@@ -446,7 +447,7 @@ export default function ExerciseDetail() {
         {renderQuestionWordBank()}
         <FormControl component="fieldset" fullWidth>
           <FormLabel component="legend">{question.question}</FormLabel>
-          <RadioGroup
+          <RadioGroup key={`${question.id}-rg-${retryKey}`}
             value={value}
             onChange={(e) => handleAnswerChange(question.id, e.target.value)}
           >
@@ -691,6 +692,7 @@ export default function ExerciseDetail() {
                   <Typography component="span">{part}</Typography>
                   {index < blanks.length - 1 && (
                     <TextField
+                      key={`${question.id}-blank-${index}-${retryKey}`}
                       size="small"
                       value={answerArray[index] || ''}
                       onChange={(e) => {
@@ -974,7 +976,7 @@ export default function ExerciseDetail() {
                   };
 
                   return (
-                    <Box key={question.id} sx={{ p: 1, borderLeft: '3px solid', borderColor: borderColorToken, background: bg, borderRadius: 1, mb: 1 }}>
+                    <Box key={`${question.id}-${retryKey}`} sx={{ p: 1, borderLeft: '3px solid', borderColor: borderColorToken, background: bg, borderRadius: 1, mb: 1 }}>
                       <Typography variant="subtitle2" sx={{ mb: 0.5 }}>
                         Câu {index + 1}
                       </Typography>
@@ -1031,9 +1033,9 @@ export default function ExerciseDetail() {
               <Button variant="contained" color="secondary" onClick={handleCheckSection}>
                 Kiểm tra
               </Button>
-              {currentSectionIndex < exercise.sections.length - 1 && (
                 <Button
                   variant="contained"
+                  disabled={currentSectionIndex >= exercise.sections.length - 1}
                   onClick={() => {
                     const nextIndex = Math.min(currentSectionIndex + 1, exercise.sections.length - 1);
                     navigate(`/exercises/${exercise.id}?section=${nextIndex}`);
@@ -1044,7 +1046,6 @@ export default function ExerciseDetail() {
                 >
                   Phần tiếp theo
                 </Button>
-              )}
             </Box>
           </Box>
         </CardContent>

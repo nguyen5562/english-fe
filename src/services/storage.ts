@@ -363,9 +363,14 @@ export const saveExerciseAttempt = (attempt: ExerciseAttempt): void => {
   if (typeof attempt.sectionIndex === 'number') {
     const idx = attempts.findIndex(a => a.studentId === attempt.studentId && a.exerciseId === attempt.exerciseId && a.sectionIndex === attempt.sectionIndex);
     if (idx === -1) {
+      // new per-section attempt: start tries at 1 (or use provided)
+      attempt.tries = (attempt.tries ?? 0) + 1;
       attempts.push(attempt);
     } else {
-      // luôn ghi đè lần làm trước cho cùng (student, exercise, section)
+      // overwrite existing per-section attempt: increment tries
+      const prev = attempts[idx];
+      const newTries = (prev?.tries ?? 0) + 1;
+      attempt.tries = newTries;
       attempts[idx] = attempt;
     }
     setItem(STORAGE_KEYS.EXERCISE_ATTEMPTS, attempts);

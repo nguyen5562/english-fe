@@ -141,6 +141,8 @@ export interface ExerciseAttempt {
   // Nếu là attempt cho 1 phần, lưu index phần ở đây (0-based). Nếu không có thì là attempt cho cả bài.
   sectionIndex?: number;
   answers: { questionId: string; answer: string | string[] }[];
+  // Số lần thử: tăng +1 mỗi lần nhấn Kiểm tra (lưu lần mới ghi đè)
+  tries?: number;
   score: number;
   maxScore: number;
   completedAt: Date;

@@ -128,8 +128,8 @@ export default function Exercises() {
                   <List>
                     {(exercise.sections ?? []).map((section, idx) => {
                       const sectionAttempts = user ? getExerciseAttempts(user.id, exercise.id).filter(a => a.sectionIndex === idx) : [];
-                      const tries = sectionAttempts.length;
                       const lastAttempt = sectionAttempts.length > 0 ? sectionAttempts.slice().sort((a,b) => new Date(b.completedAt).getTime() - new Date(a.completedAt).getTime())[0] : null;
+                      const tries = lastAttempt ? (lastAttempt.tries ?? sectionAttempts.length) : 0;
                       const lastPercent = lastAttempt ? Math.round((lastAttempt.score / lastAttempt.maxScore) * 100) : null;
 
                       return (
