@@ -140,8 +140,6 @@ export interface ExerciseAttempt {
   studentId: string;
   // Nếu là attempt cho 1 phần, lưu index phần ở đây (0-based). Nếu không có thì là attempt cho cả bài.
   sectionIndex?: number;
-  // Nếu set keepBest === false thì lưu 'latest' thay vì giữ kết quả cao nhất (dùng cho pronunciation/video-recording)
-  keepBest?: boolean;
   answers: { questionId: string; answer: string | string[] }[];
   score: number;
   maxScore: number;

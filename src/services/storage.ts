@@ -359,27 +359,16 @@ export const saveStudentProgress = (progress: StudentProgress): void => {
 export const saveExerciseAttempt = (attempt: ExerciseAttempt): void => {
   const attempts = getItem<ExerciseAttempt[]>(STORAGE_KEYS.EXERCISE_ATTEMPTS, []);
 
-  // Nếu attempt có sectionIndex thì lưu theo (student, exercise, section)
+  // Nếu attempt có sectionIndex thì lưu theo (student, exercise, section) — luôn lưu lần làm mới (ghi đè)
   if (typeof attempt.sectionIndex === 'number') {
     const idx = attempts.findIndex(a => a.studentId === attempt.studentId && a.exerciseId === attempt.exerciseId && a.sectionIndex === attempt.sectionIndex);
     if (idx === -1) {
       attempts.push(attempt);
-      setItem(STORAGE_KEYS.EXERCISE_ATTEMPTS, attempts);
-      return;
-    }
-
-    // Nếu attempt.keepBest === false => ghi đè (lưu latest)
-    if (attempt.keepBest === false) {
+    } else {
+      // luôn ghi đè lần làm trước cho cùng (student, exercise, section)
       attempts[idx] = attempt;
-      setItem(STORAGE_KEYS.EXERCISE_ATTEMPTS, attempts);
-      return;
     }
-
-    // Replace only if new score is higher
-    if (attempt.score > attempts[idx].score) {
-      attempts[idx] = attempt;
-      setItem(STORAGE_KEYS.EXERCISE_ATTEMPTS, attempts);
-    }
+    setItem(STORAGE_KEYS.EXERCISE_ATTEMPTS, attempts);
     return;
   }
 

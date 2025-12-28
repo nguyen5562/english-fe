@@ -1,4 +1,4 @@
-import { useRef, useState, useEffect } from 'react';
+import { useRef, useState, useEffect, useCallback } from 'react';
 import { useParams, useNavigate, useSearchParams } from 'react-router-dom';
 import {
   Box,
@@ -93,28 +93,30 @@ export default function ExerciseDetail() {
     return () => window.clearTimeout(id);
   }, [exercise, initialSectionIndex]);
 
+  // Helper: clear loaded attempt/view state (deferred to avoid sync setState-in-effect)
+  const clearLoadedState = () => {
+    window.setTimeout(() => {
+      setLastAttempt(null);
+      setViewingSaved(false);
+      setCheckedResults({});
+      setScore(null);
+    }, 0);
+  };
+
+  const isSectionGraded = useCallback((section: Exercise['sections'][number]) =>
+    section.questionType !== 'pronunciation' && section.questionType !== 'video-recording',
+  []);
+
   // Load last saved attempt when switching sections (and preload answers / show saved results)
   useEffect(() => {
     // If user pressed "Thử lại" and we're ignoring saved attempts, don't load saved data
     if (ignoringSaved) {
-      // Ensure UI is in clean state
-      window.setTimeout(() => {
-        setLastAttempt(null);
-        setViewingSaved(false);
-        setCheckedResults({});
-        setScore(null);
-      }, 0);
+      clearLoadedState();
       return;
     }
 
     if (!exercise || !user) {
-      // Defer setState to avoid synchronous state updates inside effect
-      window.setTimeout(() => {
-        setLastAttempt(null);
-        setViewingSaved(false);
-        setCheckedResults({});
-        setScore(null);
-      }, 0);
+      clearLoadedState();
       return;
     }
 
@@ -123,12 +125,7 @@ export default function ExerciseDetail() {
 
     const attempts = getExerciseAttempts(user.id, exercise.id).filter((a) => a.sectionIndex === currentSectionIndex);
     if (attempts.length === 0) {
-      window.setTimeout(() => {
-        setLastAttempt(null);
-        setViewingSaved(false);
-        setCheckedResults({});
-        setScore(null);
-      }, 0);
+      clearLoadedState();
       return;
     }
 
@@ -149,9 +146,7 @@ export default function ExerciseDetail() {
         return next;
       });
 
-      const sectionIsGraded = section.questionType !== 'pronunciation' && section.questionType !== 'video-recording';
-
-      if (sectionIsGraded) {
+      if (isSectionGraded(section)) {
         // Compute grading based on saved answers
         let totalScore = 0;
         let maxScore = 0;
@@ -193,7 +188,7 @@ export default function ExerciseDetail() {
         setViewingSaved(false);
       }
     }, 0);
-  }, [currentSectionIndex, user, exercise, ignoringSaved]);
+  }, [currentSectionIndex, user, exercise, ignoringSaved, isSectionGraded]);
 
   // Reset ignoringSaved when user navigates to another section so saved attempts load again
   useEffect(() => {
@@ -319,7 +314,6 @@ export default function ExerciseDetail() {
         exerciseId: exercise.id,
         studentId: user.id,
         sectionIndex: currentSectionIndex,
-        keepBest: false,
         answers: sectionAnswers,
         score: totalScore,
         maxScore,
@@ -329,6 +323,42 @@ export default function ExerciseDetail() {
       // If user was retrying, stop ignoring so the saved result can be displayed
       setIgnoringSaved(false);
     }
+  };
+
+  // Helpers used by retry/reset
+  const stopAndClearRecorders = (section: Exercise['sections'][number]) => {
+    section.questions.forEach((q) => {
+      const r = mediaRecordersRef.current[q.id];
+      if (r && r.state === 'recording') {
+        try { r.stop(); } catch { /* ignore */ }
+        try { r.stream.getTracks().forEach((t) => t.stop()); } catch { /* ignore */ }
+      }
+      mediaRecordersRef.current[q.id] = null;
+    });
+
+    setRecordings((prev) => {
+      const next = { ...prev };
+      section.questions.forEach((q) => { next[q.id] = null; });
+      return next;
+    });
+
+    setRecordingStatus((prev) => {
+      const next = { ...prev };
+      section.questions.forEach((q) => { next[q.id] = 'idle'; });
+      return next;
+    });
+  };
+
+  const resetAnswersForSection = (section: Exercise['sections'][number]) => {
+    setAnswers((prev) => {
+      const next = { ...prev };
+      section.questions.forEach((q) => {
+        const effectiveType = q.type ?? section.questionType;
+        if (effectiveType === 'fill-blank') next[q.id] = [];
+        else next[q.id] = '';
+      });
+      return next;
+    });
   };
 
   // Allow retrying a section: clear saved view and reset inputs for this section
@@ -342,50 +372,8 @@ export default function ExerciseDetail() {
     // ignore saved attempts until user either submits a new attempt or navigates away
     setIgnoringSaved(true);
 
-    // stop and clear any active MediaRecorders for this section
-    currentSection.questions.forEach((q) => {
-      const r = mediaRecordersRef.current[q.id];
-      if (r && r.state === 'recording') {
-        try {
-          r.stop();
-        } catch {
-          // ignore
-        }
-        try {
-          r.stream.getTracks().forEach((t) => t.stop());
-        } catch {
-          // ignore
-        }
-      }
-      mediaRecordersRef.current[q.id] = null;
-    });
-
-    // reset inputs for questions in this section
-    setAnswers((prev) => {
-      const next = { ...prev };
-      currentSection.questions.forEach((q) => {
-        const effectiveType = q.type ?? currentSection.questionType;
-        if (effectiveType === 'fill-blank') next[q.id] = [];
-        else next[q.id] = '';
-      });
-      return next;
-    });
-
-    // clear any in-memory recordings and recording statuses for this section
-    setRecordings((prev) => {
-      const next = { ...prev };
-      currentSection.questions.forEach((q) => {
-        next[q.id] = null;
-      });
-      return next;
-    });
-    setRecordingStatus((prev) => {
-      const next = { ...prev };
-      currentSection.questions.forEach((q) => {
-        next[q.id] = 'idle';
-      });
-      return next;
-    });
+    stopAndClearRecorders(currentSection);
+    resetAnswersForSection(currentSection);
 
     // force-remount section UI to ensure all inputs are visually reset
     setRetryKey((v) => v + 1);
