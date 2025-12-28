@@ -5,19 +5,22 @@ import {
   Typography,
   Card,
   CardContent,
-  CardActions,
-  Button,
   Chip,
-  Grid,
   FormControl,
   InputLabel,
   Select,
   MenuItem,
+  Accordion,
+  AccordionSummary,
+  AccordionDetails,
+  List,
+  ListItemButton,
+  ListItemText,
 } from '@mui/material';
 import {
   Assignment as AssignmentIcon,
-  PlayArrow as PlayArrowIcon,
 } from '@mui/icons-material';
+import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 import { getExercises, getCourses, getExerciseAttempts, getUser } from '../services/storage';
 import type { Exercise } from '../types';
 
@@ -30,21 +33,23 @@ export default function Exercises() {
   const navigate = useNavigate();
   const user = getUser();
 
+  // Mapping từ sectionType sang label hiển thị và màu cho Chip
+  const sectionTypeMap: Record<string, { label: string; color?: 'primary'|'secondary'|'error'|'info'|'success'|'warning' }> = {
+    grammar: { label: 'Grammar', color: 'primary' },
+    vocabulary: { label: 'Vocabulary', color: 'success' },
+    listening: { label: 'Listening', color: 'info' },
+    reading: { label: 'Reading', color: 'warning' },
+    pronunciation: { label: 'Pronunciation', color: 'secondary' },
+    speaking: { label: 'Speaking', color: 'error' },
+    writing: { label: 'Writing', color: 'warning' },
+    mixed: { label: 'Mixed' },
+  };
+
   const filteredExercises = selectedCourse === 'all'
     ? exercises
     : exercises.filter(e => e.courseId === selectedCourse);
 
-  const getBestScore = (exerciseId: string): number | null => {
-    if (!user) return null;
-    const attempts = getExerciseAttempts(user.id, exerciseId);
-    if (attempts.length === 0) return null;
-    const bestAttempt = attempts.reduce((best, current) => {
-      const currentPercentage = (current.score / current.maxScore) * 100;
-      const bestPercentage = (best.score / best.maxScore) * 100;
-      return currentPercentage > bestPercentage ? current : best;
-    });
-    return Math.round((bestAttempt.score / bestAttempt.maxScore) * 100);
-  };
+
 
   return (
     <Box>
@@ -76,61 +81,95 @@ export default function Exercises() {
           </CardContent>
         </Card>
       ) : (
-        <Grid container spacing={3}>
+        <Box>
           {filteredExercises.map((exercise) => {
-            const bestScore = getBestScore(exercise.id);
+            // gather attempts per section to compute sections completed and overall percent (using last attempt per section)
+            const attempts = user ? getExerciseAttempts(user.id, exercise.id) : [];
+            const lastAttemptBySection = new Map<number, typeof attempts[0]>();
+            attempts.forEach(a => {
+              if (typeof a.sectionIndex === 'number') {
+                const idx = a.sectionIndex as number;
+                const prev = lastAttemptBySection.get(idx);
+                if (!prev || new Date(a.completedAt).getTime() > new Date(prev.completedAt).getTime()) {
+                  lastAttemptBySection.set(idx, a);
+                }
+              }
+            });
+            const sectionsCompleted = lastAttemptBySection.size;
+            const overallPercent = sectionsCompleted > 0
+              ? Math.round(Array.from(lastAttemptBySection.values()).reduce((sum, a) => sum + (a.score / a.maxScore) * 100, 0) / sectionsCompleted)
+              : 0;
+
             return (
-              // @ts-expect-error - MUI v7 Grid still works with item prop
-              <Grid item xs={12} md={6} key={exercise.id}>
-                <Card>
-                  <CardContent>
-                    <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
-                      <AssignmentIcon sx={{ fontSize: 40, color: 'primary.main', mr: 2 }} />
-                      <Box sx={{ flexGrow: 1 }}>
-                        <Typography variant="h6">{exercise.title}</Typography>
-                        <Typography variant="body2" color="text.secondary">
-                          {courses.find(c => c.id === exercise.courseId)?.name}
-                        </Typography>
+              <Accordion key={exercise.id} disableGutters sx={{ mb: 2, borderRadius: 1, boxShadow: 1 }}>
+                <AccordionSummary expandIcon={<ExpandMoreIcon />}>
+                  <Box sx={{ display: 'flex', alignItems: 'center', width: '100%' }}>
+                    <AssignmentIcon sx={{ fontSize: 36, color: 'primary.main', mr: 2 }} />
+                    <Box sx={{ flexGrow: 1 }}>
+                      <Typography variant="h6">{exercise.title}</Typography>
+                      <Typography variant="body2" color="text.secondary" sx={{ display: 'flex', gap: 1, alignItems: 'center' }}>
+                        <span>{courses.find(c => c.id === exercise.courseId)?.name}</span>
+                        <span>·</span>
+                        <span>{sectionsCompleted}/{(exercise.sections ?? []).length} phần đã làm</span>
+                        <span>·</span>
+                        <span>Điểm tổng: {overallPercent}%</span>
+                      </Typography>
+                      <Box sx={{ display: 'flex', gap: 1, mt: 1 }}>
+                        <Chip label={`${(exercise.sections ?? []).length} phần`} size="small" color="primary" variant="outlined" />
+                        <Chip label={`${(exercise.sections ?? []).reduce((total, section) => total + (section.questions?.length ?? 0), 0)} câu hỏi`} size="small" />
                       </Box>
                     </Box>
-                    <Box sx={{ display: 'flex', gap: 1, mb: 2, flexWrap: 'wrap' }}>
-                      <Chip
-                        label={`${(exercise.sections ?? []).length} phần`}
-                        size="small"
-                        color="primary"
-                        variant="outlined"
-                      />
-                      <Chip
-                        label={`${(exercise.sections ?? []).reduce(
-                          (total, section) => total + (section.questions?.length ?? 0),
-                          0
-                        )} câu hỏi`}
-                        size="small"
-                      />
-                    </Box>
-                    {bestScore !== null && (
-                      <Typography variant="body2" color="success.main" sx={{ mb: 1 }}>
-                        Điểm cao nhất: {bestScore}%
-                      </Typography>
-                    )}
-                  </CardContent>
-                  <CardActions>
-                    <Button
-                      variant="contained"
-                      startIcon={<PlayArrowIcon />}
-                      fullWidth
-                      onClick={() => navigate(`/exercises/${exercise.id}`)}
-                    >
-                      Làm bài tập
-                    </Button>
-                  </CardActions>
-                </Card>
-              </Grid>
+                    <Typography variant="body2" color="success.main" sx={{ ml: 2 }}>
+                      {overallPercent}%
+                    </Typography>
+                  </Box>
+                </AccordionSummary>
+                <AccordionDetails>
+                  <List>
+                    {(exercise.sections ?? []).map((section, idx) => {
+                      const sectionAttempts = user ? getExerciseAttempts(user.id, exercise.id).filter(a => a.sectionIndex === idx) : [];
+                      const tries = sectionAttempts.length;
+                      const lastAttempt = sectionAttempts.length > 0 ? sectionAttempts.slice().sort((a,b) => new Date(b.completedAt).getTime() - new Date(a.completedAt).getTime())[0] : null;
+                      const lastPercent = lastAttempt ? Math.round((lastAttempt.score / lastAttempt.maxScore) * 100) : null;
+
+                      return (
+                        <ListItemButton
+                          key={section.id}
+                          onClick={() => navigate(`/exercises/${exercise.id}?section=${idx}`)}
+                          sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}
+                        >
+                          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                            <ListItemText primary={section.title} secondary={section.description} sx={{ mr: 2 }} />
+                            <Chip
+                              label={sectionTypeMap[section.sectionType]?.label ?? section.sectionType}
+                              size="small"
+                              // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                              color={sectionTypeMap[section.sectionType]?.color as any}
+                              variant={sectionTypeMap[section.sectionType]?.color ? 'filled' : 'outlined'}
+                              sx={{ textTransform: 'capitalize', ml: 1 }}
+                            />
+                          </Box>
+
+                          <Box sx={{ display: 'flex', gap: 2, alignItems: 'center' }}>
+                            <Box sx={{ textAlign: 'center' }}>
+                              <Typography variant="body2" color="text.secondary">{tries}</Typography>
+                              <Typography variant="body2" color="text.secondary">{tries === 1 ? 'try' : 'tries'}</Typography>
+                            </Box>
+                            <Box sx={{ textAlign: 'center' }}>
+                              <Typography variant="body2">{lastPercent !== null ? `${lastPercent}%` : '-'}</Typography>
+                              <Typography variant="caption" color="text.secondary">last</Typography>
+                            </Box>
+                          </Box>
+                        </ListItemButton>
+                      );
+                    })}
+                  </List>
+                </AccordionDetails>
+              </Accordion>
             );
           })}
-        </Grid>
+        </Box>
       )}
     </Box>
   );
 }
-
