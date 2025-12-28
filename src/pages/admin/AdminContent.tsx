@@ -68,7 +68,7 @@ export default function AdminContent() {
   
   const [courseForm, setCourseForm] = useState({ name: '', code: '', description: '' });
   const [lessonForm, setLessonForm] = useState({ title: '', order: 1 });
-  const [slideForm, setSlideForm] = useState({ title: '', content: '', order: 1 });
+  const [slideForm, setSlideForm] = useState({ title: '', fileUrl: '', order: 1 });
   const [videoForm, setVideoForm] = useState({ title: '', url: '', duration: 0, order: 1 });
   const [referenceForm, setReferenceForm] = useState({ title: '', type: 'pdf' as 'pdf' | 'link' | 'document', url: '' });
 
@@ -176,12 +176,12 @@ export default function AdminContent() {
   const handleAddSlide = (course: Course, lesson: Lesson) => {
     setSelectedCourse(course);
     setSelectedLesson(lesson);
-    setSlideForm({ title: '', content: '', order: (lesson.slides?.length || 0) + 1 });
+    setSlideForm({ title: '', fileUrl: '', order: (lesson.slides?.length || 0) + 1 });
     setOpenSlideDialog(true);
   };
 
   const handleSaveSlide = () => {
-    if (!selectedCourse || !selectedLesson || !slideForm.title) {
+    if (!selectedCourse || !selectedLesson || !slideForm.title || !slideForm.fileUrl) {
       alert('Vui lòng điền đầy đủ thông tin');
       return;
     }
@@ -611,12 +611,12 @@ export default function AdminContent() {
             <Grid item xs={12}>
               <TextField
                 fullWidth
-                label="Nội dung"
-                value={slideForm.content}
-                onChange={(e) => setSlideForm({ ...slideForm, content: e.target.value })}
-                multiline
-                rows={4}
+                label="URL file PowerPoint (.pptx)"
+                value={slideForm.fileUrl}
+                onChange={(e) => setSlideForm({ ...slideForm, fileUrl: e.target.value })}
+                placeholder="https://example.com/slides/lesson1.pptx hoặc đường dẫn file"
                 required
+                helperText="Nhập URL hoặc đường dẫn đến file PowerPoint"
               />
             </Grid>
             {/* @ts-expect-error - MUI v7 Grid still works with item prop */}

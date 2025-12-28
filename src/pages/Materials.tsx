@@ -96,9 +96,14 @@ export default function Materials() {
                       <SlideshowIcon sx={{ mr: 1, color: 'primary.main' }} />
                       <Typography variant="h6">{slide.title}</Typography>
                     </Box>
-                    <Typography variant="body2" color="text.secondary">
-                      {slide.content}
-                    </Typography>
+                    <Button
+                      variant="outlined"
+                      href={slide.fileUrl}
+                      target="_blank"
+                      sx={{ mt: 1 }}
+                    >
+                      Tải PowerPoint
+                    </Button>
                   </CardContent>
                 </Card>
               ))}

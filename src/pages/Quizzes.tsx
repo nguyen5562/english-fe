@@ -98,7 +98,7 @@ export default function Quizzes() {
                     </Typography>
                     <Box sx={{ display: 'flex', gap: 1, mb: 2, flexWrap: 'wrap' }}>
                       <Chip
-                        label={`${quiz.questions.length} câu hỏi`}
+                        label={`${quiz.sections.reduce((sum, section) => sum + section.questions.length, 0)} câu hỏi`}
                         size="small"
                       />
                       <Chip

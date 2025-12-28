@@ -26,6 +26,7 @@ import {
 import { ArrowBack as ArrowBackIcon, CheckCircle as CheckCircleIcon } from '@mui/icons-material';
 import { getExercise, getUser, saveExerciseAttempt, getExerciseAttempts } from '../services/storage';
 import type { Exercise, Question, QuestionType, ExerciseAttempt } from '../types';
+import { sectionTypeMap, renderQuestionMedia, renderQuestionWordBank, renderSectionMedia, renderSectionWordBank, formatAnswer, calculateScore } from '../utils/questionHelpers';
 
 export default function ExerciseDetail() {
   const { id } = useParams<{ id: string }>();
@@ -71,17 +72,6 @@ export default function ExerciseDetail() {
   // Local key used to force-remount the section UI when retrying (ensures uncontrolled parts reset)
   const [retryKey, setRetryKey] = useState<number>(0);
 
-  // Map sectionType to label and color (used for Chips in detail view)
-  const sectionTypeMap: Record<string, { label: string; color?: 'primary'|'secondary'|'error'|'info'|'success'|'warning' }> = {
-    grammar: { label: 'Grammar', color: 'primary' },
-    vocabulary: { label: 'Vocabulary', color: 'success' },
-    listening: { label: 'Listening', color: 'info' },
-    reading: { label: 'Reading', color: 'warning' },
-    pronunciation: { label: 'Pronunciation', color: 'secondary' },
-    speaking: { label: 'Speaking', color: 'error' },
-    writing: { label: 'Writing', color: 'warning' },
-    mixed: { label: 'Mixed' },
-  };
 
   // Make sure the requested initial section index is within bounds
   useEffect(() => {
@@ -149,12 +139,14 @@ export default function ExerciseDetail() {
 
       if (isSectionGraded(section)) {
         // Compute grading based on saved answers
-        let totalScore = 0;
-        let maxScore = 0;
+        const savedAnswers: Record<string, string | string[]> = {};
+        last.answers.forEach((a) => {
+          savedAnswers[a.questionId] = a.answer;
+        });
+        const { score: totalScore, maxScore } = calculateScore(section.questions, savedAnswers);
+        
         const results: Record<string, { graded: boolean; correct?: boolean; correctAnswer: string | string[] }> = {};
-
         section.questions.forEach((q) => {
-          maxScore += q.points;
           const ansObj = last.answers.find((x) => x.questionId === q.id);
           const userAnswer = ansObj ? ansObj.answer : (Array.isArray(q.correctAnswer) ? [] : '');
           const correctAnswer = q.correctAnswer;
@@ -162,12 +154,10 @@ export default function ExerciseDetail() {
 
           if (Array.isArray(correctAnswer)) {
             if (Array.isArray(userAnswer) && JSON.stringify((userAnswer as string[]).slice().sort()) === JSON.stringify((correctAnswer as string[]).slice().sort())) {
-              totalScore += q.points;
               correct = true;
             }
           } else {
             if (userAnswer === correctAnswer) {
-              totalScore += q.points;
               correct = true;
             }
           }
@@ -258,40 +248,35 @@ export default function ExerciseDetail() {
   // Check answers for current section, mark correct/incorrect, show correct answers and save attempt (per-section)
   const handleCheckSection = () => {
     const section = currentSection;
-    let totalScore = 0;
-    let maxScore = 0;
     const results: Record<string, { graded: boolean; correct?: boolean; correctAnswer: string | string[] }> = {};
-
-    // Decide grading for whole section based on ExerciseSection.questionType
     const sectionIsGraded = section.questionType !== 'pronunciation' && section.questionType !== 'video-recording';
 
     section.questions.forEach((question) => {
-      // If section is not graded (e.g., pronunciation / video-recording), mark as non-graded
       if (!sectionIsGraded) {
         results[question.id] = { graded: false, correctAnswer: question.correctAnswer };
         return;
       }
 
-      // Graded section: evaluate each question
-      maxScore += question.points;
       const userAnswer = answers[question.id];
       const correctAnswer = question.correctAnswer;
       let correct = false;
 
       if (Array.isArray(correctAnswer)) {
         if (Array.isArray(userAnswer) && JSON.stringify(userAnswer.sort()) === JSON.stringify(correctAnswer.sort())) {
-          totalScore += question.points;
           correct = true;
         }
       } else {
         if (userAnswer === correctAnswer) {
-          totalScore += question.points;
           correct = true;
         }
       }
 
       results[question.id] = { graded: true, correct, correctAnswer };
     });
+
+    const { score: totalScore, maxScore } = sectionIsGraded 
+      ? calculateScore(section.questions, answers)
+      : { score: 0, maxScore: 0 };
 
     setCheckedResults(results);
     setScore({ score: totalScore, maxScore });
@@ -386,65 +371,22 @@ export default function ExerciseDetail() {
   ) => {
     const value = (answers[question.id] || '') as string;
 
-    // Helper: render media (audio, image, video) for a question
-    const renderQuestionMedia = () => (
-      <>
-        {question.imageUrl && (
-          <Box sx={{ mb: 2 }}>
-            <Box
-              component="img"
-              src={question.imageUrl}
-              alt={question.question}
-              sx={{ maxWidth: '100%', borderRadius: 1 }}
-            />
-          </Box>
-        )}
-        {question.audioUrl && (
-          <Box sx={{ mb: 2 }}>
-            <audio controls src={question.audioUrl}>
-              Trình duyệt của bạn không hỗ trợ audio.
-            </audio>
-          </Box>
-        )}
-        {question.videoUrl && (
-          <Box sx={{ mb: 2 }}>
-            <video controls src={question.videoUrl} style={{ width: '100%', maxWidth: '800px', borderRadius: '8px' }}>
-              Trình duyệt của bạn không hỗ trợ video.
-            </video>
-          </Box>
-        )}
-      </>
-    );
-
-    // Helper: render wordBank for a question (from question or section)
-    const renderQuestionWordBank = () => {
-      if (!question.wordBank || question.wordBank.length === 0) return null;
-
-      return (
-        <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1, mb: 2 }}>
-          {question.wordBank.map((word) => (
-            <Chip
-              key={word}
-              label={word}
-              clickable
-              onClick={() => {
-                setAnswers((prev) => {
-                  const current = (prev[question.id] as string) || '';
-                  const next = current ? `${current} ${word}` : word;
-                  return { ...prev, [question.id]: next };
-                });
-              }}
-            />
-          ))}
-        </Box>
-      );
+    // Helper: render wordBank for a question with click handler
+    const renderQuestionWordBankWithHandler = () => {
+      return renderQuestionWordBank(question, (word) => {
+        setAnswers((prev) => {
+          const current = (prev[question.id] as string) || '';
+          const next = current ? `${current} ${word}` : word;
+          return { ...prev, [question.id]: next };
+        });
+      });
     };
 
     // Helper: render MC-style question
     const renderMultipleChoice = () => (
       <Box>
-        {renderQuestionMedia()}
-        {renderQuestionWordBank()}
+        {renderQuestionMedia(question)}
+        {renderQuestionWordBankWithHandler()}
         <FormControl component="fieldset" fullWidth>
           <FormLabel component="legend">{question.question}</FormLabel>
           <RadioGroup key={`${question.id}-rg-${retryKey}`}
@@ -484,8 +426,8 @@ export default function ExerciseDetail() {
 
         return (
           <Box>
-            {renderQuestionMedia()}
-            {renderQuestionWordBank()}
+            {renderQuestionMedia(question)}
+            {renderQuestionWordBankWithHandler()}
             {hasBlank ? (
               <Box sx={{ display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: 1 }}>
                 {parts.map((part, index) => (
@@ -543,8 +485,8 @@ export default function ExerciseDetail() {
         }
         return (
           <Box>
-            {renderQuestionMedia()}
-            {renderQuestionWordBank()}
+            {renderQuestionMedia(question)}
+            {renderQuestionWordBankWithHandler()}
             <Typography variant="body1" gutterBottom>
               {question.question}
             </Typography>
@@ -566,8 +508,8 @@ export default function ExerciseDetail() {
 
         return (
           <Box>
-            {renderQuestionMedia()}
-            {renderQuestionWordBank()}
+            {renderQuestionMedia(question)}
+            {renderQuestionWordBankWithHandler()}
             <Typography variant="body1" gutterBottom>
               {question.question}
             </Typography>
@@ -608,8 +550,8 @@ export default function ExerciseDetail() {
         // Điền từ vào chỗ trống
         return (
           <Box>
-            {renderQuestionMedia()}
-            {renderQuestionWordBank()}
+            {renderQuestionMedia(question)}
+            {renderQuestionWordBankWithHandler()}
             <Typography variant="body1" gutterBottom>
               {question.question}
             </Typography>
@@ -629,8 +571,8 @@ export default function ExerciseDetail() {
         // Sắp xếp lại các từ thành câu đúng trật tự
         return (
           <Box>
-            {renderQuestionMedia()}
-            {renderQuestionWordBank()}
+            {renderQuestionMedia(question)}
+            {renderQuestionWordBankWithHandler()}
             <Typography variant="body1" gutterBottom>
               {question.question}
             </Typography>
@@ -653,8 +595,8 @@ export default function ExerciseDetail() {
         {
           return (
             <Box>
-              {renderQuestionMedia()}
-              {renderQuestionWordBank()}
+              {renderQuestionMedia(question)}
+              {renderQuestionWordBankWithHandler()}
               <Typography variant="body1" gutterBottom>
                 {question.question}
               </Typography>
@@ -684,8 +626,8 @@ export default function ExerciseDetail() {
 
         return (
           <Box>
-            {renderQuestionMedia()}
-            {renderQuestionWordBank()}
+            {renderQuestionMedia(question)}
+            {renderQuestionWordBankWithHandler()}
             <Box sx={{ display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: 1, mb: 2 }}>
               {blanks.map((part, index) => (
                 <Box key={index} sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
@@ -717,8 +659,8 @@ export default function ExerciseDetail() {
         // Passage đã được hiển thị ở section level, ở đây chỉ cần hiển thị input cho từng câu
         return (
           <Box>
-            {renderQuestionMedia()}
-            {renderQuestionWordBank()}
+            {renderQuestionMedia(question)}
+            {renderQuestionWordBankWithHandler()}
             <Typography variant="body2" color="text.secondary" sx={{ mb: 1 }}>
               Điền từ vào chỗ trống số {question.question}:
             </Typography>
@@ -748,8 +690,8 @@ export default function ExerciseDetail() {
 
         return (
           <Box>
-            {renderQuestionMedia()}
-            {renderQuestionWordBank()}
+            {renderQuestionMedia(question)}
+            {renderQuestionWordBankWithHandler()}
             <Typography variant="body1" gutterBottom>
               {question.question}
             </Typography>
@@ -791,8 +733,8 @@ export default function ExerciseDetail() {
         // Bài viết dài (ví dụ: viết profile, viết đoạn văn)
         return (
           <Box>
-            {renderQuestionMedia()}
-            {renderQuestionWordBank()}
+            {renderQuestionMedia(question)}
+            {renderQuestionWordBankWithHandler()}
             <Typography variant="body1" gutterBottom>
               {question.question}
             </Typography>
@@ -812,8 +754,8 @@ export default function ExerciseDetail() {
       default:
         return (
           <Box>
-            {renderQuestionMedia()}
-            {renderQuestionWordBank()}
+            {renderQuestionMedia(question)}
+            {renderQuestionWordBankWithHandler()}
             <Typography variant="body1" gutterBottom>
               {question.question}
             </Typography>
@@ -871,56 +813,8 @@ export default function ExerciseDetail() {
               </Typography>
             )}
 
-            {(currentSection.audioUrl || currentSection.videoUrl || currentSection.imageUrl || currentSection.passage) && (
-              <Box sx={{ mb: 2 }}>
-                {currentSection.audioUrl && (
-                  <Box sx={{ mb: 1 }}>
-                    <audio controls src={currentSection.audioUrl}>
-                      Trình duyệt của bạn không hỗ trợ audio.
-                    </audio>
-                  </Box>
-                )}
-                {currentSection.videoUrl && (
-                  <Box sx={{ mb: 1 }}>
-                    <video controls src={currentSection.videoUrl} style={{ width: '100%', maxWidth: '800px', borderRadius: '8px' }}>
-                      Trình duyệt của bạn không hỗ trợ video.
-                    </video>
-                  </Box>
-                )}
-                {currentSection.imageUrl && (
-                  <Box
-                    component="img"
-                    src={currentSection.imageUrl}
-                    alt={currentSection.title}
-                    sx={{ maxWidth: '100%', borderRadius: 1 }}
-                  />
-                )}
-                {currentSection.passage && currentSection.questionType !== 'paragraph-fill' && (
-                  <Box
-                    sx={{
-                      p: 1,
-                      bgcolor: 'grey.50',
-                      borderRadius: 1,
-                      border: '1px solid',
-                      borderColor: 'grey.300',
-                      whiteSpace: 'pre-wrap',
-                      mb: 1,
-                    }}
-                  >
-                    <Typography variant="body1">{currentSection.passage}</Typography>
-                  </Box>
-                )}
-              </Box>
-            )}
-
-            {/* Word bank cho toàn phần (nếu có) */}
-            {currentSection.wordBank && currentSection.wordBank.length > 0 && (
-              <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1, mb: 2 }}>
-                {currentSection.wordBank.map((word) => (
-                  <Chip key={word} label={word} />
-                ))}
-              </Box>
-            )}
+            {renderSectionMedia(currentSection)}
+            {renderSectionWordBank(currentSection)}
 
             {/* Hiển thị đặc biệt cho paragraph-fill: passage với input fields inline */}
             {currentSection.questionType === 'paragraph-fill' && currentSection.passage ? (
@@ -970,10 +864,6 @@ export default function ExerciseDetail() {
                   const bg = result ? (result.correct ? 'rgba(56, 142, 60, 0.06)' : 'rgba(211, 47, 47, 0.04)') : 'transparent';
                   const borderColorToken = result ? (result.correct ? 'success.main' : 'error.main') : 'transparent';
 
-                  const formatAnswer = (ans: string | string[]) => {
-                    if (Array.isArray(ans)) return ans.join(', ');
-                    return String(ans ?? '');
-                  };
 
                   return (
                     <Box key={`${question.id}-${retryKey}`} sx={{ p: 1, borderLeft: '3px solid', borderColor: borderColorToken, background: bg, borderRadius: 1, mb: 1 }}>

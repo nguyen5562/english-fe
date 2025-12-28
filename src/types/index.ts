@@ -30,7 +30,7 @@ export interface Slide {
   id: string;
   lessonId: string;
   title: string;
-  content: string;
+  fileUrl: string; // URL đến file PowerPoint (.pptx)
   order: number;
 }
 
@@ -66,7 +66,8 @@ export type QuestionType =
   | "dropdown-choice" // chọn từ dropdown (ví dụ: Choose the correct verbs)
   | "video-recording"; // xem video rồi ghi âm lại
 
-export interface ExerciseSection {
+// Section dùng chung cho cả Exercise và Quiz
+export interface Section {
   id: string;
   title: string;
   description?: string;
@@ -94,14 +95,14 @@ export interface Exercise {
   id: string;
   courseId: string;
   title: string;
-  sections: ExerciseSection[];
+  sections: Section[];
 }
 
 export interface Question {
   id: string;
-  exerciseId: string;
+  sectionId: string; // ID của section mà question này thuộc về
   question: string;
-  // Trong thiết kế mới, type chủ yếu lấy từ ExerciseSection.questionType.
+  // Trong thiết kế mới, type chủ yếu lấy từ Section.questionType.
   // Trường này là optional để vẫn hỗ trợ các câu hỏi đặc biệt nếu cần.
   type?: QuestionType;
   options?: string[]; // For multiple choice
@@ -119,7 +120,7 @@ export interface Quiz {
   courseId: string;
   title: string;
   description: string;
-  questions: Question[];
+  sections: Section[]; // Quiz làm theo phần, làm hết tất cả các phần rồi mới nộp bài
   timeLimit: number; // minutes
   passingScore: number; // percentage
 }
@@ -159,6 +160,8 @@ export interface QuizAttempt {
   passed: boolean;
   completedAt: Date;
   timeSpent: number; // minutes
+  // Lưu thông tin về section hiện tại (optional, có thể dùng để theo dõi tiến độ)
+  currentSectionIndex?: number;
 }
 
 export interface Statistics {

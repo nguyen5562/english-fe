@@ -20,8 +20,8 @@ export const initializeMockData = (): void => {
             {
               id: 'slide-1-1-1',
               lessonId: 'lesson-1-1',
-              title: 'Basic Greetings',
-              content: 'Learn how to greet people in English...',
+              title: 'Slide bài học',
+              fileUrl: '/silde.pptx',
               order: 1,
             },
           ],
@@ -29,8 +29,8 @@ export const initializeMockData = (): void => {
             {
               id: 'video-1-1-1',
               lessonId: 'lesson-1-1',
-              title: 'Introduction to Greetings',
-              url: 'https://example.com/video1',
+              title: 'Video bài học',
+              url: '/video.mp4',
               duration: 300,
               order: 1,
             },
@@ -39,9 +39,9 @@ export const initializeMockData = (): void => {
             {
               id: 'ref-1-1-1',
               lessonId: 'lesson-1-1',
-              title: 'Grammar Reference',
+              title: 'Word List',
               type: 'pdf',
-              url: 'https://example.com/grammar.pdf',
+              url: '/WordList.pdf',
             },
           ],
         },
@@ -100,7 +100,7 @@ export const initializeMockData = (): void => {
           questions: [
             {
               id: 'u1-s1-q1',
-              exerciseId: 'exercise-unit1',
+              sectionId: 'unit1-sec-1',
               question: 'Rewrite: "Where the train station?" (is)',
               type: 'fill-sentence',
               correctAnswer: 'Where is the train station?',
@@ -108,7 +108,7 @@ export const initializeMockData = (): void => {
             },
             {
               id: 'u1-s1-q2',
-              exerciseId: 'exercise-unit1',
+              sectionId: 'unit1-sec-1',
               question: 'Rewrite: "How often you read magazines?" (do)',
               type: 'fill-sentence',
               correctAnswer: 'How often do you read magazines?',
@@ -116,7 +116,7 @@ export const initializeMockData = (): void => {
             },
             {
               id: 'u1-s1-q3',
-              exerciseId: 'exercise-unit1',
+              sectionId: 'unit1-sec-1',
               question: 'Rewrite: "Do you often to the cinema?" (go)',
               type: 'fill-sentence',
               correctAnswer: 'Do you often go to the cinema?',
@@ -124,7 +124,7 @@ export const initializeMockData = (): void => {
             },
             {
               id: 'u1-s1-q4',
-              exerciseId: 'exercise-unit1',
+              sectionId: 'unit1-sec-1',
               question: 'Rewrite: "What this word mean?" (does)',
               type: 'fill-sentence',
               correctAnswer: 'What does this word mean?',
@@ -132,7 +132,7 @@ export const initializeMockData = (): void => {
             },
             {
               id: 'u1-s1-q5',
-              exerciseId: 'exercise-unit1',
+              sectionId: 'unit1-sec-1',
               question: 'Rewrite: "What time did arrive?" (your friends)',
               type: 'fill-sentence',
               correctAnswer: 'What time did your friends arrive?',
@@ -140,7 +140,7 @@ export const initializeMockData = (): void => {
             },
             {
               id: 'u1-s1-q6',
-              exerciseId: 'exercise-unit1',
+              sectionId: 'unit1-sec-1',
               question: 'Rewrite: "When I see you?" (can)',
               type: 'fill-sentence',
               correctAnswer: 'When can I see you?',
@@ -157,7 +157,7 @@ export const initializeMockData = (): void => {
           questions: [
             {
               id: 'u1-s2-q1',
-              exerciseId: 'exercise-unit1',
+              sectionId: 'unit1-sec-2',
               question: 'a / you / do / have / car?',
               type: 'word-order',
               correctAnswer: 'Do you have a car?',
@@ -165,7 +165,7 @@ export const initializeMockData = (): void => {
             },
             {
               id: 'u1-s2-q2',
-              exerciseId: 'exercise-unit1',
+              sectionId: 'unit1-sec-2',
               question: 'your / a / father / doctor / is',
               type: 'word-order',
               correctAnswer: 'Is your father a doctor?',
@@ -173,7 +173,7 @@ export const initializeMockData = (): void => {
             },
             {
               id: 'u1-s2-q3',
-              exerciseId: 'exercise-unit1',
+              sectionId: 'unit1-sec-2',
               question: 'Italian / you / can / speak',
               type: 'word-order',
               correctAnswer: 'Can you speak Italian?',
@@ -181,7 +181,7 @@ export const initializeMockData = (): void => {
             },
             {
               id: 'u1-s2-q4',
-              exerciseId: 'exercise-unit1',
+              sectionId: 'unit1-sec-2',
               question: 'where / summer / you / did / go / last',
               type: 'word-order',
               correctAnswer: 'Where did you go last summer?',
@@ -189,7 +189,7 @@ export const initializeMockData = (): void => {
             },
             {
               id: 'u1-s2-q5',
-              exerciseId: 'exercise-unit1',
+              sectionId: 'unit1-sec-2',
               question: 'were / you / born / where',
               type: 'word-order',
               correctAnswer: 'Where were you born?',
@@ -197,7 +197,7 @@ export const initializeMockData = (): void => {
             },
             {
               id: 'u1-s2-q6',
-              exerciseId: 'exercise-unit1',
+              sectionId: 'unit1-sec-2',
               question: 'your / what / class / does / start / time',
               type: 'word-order',
               correctAnswer: 'What time does your class start?',
@@ -215,7 +215,7 @@ export const initializeMockData = (): void => {
           questions: [
             {
               id: 'u1-s3-q1',
-              exerciseId: 'exercise-unit1',
+              sectionId: 'unit1-sec-3',
               question: 'Where ____ you from?',
               type: 'dropdown-choice',
               options: ['are', 'do', 'were'],
@@ -224,7 +224,7 @@ export const initializeMockData = (): void => {
             },
             {
               id: 'u1-s3-q2',
-              exerciseId: 'exercise-unit1',
+              sectionId: 'unit1-sec-1',
               question: 'Where ____ you born?',
               type: 'dropdown-choice',
               options: ['are', 'do', 'were'],
@@ -233,7 +233,7 @@ export const initializeMockData = (): void => {
             },
             {
               id: 'u1-s3-q3',
-              exerciseId: 'exercise-unit1',
+              sectionId: 'unit1-sec-1',
               question: 'Where do you ____?',
               type: 'dropdown-choice',
               options: ['live', 'are', 'have'],
@@ -242,7 +242,7 @@ export const initializeMockData = (): void => {
             },
             {
               id: 'u1-s3-q4',
-              exerciseId: 'exercise-unit1',
+              sectionId: 'unit1-sec-1',
               question: 'Do you ____ in a house or a flat?',
               type: 'dropdown-choice',
               options: ['live', 'are', 'have'],
@@ -251,7 +251,7 @@ export const initializeMockData = (): void => {
             },
             {
               id: 'u1-s3-q5',
-              exerciseId: 'exercise-unit1',
+              sectionId: 'unit1-sec-1',
               question: 'Do you ____ any brothers and sisters?',
               type: 'dropdown-choice',
               options: ['have', 'are', 'do'],
@@ -260,7 +260,7 @@ export const initializeMockData = (): void => {
             },
             {
               id: 'u1-s3-q6',
-              exerciseId: 'exercise-unit1',
+              sectionId: 'unit1-sec-1',
               question: 'Do you ____ any pets?',
               type: 'dropdown-choice',
               options: ['have', 'are', 'do'],
@@ -269,7 +269,7 @@ export const initializeMockData = (): void => {
             },
             {
               id: 'u1-s3-q7',
-              exerciseId: 'exercise-unit1',
+              sectionId: 'unit1-sec-1',
               question: 'What do you ____?',
               type: 'dropdown-choice',
               options: ['do', 'are', 'have'],
@@ -278,7 +278,7 @@ export const initializeMockData = (): void => {
             },
             {
               id: 'u1-s3-q8',
-              exerciseId: 'exercise-unit1',
+              sectionId: 'unit1-sec-1',
               question: 'What time do you ____ up during the week?',
               type: 'dropdown-choice',
               options: ['get', 'go', 'wake'],
@@ -297,7 +297,7 @@ export const initializeMockData = (): void => {
           questions: [
             {
               id: 'u1-s4-q1',
-              exerciseId: 'exercise-unit1',
+              sectionId: 'unit1-sec-4',
               question: 'Where do you usually ____ lunch?',
               type: 'fill-blank',
               correctAnswer: 'have',
@@ -305,7 +305,7 @@ export const initializeMockData = (): void => {
             },
             {
               id: 'u1-s4-q2',
-              exerciseId: 'exercise-unit1',
+              sectionId: 'unit1-sec-1',
               question: 'What time do you usually ____ to bed?',
               type: 'fill-blank',
               correctAnswer: 'go',
@@ -313,7 +313,7 @@ export const initializeMockData = (): void => {
             },
             {
               id: 'u1-s4-q3',
-              exerciseId: 'exercise-unit1',
+              sectionId: 'unit1-sec-1',
               question: 'Where did you ____ English before?',
               type: 'fill-blank',
               correctAnswer: 'study',
@@ -321,7 +321,7 @@ export const initializeMockData = (): void => {
             },
             {
               id: 'u1-s4-q4',
-              exerciseId: 'exercise-unit1',
+              sectionId: 'unit1-sec-1',
               question: 'Can you ____ any other languages? Which?',
               type: 'fill-blank',
               correctAnswer: 'speak',
@@ -329,7 +329,7 @@ export const initializeMockData = (): void => {
             },
             {
               id: 'u1-s4-q5',
-              exerciseId: 'exercise-unit1',
+              sectionId: 'unit1-sec-1',
               question: 'What kind of music do you ____ to?',
               type: 'fill-blank',
               correctAnswer: 'listen',
@@ -337,7 +337,7 @@ export const initializeMockData = (): void => {
             },
             {
               id: 'u1-s4-q6',
-              exerciseId: 'exercise-unit1',
+              sectionId: 'unit1-sec-1',
               question: 'What TV programmes or series do you ____?',
               type: 'fill-blank',
               correctAnswer: 'watch',
@@ -345,7 +345,7 @@ export const initializeMockData = (): void => {
             },
             {
               id: 'u1-s4-q7',
-              exerciseId: 'exercise-unit1',
+              sectionId: 'unit1-sec-1',
               question: 'Do you ____ any sport or exercise? What?',
               type: 'fill-blank',
               correctAnswer: 'do',
@@ -353,7 +353,7 @@ export const initializeMockData = (): void => {
             },
             {
               id: 'u1-s4-q8',
-              exerciseId: 'exercise-unit1',
+              sectionId: 'unit1-sec-1',
               question: 'What kind of books or magazines do you ____?',
               type: 'fill-blank',
               correctAnswer: 'read',
@@ -361,7 +361,7 @@ export const initializeMockData = (): void => {
             },
             {
               id: 'u1-s4-q9',
-              exerciseId: 'exercise-unit1',
+              sectionId: 'unit1-sec-1',
               question: 'How often do you ____ to the cinema?',
               type: 'fill-blank',
               correctAnswer: 'go',
@@ -380,7 +380,7 @@ export const initializeMockData = (): void => {
           questions: [
             {
               id: 'u1-s5-q1',
-              exerciseId: 'exercise-unit1',
+              sectionId: 'unit1-sec-5',
               question: 'Say the word: train /eɪ/',
               type: 'pronunciation',
               imageUrl: 'https://example.com/images/unit1-train.png',
@@ -389,7 +389,7 @@ export const initializeMockData = (): void => {
             },
             {
               id: 'u1-s5-q2',
-              exerciseId: 'exercise-unit1',
+              sectionId: 'unit1-sec-1',
               question: 'Say the word: tree /iː/',
               type: 'pronunciation',
               imageUrl: 'https://example.com/images/unit1-tree.png',
@@ -398,7 +398,7 @@ export const initializeMockData = (): void => {
             },
             {
               id: 'u1-s5-q3',
-              exerciseId: 'exercise-unit1',
+              sectionId: 'unit1-sec-1',
               question: 'Say the word: egg /e/',
               type: 'pronunciation',
               imageUrl: 'https://example.com/images/unit1-egg.png',
@@ -407,7 +407,7 @@ export const initializeMockData = (): void => {
             },
             {
               id: 'u1-s5-q4',
-              exerciseId: 'exercise-unit1',
+              sectionId: 'unit1-sec-1',
               question: 'Say the word: bike /aɪ/',
               type: 'pronunciation',
               imageUrl: 'https://example.com/images/unit1-bike.png',
@@ -416,7 +416,7 @@ export const initializeMockData = (): void => {
             },
             {
               id: 'u1-s5-q5',
-              exerciseId: 'exercise-unit1',
+              sectionId: 'unit1-sec-1',
               question: 'Say the word: phone /əʊ/',
               type: 'pronunciation',
               imageUrl: 'https://example.com/images/unit1-phone.png',
@@ -425,7 +425,7 @@ export const initializeMockData = (): void => {
             },
             {
               id: 'u1-s5-q6',
-              exerciseId: 'exercise-unit1',
+              sectionId: 'unit1-sec-1',
               question: 'Say the word: boot /uː/',
               type: 'pronunciation',
               imageUrl: 'https://example.com/images/unit1-boot.png',
@@ -434,7 +434,7 @@ export const initializeMockData = (): void => {
             },
             {
               id: 'u1-s5-q7',
-              exerciseId: 'exercise-unit1',
+              sectionId: 'unit1-sec-1',
               question: 'Say the word: car /ɑː/',
               type: 'pronunciation',
               imageUrl: 'https://example.com/images/unit1-car.png',
@@ -453,7 +453,7 @@ export const initializeMockData = (): void => {
           questions: [
             {
               id: 'u1-s6-q1',
-              exerciseId: 'exercise-unit1',
+              sectionId: 'unit1-sec-6',
               question: 'This is ____ in the ____, We ____.',
               type: 'fill-blank',
               correctAnswer: ['my', 'kitchen', "aren't"],
@@ -461,7 +461,7 @@ export const initializeMockData = (): void => {
             },
             {
               id: 'u1-s6-q2',
-              exerciseId: 'exercise-unit1',
+              sectionId: 'unit1-sec-1',
               question: "That's ____ in the ____.",
               type: 'fill-blank',
               correctAnswer: ['my', 'bedroom'],
@@ -469,7 +469,7 @@ export const initializeMockData = (): void => {
             },
             {
               id: 'u1-s6-q3',
-              exerciseId: 'exercise-unit1',
+              sectionId: 'unit1-sec-1',
               question: "She's ____, and she ____.",
               type: 'fill-blank',
               correctAnswer: ['my', 'sister', "isn't"],
@@ -477,7 +477,7 @@ export const initializeMockData = (): void => {
             },
             {
               id: 'u1-s6-q4',
-              exerciseId: 'exercise-unit1',
+              sectionId: 'unit1-sec-1',
               question: 'The ____ in the ____ and ____.',
               type: 'fill-blank',
               correctAnswer: ['cat', 'kitchen', 'sleeping'],
@@ -485,7 +485,7 @@ export const initializeMockData = (): void => {
             },
             {
               id: 'u1-s6-q5',
-              exerciseId: 'exercise-unit1',
+              sectionId: 'unit1-sec-1',
               question: "She's ____, and ____.",
               type: 'fill-blank',
               correctAnswer: ['my', 'friend', "isn't"],
@@ -493,7 +493,7 @@ export const initializeMockData = (): void => {
             },
             {
               id: 'u1-s6-q6',
-              exerciseId: 'exercise-unit1',
+              sectionId: 'unit1-sec-1',
               question: 'The ____ next to me ____.',
               type: 'fill-blank',
               correctAnswer: ['person', "isn't"],
@@ -512,7 +512,7 @@ export const initializeMockData = (): void => {
           questions: [
             {
               id: 'u1-s7-q1',
-              exerciseId: 'exercise-unit1',
+              sectionId: 'unit1-sec-1',
               question: 'had',
               type: 'paragraph-fill',
               correctAnswer: 'had',
@@ -520,7 +520,7 @@ export const initializeMockData = (): void => {
             },
             {
               id: 'u1-s7-q2',
-              exerciseId: 'exercise-unit1',
+              sectionId: 'unit1-sec-1',
               question: 'drove',
               type: 'paragraph-fill',
               correctAnswer: 'drove',
@@ -528,7 +528,7 @@ export const initializeMockData = (): void => {
             },
             {
               id: 'u1-s7-q3',
-              exerciseId: 'exercise-unit1',
+              sectionId: 'unit1-sec-1',
               question: 'broke',
               type: 'paragraph-fill',
               correctAnswer: 'broke',
@@ -536,7 +536,7 @@ export const initializeMockData = (): void => {
             },
             {
               id: 'u1-s7-q4',
-              exerciseId: 'exercise-unit1',
+              sectionId: 'unit1-sec-1',
               question: 'spent',
               type: 'paragraph-fill',
               correctAnswer: 'spent',
@@ -544,7 +544,7 @@ export const initializeMockData = (): void => {
             },
             {
               id: 'u1-s7-q5',
-              exerciseId: 'exercise-unit1',
+              sectionId: 'unit1-sec-1',
               question: 'got',
               type: 'paragraph-fill',
               correctAnswer: 'got',
@@ -552,7 +552,7 @@ export const initializeMockData = (): void => {
             },
             {
               id: 'u1-s7-q6',
-              exerciseId: 'exercise-unit1',
+              sectionId: 'unit1-sec-1',
               question: 'went',
               type: 'paragraph-fill',
               correctAnswer: 'went',
@@ -560,7 +560,7 @@ export const initializeMockData = (): void => {
             },
             {
               id: 'u1-s7-q7',
-              exerciseId: 'exercise-unit1',
+              sectionId: 'unit1-sec-1',
               question: "couldn't",
               type: 'paragraph-fill',
               correctAnswer: "couldn't",
@@ -568,7 +568,7 @@ export const initializeMockData = (): void => {
             },
             {
               id: 'u1-s7-q8',
-              exerciseId: 'exercise-unit1',
+              sectionId: 'unit1-sec-1',
               question: 'were',
               type: 'paragraph-fill',
               correctAnswer: 'were',
@@ -576,7 +576,7 @@ export const initializeMockData = (): void => {
             },
             {
               id: 'u1-s7-q9',
-              exerciseId: 'exercise-unit1',
+              sectionId: 'unit1-sec-1',
               question: "didn't know",
               type: 'paragraph-fill',
               correctAnswer: "didn't know",
@@ -584,7 +584,7 @@ export const initializeMockData = (): void => {
             },
             {
               id: 'u1-s7-q10',
-              exerciseId: 'exercise-unit1',
+              sectionId: 'unit1-sec-1',
               question: 'found',
               type: 'paragraph-fill',
               correctAnswer: 'found',
@@ -592,7 +592,7 @@ export const initializeMockData = (): void => {
             },
             {
               id: 'u1-s7-q11',
-              exerciseId: 'exercise-unit1',
+              sectionId: 'unit1-sec-1',
               question: 'stayed',
               type: 'paragraph-fill',
               correctAnswer: 'stayed',
@@ -600,7 +600,7 @@ export const initializeMockData = (): void => {
             },
             {
               id: 'u1-s7-q12',
-              exerciseId: 'exercise-unit1',
+              sectionId: 'unit1-sec-1',
               question: 'saw',
               type: 'paragraph-fill',
               correctAnswer: 'saw',
@@ -608,7 +608,7 @@ export const initializeMockData = (): void => {
             },
             {
               id: 'u1-s7-q13',
-              exerciseId: 'exercise-unit1',
+              sectionId: 'unit1-sec-1',
               question: 'bought',
               type: 'paragraph-fill',
               correctAnswer: 'bought',
@@ -616,7 +616,7 @@ export const initializeMockData = (): void => {
             },
             {
               id: 'u1-s7-q14',
-              exerciseId: 'exercise-unit1',
+              sectionId: 'unit1-sec-1',
               question: 'wanted',
               type: 'paragraph-fill',
               correctAnswer: 'wanted',
@@ -624,7 +624,7 @@ export const initializeMockData = (): void => {
             },
             {
               id: 'u1-s7-q15',
-              exerciseId: 'exercise-unit1',
+              sectionId: 'unit1-sec-1',
               question: "didn't have",
               type: 'paragraph-fill',
               correctAnswer: "didn't have",
@@ -632,7 +632,7 @@ export const initializeMockData = (): void => {
             },
             {
               id: 'u1-s7-q16',
-              exerciseId: 'exercise-unit1',
+              sectionId: 'unit1-sec-1',
               question: 'was',
               type: 'paragraph-fill',
               correctAnswer: 'was',
@@ -640,7 +640,7 @@ export const initializeMockData = (): void => {
             },
             {
               id: 'u1-s7-q17',
-              exerciseId: 'exercise-unit1',
+              sectionId: 'unit1-sec-1',
               question: "wasn't",
               type: 'paragraph-fill',
               correctAnswer: "wasn't",
@@ -648,7 +648,7 @@ export const initializeMockData = (): void => {
             },
             {
               id: 'u1-s7-q18',
-              exerciseId: 'exercise-unit1',
+              sectionId: 'unit1-sec-1',
               question: 'started',
               type: 'paragraph-fill',
               correctAnswer: 'started',
@@ -656,7 +656,7 @@ export const initializeMockData = (): void => {
             },
             {
               id: 'u1-s7-q19',
-              exerciseId: 'exercise-unit1',
+              sectionId: 'unit1-sec-1',
               question: 'left',
               type: 'paragraph-fill',
               correctAnswer: 'left',
@@ -664,7 +664,7 @@ export const initializeMockData = (): void => {
             },
             {
               id: 'u1-s7-q20',
-              exerciseId: 'exercise-unit1',
+              sectionId: 'unit1-sec-1',
               question: 'stopped',
               type: 'paragraph-fill',
               correctAnswer: 'stopped',
@@ -688,7 +688,7 @@ export const initializeMockData = (): void => {
           questions: [
             {
               id: 'u2-s1-q1',
-              exerciseId: 'exercise-unit2',
+              sectionId: 'unit2-sec-1',
               question: 'She has curly red hair. (choose the correct picture: 1, 2 or 3)',
               type: 'picture-choice',
               options: ['picture 1', 'picture 2', 'picture 3'],
@@ -697,7 +697,7 @@ export const initializeMockData = (): void => {
             },
             {
               id: 'u2-s1-q2',
-              exerciseId: 'exercise-unit2',
+              sectionId: 'unit2-sec-1',
               question: 'She has long straight hair. (choose the correct picture: 1, 2 or 3)',
               type: 'picture-choice',
               options: ['picture 1', 'picture 2', 'picture 3'],
@@ -716,7 +716,7 @@ export const initializeMockData = (): void => {
           questions: [
             {
               id: 'u2-s2-q1',
-              exerciseId: 'exercise-unit2',
+              sectionId: 'unit2-sec-1',
               question: 'friendly → ________',
               type: 'fill-sentence',
               correctAnswer: 'unfriendly',
@@ -724,7 +724,7 @@ export const initializeMockData = (): void => {
             },
             {
               id: 'u2-s2-q2',
-              exerciseId: 'exercise-unit2',
+              sectionId: 'unit2-sec-1',
               question: 'talkative → ________',
               type: 'fill-sentence',
               correctAnswer: 'quiet',
@@ -732,7 +732,7 @@ export const initializeMockData = (): void => {
             },
             {
               id: 'u2-s2-q3',
-              exerciseId: 'exercise-unit2',
+              sectionId: 'unit2-sec-1',
               question: 'generous → ________',
               type: 'fill-sentence',
               correctAnswer: 'mean',
@@ -740,7 +740,7 @@ export const initializeMockData = (): void => {
             },
             {
               id: 'u2-s2-q4',
-              exerciseId: 'exercise-unit2',
+              sectionId: 'unit2-sec-1',
               question: 'kind → ________',
               type: 'fill-sentence',
               correctAnswer: 'unkind',
@@ -748,7 +748,7 @@ export const initializeMockData = (): void => {
             },
             {
               id: 'u2-s2-q5',
-              exerciseId: 'exercise-unit2',
+              sectionId: 'unit2-sec-1',
               question: 'lazy → ________',
               type: 'fill-sentence',
               correctAnswer: 'hard-working',
@@ -756,7 +756,7 @@ export const initializeMockData = (): void => {
             },
             {
               id: 'u2-s2-q6',
-              exerciseId: 'exercise-unit2',
+              sectionId: 'unit2-sec-1',
               question: 'funny → ________',
               type: 'fill-sentence',
               correctAnswer: 'serious',
@@ -764,7 +764,7 @@ export const initializeMockData = (): void => {
             },
             {
               id: 'u2-s2-q7',
-              exerciseId: 'exercise-unit2',
+              sectionId: 'unit2-sec-1',
               question: 'clever → ________',
               type: 'fill-sentence',
               correctAnswer: 'stupid',
@@ -772,7 +772,7 @@ export const initializeMockData = (): void => {
             },
             {
               id: 'u2-s2-q8',
-              exerciseId: 'exercise-unit2',
+              sectionId: 'unit2-sec-1',
               question: 'shy → ________',
               type: 'fill-sentence',
               correctAnswer: 'extrovert',
@@ -795,7 +795,7 @@ Between 10,000 and 40,000 people attend the event every year. It's held in a dis
           questions: [
             {
               id: 'u2-s3-q1',
-              exerciseId: 'exercise-unit2',
+              sectionId: 'unit2-sec-1',
               question: "People go to Singles' Day to find ____.",
               type: 'reading-mcq',
               options: ['a job', 'a teacher', 'a partner'],
@@ -804,7 +804,7 @@ Between 10,000 and 40,000 people attend the event every year. It's held in a dis
             },
             {
               id: 'u2-s3-q2',
-              exerciseId: 'exercise-unit2',
+              sectionId: 'unit2-sec-1',
               question: "Singles' Day takes place ____ the town hall.",
               type: 'reading-mcq',
               options: ['outside', 'inside and outside', 'inside'],
@@ -813,7 +813,7 @@ Between 10,000 and 40,000 people attend the event every year. It's held in a dis
             },
             {
               id: 'u2-s3-q3',
-              exerciseId: 'exercise-unit2',
+              sectionId: 'unit2-sec-1',
               question: 'There are ____ single people in Shanghai today.',
               type: 'reading-mcq',
               options: ['more', 'the same number of', 'fewer'],
@@ -831,7 +831,7 @@ Between 10,000 and 40,000 people attend the event every year. It's held in a dis
           questions: [
             {
               id: 'u2-s4-q1',
-              exerciseId: 'exercise-unit2',
+              sectionId: 'unit2-sec-1',
               question:
                 'Imagine you are a character from a film or TV series. Write five short paragraphs about: name, age, nationality; work/studies and family; physical appearance; personality; hobbies and interests.',
               type: 'writing',
@@ -849,7 +849,7 @@ Between 10,000 and 40,000 people attend the event every year. It's held in a dis
           questions: [
             {
               id: 'u2-s5-q1',
-              exerciseId: 'exercise-unit2',
+              sectionId: 'unit2-sec-1',
               question: '____ any friends in the USA?',
               type: 'multiple-choice',
               options: ['Are you have', 'You have', 'Do you have'],
@@ -858,7 +858,7 @@ Between 10,000 and 40,000 people attend the event every year. It's held in a dis
             },
             {
               id: 'u2-s5-q2',
-              exerciseId: 'exercise-unit2',
+              sectionId: 'unit2-sec-1',
               question: '"Where ____?" "At the BBC. She\'s an engineer."',
               type: 'multiple-choice',
               options: ['Kim does work', 'does work Kim', 'does Kim work'],
@@ -867,7 +867,7 @@ Between 10,000 and 40,000 people attend the event every year. It's held in a dis
             },
             {
               id: 'u2-s5-q3',
-              exerciseId: 'exercise-unit2',
+              sectionId: 'unit2-sec-1',
               question: "I'm hungry! ____ something to eat.",
               type: 'multiple-choice',
               options: ["I'm wanting", "I'm want", 'I want'],
@@ -885,7 +885,7 @@ Between 10,000 and 40,000 people attend the event every year. It's held in a dis
           questions: [
             {
               id: 'u2-s6-q1',
-              exerciseId: 'exercise-unit2',
+              sectionId: 'unit2-sec-1',
               question: 'This is ____ ____ ____ ____ ____ in the ____ ____ ____. We ____ ____ ____.',
               type: 'fill-blank',
               audioUrl: 'https://example.com/audio/unit2-listen-write-q1.mp3',
@@ -894,7 +894,7 @@ Between 10,000 and 40,000 people attend the event every year. It's held in a dis
             },
             {
               id: 'u2-s6-q2',
-              exerciseId: 'exercise-unit2',
+              sectionId: 'unit2-sec-1',
               question: "That's ____ ____ in the ____ ____ ____.",
               type: 'fill-blank',
               audioUrl: 'https://example.com/audio/unit2-listen-write-q2.mp3',
@@ -903,7 +903,7 @@ Between 10,000 and 40,000 people attend the event every year. It's held in a dis
             },
             {
               id: 'u2-s6-q3',
-              exerciseId: 'exercise-unit2',
+              sectionId: 'unit2-sec-1',
               question: "She's ____ ____, and she ____ ____ ____.",
               type: 'fill-blank',
               audioUrl: 'https://example.com/audio/unit2-listen-write-q3.mp3',
@@ -912,7 +912,7 @@ Between 10,000 and 40,000 people attend the event every year. It's held in a dis
             },
             {
               id: 'u2-s6-q4',
-              exerciseId: 'exercise-unit2',
+              sectionId: 'unit2-sec-1',
               question: 'The ____ in the ____ and ____ ____ ____.',
               type: 'fill-blank',
               audioUrl: 'https://example.com/audio/unit2-listen-write-q4.mp3',
@@ -921,7 +921,7 @@ Between 10,000 and 40,000 people attend the event every year. It's held in a dis
             },
             {
               id: 'u2-s6-q5',
-              exerciseId: 'exercise-unit2',
+              sectionId: 'unit2-sec-1',
               question: "She's ____ ____, and ____ ____ ____.",
               type: 'fill-blank',
               audioUrl: 'https://example.com/audio/unit2-listen-write-q5.mp3',
@@ -930,7 +930,7 @@ Between 10,000 and 40,000 people attend the event every year. It's held in a dis
             },
             {
               id: 'u2-s6-q6',
-              exerciseId: 'exercise-unit2',
+              sectionId: 'unit2-sec-1',
               question: 'The ____ ____ next to me ____ ____.',
               type: 'fill-blank',
               audioUrl: 'https://example.com/audio/unit2-listen-write-q6.mp3',
@@ -950,7 +950,7 @@ Between 10,000 and 40,000 people attend the event every year. It's held in a dis
           questions: [
             {
               id: 'u2-s7-q1',
-              exerciseId: 'exercise-unit2',
+              sectionId: 'unit2-sec-1',
               question: 'had',
               type: 'paragraph-fill',
               correctAnswer: 'had',
@@ -958,7 +958,7 @@ Between 10,000 and 40,000 people attend the event every year. It's held in a dis
             },
             {
               id: 'u2-s7-q2',
-              exerciseId: 'exercise-unit2',
+              sectionId: 'unit2-sec-1',
               question: 'drove',
               type: 'paragraph-fill',
               correctAnswer: 'drove',
@@ -966,7 +966,7 @@ Between 10,000 and 40,000 people attend the event every year. It's held in a dis
             },
             {
               id: 'u2-s7-q3',
-              exerciseId: 'exercise-unit2',
+              sectionId: 'unit2-sec-1',
               question: 'broke',
               type: 'paragraph-fill',
               correctAnswer: 'broke',
@@ -974,7 +974,7 @@ Between 10,000 and 40,000 people attend the event every year. It's held in a dis
             },
             {
               id: 'u2-s7-q4',
-              exerciseId: 'exercise-unit2',
+              sectionId: 'unit2-sec-1',
               question: 'spent',
               type: 'paragraph-fill',
               correctAnswer: 'spent',
@@ -982,7 +982,7 @@ Between 10,000 and 40,000 people attend the event every year. It's held in a dis
             },
             {
               id: 'u2-s7-q5',
-              exerciseId: 'exercise-unit2',
+              sectionId: 'unit2-sec-1',
               question: 'got',
               type: 'paragraph-fill',
               correctAnswer: 'got',
@@ -990,7 +990,7 @@ Between 10,000 and 40,000 people attend the event every year. It's held in a dis
             },
             {
               id: 'u2-s7-q6',
-              exerciseId: 'exercise-unit2',
+              sectionId: 'unit2-sec-1',
               question: 'went',
               type: 'paragraph-fill',
               correctAnswer: 'went',
@@ -998,7 +998,7 @@ Between 10,000 and 40,000 people attend the event every year. It's held in a dis
             },
             {
               id: 'u2-s7-q7',
-              exerciseId: 'exercise-unit2',
+              sectionId: 'unit2-sec-1',
               question: "couldn't",
               type: 'paragraph-fill',
               correctAnswer: "couldn't",
@@ -1006,7 +1006,7 @@ Between 10,000 and 40,000 people attend the event every year. It's held in a dis
             },
             {
               id: 'u2-s7-q8',
-              exerciseId: 'exercise-unit2',
+              sectionId: 'unit2-sec-1',
               question: 'were',
               type: 'paragraph-fill',
               correctAnswer: 'were',
@@ -1014,7 +1014,7 @@ Between 10,000 and 40,000 people attend the event every year. It's held in a dis
             },
             {
               id: 'u2-s7-q9',
-              exerciseId: 'exercise-unit2',
+              sectionId: 'unit2-sec-1',
               question: "didn't know",
               type: 'paragraph-fill',
               correctAnswer: "didn't know",
@@ -1022,7 +1022,7 @@ Between 10,000 and 40,000 people attend the event every year. It's held in a dis
             },
             {
               id: 'u2-s7-q10',
-              exerciseId: 'exercise-unit2',
+              sectionId: 'unit2-sec-1',
               question: 'found',
               type: 'paragraph-fill',
               correctAnswer: 'found',
@@ -1030,7 +1030,7 @@ Between 10,000 and 40,000 people attend the event every year. It's held in a dis
             },
             {
               id: 'u2-s7-q11',
-              exerciseId: 'exercise-unit2',
+              sectionId: 'unit2-sec-1',
               question: 'stayed',
               type: 'paragraph-fill',
               correctAnswer: 'stayed',
@@ -1038,7 +1038,7 @@ Between 10,000 and 40,000 people attend the event every year. It's held in a dis
             },
             {
               id: 'u2-s7-q12',
-              exerciseId: 'exercise-unit2',
+              sectionId: 'unit2-sec-1',
               question: 'saw',
               type: 'paragraph-fill',
               correctAnswer: 'saw',
@@ -1046,7 +1046,7 @@ Between 10,000 and 40,000 people attend the event every year. It's held in a dis
             },
             {
               id: 'u2-s7-q13',
-              exerciseId: 'exercise-unit2',
+              sectionId: 'unit2-sec-1',
               question: 'bought',
               type: 'paragraph-fill',
               correctAnswer: 'bought',
@@ -1054,7 +1054,7 @@ Between 10,000 and 40,000 people attend the event every year. It's held in a dis
             },
             {
               id: 'u2-s7-q14',
-              exerciseId: 'exercise-unit2',
+              sectionId: 'unit2-sec-1',
               question: 'wanted',
               type: 'paragraph-fill',
               correctAnswer: 'wanted',
@@ -1062,7 +1062,7 @@ Between 10,000 and 40,000 people attend the event every year. It's held in a dis
             },
             {
               id: 'u2-s7-q15',
-              exerciseId: 'exercise-unit2',
+              sectionId: 'unit2-sec-1',
               question: "didn't have",
               type: 'paragraph-fill',
               correctAnswer: "didn't have",
@@ -1070,7 +1070,7 @@ Between 10,000 and 40,000 people attend the event every year. It's held in a dis
             },
             {
               id: 'u2-s7-q16',
-              exerciseId: 'exercise-unit2',
+              sectionId: 'unit2-sec-1',
               question: 'was',
               type: 'paragraph-fill',
               correctAnswer: 'was',
@@ -1078,7 +1078,7 @@ Between 10,000 and 40,000 people attend the event every year. It's held in a dis
             },
             {
               id: 'u2-s7-q17',
-              exerciseId: 'exercise-unit2',
+              sectionId: 'unit2-sec-1',
               question: "wasn't",
               type: 'paragraph-fill',
               correctAnswer: "wasn't",
@@ -1086,7 +1086,7 @@ Between 10,000 and 40,000 people attend the event every year. It's held in a dis
             },
             {
               id: 'u2-s7-q18',
-              exerciseId: 'exercise-unit2',
+              sectionId: 'unit2-sec-1',
               question: 'started',
               type: 'paragraph-fill',
               correctAnswer: 'started',
@@ -1094,7 +1094,7 @@ Between 10,000 and 40,000 people attend the event every year. It's held in a dis
             },
             {
               id: 'u2-s7-q19',
-              exerciseId: 'exercise-unit2',
+              sectionId: 'unit2-sec-1',
               question: 'left',
               type: 'paragraph-fill',
               correctAnswer: 'left',
@@ -1102,7 +1102,7 @@ Between 10,000 and 40,000 people attend the event every year. It's held in a dis
             },
             {
               id: 'u2-s7-q20',
-              exerciseId: 'exercise-unit2',
+              sectionId: 'unit2-sec-1',
               question: 'stopped',
               type: 'paragraph-fill',
               correctAnswer: 'stopped',
@@ -1128,7 +1128,7 @@ Between 10,000 and 40,000 people attend the event every year. It's held in a dis
           questions: [
             {
               id: 'u3-s1-q1',
-              exerciseId: 'exercise-unit3',
+              sectionId: 'unit3-sec-1',
               question: 'Record yourself saying the Social English phrases from the video.',
               type: 'video-recording',
               correctAnswer: '',
@@ -1147,7 +1147,7 @@ Between 10,000 and 40,000 people attend the event every year. It's held in a dis
           questions: [
             {
               id: 'u3-s2-q1',
-              exerciseId: 'exercise-unit3',
+              sectionId: 'unit3-sec-2',
               question: 'Record yourself saying the Social English phrases from the video.',
               type: 'video-recording',
               correctAnswer: '',
@@ -1166,27 +1166,283 @@ Between 10,000 and 40,000 people attend the event every year. It's held in a dis
       courseId: 'course-1',
       title: 'Midterm Quiz - Tiếng Anh 1',
       description: 'Bài kiểm tra giữa kỳ cho học phần Tiếng Anh 1',
-      questions: [
+      sections: [
         {
-          id: 'quiz-q1',
-          exerciseId: 'quiz-1',
-          question: 'What is the past tense of "go"?',
-          type: 'multiple-choice',
-          options: ['goed', 'went', 'gone', 'going'],
-          correctAnswer: 'went',
-          points: 20,
+          id: 'quiz-1-section-1',
+          title: 'Grammar Section',
+          description: 'Kiểm tra kiến thức ngữ pháp cơ bản',
+          sectionType: 'grammar',
+          questionType: 'multiple-choice',
+          questions: [
+            {
+              id: 'quiz-1-q1',
+              sectionId: 'quiz-1-section-1',
+              question: 'What is the past tense of "go"?',
+              type: 'multiple-choice',
+              options: ['goed', 'went', 'gone', 'going'],
+              correctAnswer: 'went',
+              points: 10,
+            },
+            {
+              id: 'quiz-1-q2',
+              sectionId: 'quiz-1-section-1',
+              question: 'Choose the correct form: "She _____ to school every day."',
+              type: 'multiple-choice',
+              options: ['go', 'goes', 'going', 'went'],
+              correctAnswer: 'goes',
+              points: 10,
+            },
+            {
+              id: 'quiz-1-q3',
+              sectionId: 'quiz-1-section-1',
+              question: 'Which sentence is in Present Continuous tense?',
+              type: 'multiple-choice',
+              options: [
+                'I play football.',
+                'I am playing football.',
+                'I played football.',
+                'I will play football.'
+              ],
+              correctAnswer: 'I am playing football.',
+              points: 10,
+            },
+          ],
         },
         {
-          id: 'quiz-q2',
-          exerciseId: 'quiz-1',
-          question: 'Write a sentence using Present Simple tense.',
-          type: 'writing',
-          correctAnswer: '',
-          points: 30,
+          id: 'quiz-1-section-2',
+          title: 'Vocabulary Section',
+          description: 'Kiểm tra vốn từ vựng',
+          sectionType: 'vocabulary',
+          questionType: 'multiple-choice',
+          questions: [
+            {
+              id: 'quiz-1-q4',
+              sectionId: 'quiz-1-section-2',
+              question: 'What is the meaning of "beautiful"?',
+              type: 'multiple-choice',
+              options: ['xấu', 'đẹp', 'lớn', 'nhỏ'],
+              correctAnswer: 'đẹp',
+              points: 10,
+            },
+            {
+              id: 'quiz-1-q5',
+              sectionId: 'quiz-1-section-2',
+              question: 'Choose the synonym of "happy":',
+              type: 'multiple-choice',
+              options: ['sad', 'glad', 'angry', 'tired'],
+              correctAnswer: 'glad',
+              points: 10,
+            },
+            {
+              id: 'quiz-1-q6',
+              sectionId: 'quiz-1-section-2',
+              question: 'What is the opposite of "hot"?',
+              type: 'multiple-choice',
+              options: ['warm', 'cold', 'cool', 'freezing'],
+              correctAnswer: 'cold',
+              points: 10,
+            },
+          ],
+        },
+        {
+          id: 'quiz-1-section-3',
+          title: 'Reading Comprehension',
+          description: 'Đọc hiểu đoạn văn và trả lời câu hỏi',
+          sectionType: 'reading',
+          questionType: 'reading-mcq',
+          passage: 'Tom is a student. He goes to school every day. He likes English very much. In the morning, he reads books. In the afternoon, he does homework. He is a good student.',
+          questions: [
+            {
+              id: 'quiz-1-q7',
+              sectionId: 'quiz-1-section-3',
+              question: 'What does Tom do every day?',
+              type: 'reading-mcq',
+              options: ['He plays games', 'He goes to school', 'He watches TV', 'He goes shopping'],
+              correctAnswer: 'He goes to school',
+              points: 15,
+            },
+            {
+              id: 'quiz-1-q8',
+              sectionId: 'quiz-1-section-3',
+              question: 'What does Tom like?',
+              type: 'reading-mcq',
+              options: ['Math', 'English', 'Science', 'History'],
+              correctAnswer: 'English',
+              points: 15,
+            },
+            {
+              id: 'quiz-1-q9',
+              sectionId: 'quiz-1-section-3',
+              question: 'When does Tom read books?',
+              type: 'reading-mcq',
+              options: ['In the morning', 'In the afternoon', 'In the evening', 'At night'],
+              correctAnswer: 'In the morning',
+              points: 15,
+            },
+          ],
+        },
+        {
+          id: 'quiz-1-section-4',
+          title: 'Writing Section',
+          description: 'Viết câu và đoạn văn',
+          sectionType: 'writing',
+          questionType: 'writing',
+          questions: [
+            {
+              id: 'quiz-1-q10',
+              sectionId: 'quiz-1-section-4',
+              question: 'Write a sentence using Present Simple tense.',
+              type: 'writing',
+              correctAnswer: '',
+              points: 20,
+            },
+            {
+              id: 'quiz-1-q11',
+              sectionId: 'quiz-1-section-4',
+              question: 'Describe your daily routine in 3-4 sentences.',
+              type: 'writing',
+              correctAnswer: '',
+              points: 25,
+            },
+            {
+              id: 'quiz-1-q12',
+              sectionId: 'quiz-1-section-4',
+              question: 'Write about your favorite hobby and why you like it.',
+              type: 'writing',
+              correctAnswer: '',
+              points: 25,
+            },
+          ],
         },
       ],
       timeLimit: 60,
       passingScore: 60,
+    },
+    {
+      id: 'quiz-2',
+      courseId: 'course-1',
+      title: 'Final Exam - Tiếng Anh 1',
+      description: 'Bài thi cuối kỳ cho học phần Tiếng Anh 1',
+      sections: [
+        {
+          id: 'quiz-2-section-1',
+          title: 'Grammar Advanced',
+          description: 'Ngữ pháp nâng cao',
+          sectionType: 'grammar',
+          questionType: 'multiple-choice',
+          questions: [
+            {
+              id: 'quiz-2-q1',
+              sectionId: 'quiz-2-section-1',
+              question: 'Choose the correct conditional sentence:',
+              type: 'multiple-choice',
+              options: [
+                'If I was you, I would go.',
+                'If I were you, I would go.',
+                'If I am you, I will go.',
+                'If I be you, I go.'
+              ],
+              correctAnswer: 'If I were you, I would go.',
+              points: 15,
+            },
+            {
+              id: 'quiz-2-q2',
+              sectionId: 'quiz-2-section-1',
+              question: 'Which sentence uses passive voice correctly?',
+              type: 'multiple-choice',
+              options: [
+                'The book was read by me.',
+                'The book read by me.',
+                'The book is read by me yesterday.',
+                'The book reading by me.'
+              ],
+              correctAnswer: 'The book was read by me.',
+              points: 15,
+            },
+            {
+              id: 'quiz-2-q3',
+              sectionId: 'quiz-2-section-1',
+              question: 'Complete: "I have _____ this movie three times."',
+              type: 'multiple-choice',
+              options: ['see', 'saw', 'seen', 'seeing'],
+              correctAnswer: 'seen',
+              points: 15,
+            },
+          ],
+        },
+        {
+          id: 'quiz-2-section-2',
+          title: 'Fill in the Blanks',
+          description: 'Điền từ vào chỗ trống',
+          sectionType: 'vocabulary',
+          questionType: 'fill-blank',
+          questions: [
+            {
+              id: 'quiz-2-q4',
+              sectionId: 'quiz-2-section-2',
+              question: 'Complete the sentence: "I _____ to the store yesterday."',
+              type: 'fill-blank',
+              correctAnswer: 'went',
+              points: 10,
+            },
+            {
+              id: 'quiz-2-q5',
+              sectionId: 'quiz-2-section-2',
+              question: 'Fill in: "She _____ English for five years."',
+              type: 'fill-blank',
+              correctAnswer: 'has studied',
+              points: 10,
+            },
+            {
+              id: 'quiz-2-q6',
+              sectionId: 'quiz-2-section-2',
+              question: 'Complete: "They _____ playing football when it started raining."',
+              type: 'fill-blank',
+              correctAnswer: 'were',
+              points: 10,
+            },
+          ],
+        },
+        {
+          id: 'quiz-2-section-3',
+          title: 'Listening Comprehension',
+          description: 'Nghe hiểu (giả lập - không có audio thực)',
+          sectionType: 'listening',
+          questionType: 'listening',
+          audioUrl: 'https://example.com/listening-audio.mp3',
+          questions: [
+            {
+              id: 'quiz-2-q7',
+              sectionId: 'quiz-2-section-3',
+              question: 'What did the speaker say about the weather?',
+              type: 'listening',
+              options: ['It is sunny', 'It is raining', 'It is cloudy', 'It is snowing'],
+              correctAnswer: 'It is raining',
+              points: 20,
+            },
+            {
+              id: 'quiz-2-q8',
+              sectionId: 'quiz-2-section-3',
+              question: 'Where did the conversation take place?',
+              type: 'listening',
+              options: ['At a restaurant', 'At a school', 'At a park', 'At a library'],
+              correctAnswer: 'At a restaurant',
+              points: 20,
+            },
+            {
+              id: 'quiz-2-q9',
+              sectionId: 'quiz-2-section-3',
+              question: 'What time did they meet?',
+              type: 'listening',
+              options: ['8:00 AM', '12:00 PM', '6:00 PM', '9:00 PM'],
+              correctAnswer: '6:00 PM',
+              points: 20,
+            },
+          ],
+        },
+      ],
+      timeLimit: 90,
+      passingScore: 70,
     },
   ];
 

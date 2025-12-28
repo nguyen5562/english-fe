@@ -6,12 +6,6 @@ import {
   Card,
   CardContent,
   Button,
-  Radio,
-  RadioGroup,
-  FormControlLabel,
-  FormControl,
-  FormLabel,
-  TextField,
   LinearProgress,
   Alert,
   Dialog,
@@ -19,16 +13,24 @@ import {
   DialogContent,
   DialogActions,
   CircularProgress,
+  Chip,
+  Divider,
+  Select,
+  MenuItem,
+  FormControl,
+  InputLabel,
+  TextField,
 } from '@mui/material';
 import { ArrowBack as ArrowBackIcon, CheckCircle as CheckCircleIcon, Timer as TimerIcon } from '@mui/icons-material';
 import { getQuiz, getUser, saveQuizAttempt } from '../services/storage';
-import type { Quiz, Question } from '../types';
+import type { Quiz, Question, Section } from '../types';
+import { sectionTypeMap, renderSectionMedia, renderSectionWordBank, calculateScore, renderMultipleChoice, renderTextInput, renderQuestionMedia, renderQuestionWordBank } from '../utils/questionHelpers';
 
 export default function QuizDetail() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const [quiz, setQuiz] = useState<Quiz | null>(null);
-  const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
+  const [currentSectionIndex, setCurrentSectionIndex] = useState(0);
   const [answers, setAnswers] = useState<Record<string, string | string[]>>({});
   const [showResult, setShowResult] = useState(false);
   const [result, setResult] = useState<{ score: number; maxScore: number; percentage: number; passed: boolean } | null>(null);
@@ -43,10 +45,17 @@ export default function QuizDetail() {
         setQuiz(loadedQuiz);
         setTimeRemaining(loadedQuiz.timeLimit * 60); // Convert minutes to seconds
         setStartTime(new Date());
-        // Initialize answers
+        // Initialize answers for all questions in all sections
         const initialAnswers: Record<string, string | string[]> = {};
-        loadedQuiz.questions.forEach(q => {
-          initialAnswers[q.id] = q.type === 'multiple-choice' ? '' : '';
+        loadedQuiz.sections.forEach(section => {
+          section.questions.forEach(q => {
+            const effectiveType = q.type ?? section.questionType;
+            if (effectiveType === 'fill-blank') {
+              initialAnswers[q.id] = [];
+            } else {
+              initialAnswers[q.id] = '';
+            }
+          });
         });
         setAnswers(initialAnswers);
       }
@@ -77,49 +86,39 @@ export default function QuizDetail() {
     );
   }
 
-  const currentQuestion = quiz.questions[currentQuestionIndex];
-  const progress = ((currentQuestionIndex + 1) / quiz.questions.length) * 100;
+  const currentSection = quiz.sections[currentSectionIndex];
+  const allQuestions = quiz.sections.flatMap(section => section.questions);
+  const totalQuestions = allQuestions.length;
+  const questionsCompleted = quiz.sections
+    .slice(0, currentSectionIndex)
+    .reduce((sum, section) => sum + section.questions.length, 0);
+  const progress = ((questionsCompleted + currentSection.questions.length) / totalQuestions) * 100;
   const minutes = Math.floor(timeRemaining / 60);
   const seconds = timeRemaining % 60;
 
-  const handleAnswerChange = (questionId: string, value: string) => {
+  const handleAnswerChange = (questionId: string, value: string | string[]) => {
     setAnswers(prev => ({ ...prev, [questionId]: value }));
   };
 
   const handleNext = () => {
-    if (currentQuestionIndex < quiz.questions.length - 1) {
-      setCurrentQuestionIndex(prev => prev + 1);
+    // Chuyển sang section tiếp theo
+    if (currentSectionIndex < quiz.sections.length - 1) {
+      setCurrentSectionIndex(prev => prev + 1);
     } else {
+      // Đã làm hết tất cả các phần, nộp bài
       handleSubmit();
     }
   };
 
   const handlePrevious = () => {
-    if (currentQuestionIndex > 0) {
-      setCurrentQuestionIndex(prev => prev - 1);
+    // Chuyển về section trước
+    if (currentSectionIndex > 0) {
+      setCurrentSectionIndex(prev => prev - 1);
     }
   };
 
   const handleSubmit = () => {
-    let totalScore = 0;
-    let maxScore = 0;
-
-    quiz.questions.forEach(question => {
-      maxScore += question.points;
-      const userAnswer = answers[question.id];
-      const correctAnswer = question.correctAnswer;
-
-      if (Array.isArray(correctAnswer)) {
-        if (Array.isArray(userAnswer) && JSON.stringify(userAnswer.sort()) === JSON.stringify(correctAnswer.sort())) {
-          totalScore += question.points;
-        }
-      } else {
-        if (userAnswer === correctAnswer) {
-          totalScore += question.points;
-        }
-      }
-    });
-
+    const { score: totalScore, maxScore } = calculateScore(allQuestions, answers);
     const percentage = (totalScore / maxScore) * 100;
     const passed = percentage >= quiz.passingScore;
     const timeSpent = startTime ? Math.round((new Date().getTime() - startTime.getTime()) / 60000) : 0;
@@ -143,65 +142,198 @@ export default function QuizDetail() {
         passed,
         completedAt: new Date(),
         timeSpent,
+        currentSectionIndex: currentSectionIndex,
       });
     }
   };
 
-  const renderQuestion = (question: Question) => {
-    switch (question.type) {
+  const renderQuestion = (question: Question, section: Section, index: number) => {
+    const effectiveType = question.type ?? section.questionType;
+    const answerValue = answers[question.id] || '';
+    const value = Array.isArray(answerValue) ? '' : answerValue;
+    const questionNumber = <Typography variant="subtitle1" sx={{ mb: 1, fontWeight: 'bold' }}>Câu {index + 1}</Typography>;
+    
+    switch (effectiveType) {
       case 'multiple-choice':
+      case 'reading-mcq':
+      case 'picture-choice':
         return (
-          <FormControl component="fieldset" fullWidth>
-            <FormLabel component="legend">{question.question}</FormLabel>
-            <RadioGroup
-              value={answers[question.id] || ''}
-              onChange={(e) => handleAnswerChange(question.id, e.target.value)}
-            >
-              {question.options?.map((option, index) => (
-                <FormControlLabel
-                  key={index}
-                  value={option}
-                  control={<Radio />}
-                  label={option}
-                />
-              ))}
-            </RadioGroup>
-          </FormControl>
+          <Box key={question.id} sx={{ mb: 3 }}>
+            {questionNumber}
+            {renderQuestionMedia(question)}
+            {renderQuestionWordBank(question)}
+            {renderMultipleChoice(question, value, (v) => handleAnswerChange(question.id, v))}
+          </Box>
+        );
+      case 'listening':
+        return (
+          <Box key={question.id} sx={{ mb: 3 }}>
+            {questionNumber}
+            {renderQuestionMedia(question)}
+            {renderQuestionWordBank(question)}
+            {question.options && question.options.length > 0
+              ? renderMultipleChoice(question, value, (v) => handleAnswerChange(question.id, v))
+              : renderTextInput(question, value, (v) => handleAnswerChange(question.id, v))
+            }
+          </Box>
         );
       case 'fill-sentence':
+      case 'word-order':
+      case 'word-bank':
         return (
-          <Box>
+          <Box key={question.id} sx={{ mb: 3 }}>
+            {questionNumber}
+            {renderQuestionMedia(question)}
+            {renderQuestionWordBank(question)}
+            {renderTextInput(question, value, (v) => handleAnswerChange(question.id, v))}
+          </Box>
+        );
+      case 'fill-blank': {
+        // Điền từ vào nhiều chỗ trống trong câu
+        const blanks = question.question.split('____');
+        const answerArray = Array.isArray(answerValue)
+          ? answerValue
+          : typeof answerValue === 'string' && answerValue
+            ? answerValue.split(',').map((s) => s.trim())
+            : Array(blanks.length - 1).fill('');
+        
+        return (
+          <Box key={question.id} sx={{ mb: 3 }}>
+            {questionNumber}
+            {renderQuestionMedia(question)}
+            {renderQuestionWordBank(question)}
+            <Box sx={{ display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: 1 }}>
+              {blanks.map((part, idx) => (
+                <Box key={idx} sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
+                  <Typography component="span">{part}</Typography>
+                  {idx < blanks.length - 1 && (
+                    <TextField
+                      size="small"
+                      value={answerArray[idx] || ''}
+                      onChange={(e) => {
+                        const newArray = [...answerArray];
+                        newArray[idx] = e.target.value;
+                        handleAnswerChange(question.id, newArray);
+                      }}
+                      sx={{ width: 100 }}
+                      placeholder="..."
+                    />
+                  )}
+                </Box>
+              ))}
+            </Box>
+          </Box>
+        );
+      }
+      case 'paragraph-fill':
+        return (
+          <Box key={question.id} sx={{ mb: 3 }}>
+            {questionNumber}
+            {renderQuestionMedia(question)}
+            {renderQuestionWordBank(question)}
+            <Typography variant="body2" color="text.secondary" sx={{ mb: 1 }}>
+              Điền từ vào chỗ trống số {question.question}:
+            </Typography>
+            {renderTextInput(question, value, (v) => handleAnswerChange(question.id, v), {
+              placeholder: 'Nhập từ cần điền',
+            })}
+          </Box>
+        );
+      case 'dropdown-choice': {
+        const parts = question.question.split('____');
+        const hasBlank = parts.length > 1;
+        
+        return (
+          <Box key={question.id} sx={{ mb: 3 }}>
+            {questionNumber}
+            {renderQuestionMedia(question)}
+            {renderQuestionWordBank(question)}
+            {hasBlank ? (
+              <Box sx={{ display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: 1 }}>
+                {parts.map((part, idx) => (
+                  <Box key={idx} sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
+                    <Typography component="span" variant="body1">{part}</Typography>
+                    {idx < parts.length - 1 && (
+                      <FormControl size="small" sx={{ minWidth: 120 }}>
+                        <Select
+                          value={value || ''}
+                          onChange={(e) => handleAnswerChange(question.id, e.target.value)}
+                          displayEmpty
+                        >
+                          <MenuItem value="" disabled><em></em></MenuItem>
+                          {question.options?.map((option, optIdx) => (
+                            <MenuItem key={optIdx} value={option}>{option}</MenuItem>
+                          ))}
+                        </Select>
+                      </FormControl>
+                    )}
+                  </Box>
+                ))}
+              </Box>
+            ) : (
+              <FormControl fullWidth>
+                <InputLabel>{question.question}</InputLabel>
+                <Select
+                  value={value || ''}
+                  onChange={(e) => handleAnswerChange(question.id, e.target.value)}
+                  label={question.question}
+                >
+                  {question.options?.map((option, optIdx) => (
+                    <MenuItem key={optIdx} value={option}>{option}</MenuItem>
+                  ))}
+                </Select>
+              </FormControl>
+            )}
+          </Box>
+        );
+      }
+      case 'pronunciation':
+      case 'video-recording':
+        // Trong quiz, pronunciation và video-recording có thể chỉ cần text input
+        // (hoặc có thể thêm recording sau nếu cần)
+        return (
+          <Box key={question.id} sx={{ mb: 3 }}>
+            {questionNumber}
+            {renderQuestionMedia(question)}
+            {renderQuestionWordBank(question)}
             <Typography variant="body1" gutterBottom>
               {question.question}
             </Typography>
-            <TextField
-              fullWidth
-              variant="outlined"
-              value={answers[question.id] || ''}
-              onChange={(e) => handleAnswerChange(question.id, e.target.value)}
-              placeholder="Nhập câu trả lời của bạn"
-            />
+            <Typography variant="body2" color="text.secondary" sx={{ mb: 1 }}>
+              {effectiveType === 'pronunciation' 
+                ? 'Nhập câu trả lời của bạn (hoặc mô tả phát âm)'
+                : 'Nhập câu trả lời của bạn (mô tả nội dung video)'}
+            </Typography>
+            {renderTextInput(question, value, (v) => handleAnswerChange(question.id, v), {
+              rows: 4,
+            })}
+          </Box>
+        );
+      case 'writing':
+        return (
+          <Box key={question.id} sx={{ mb: 3 }}>
+            {questionNumber}
+            {renderQuestionMedia(question)}
+            {renderQuestionWordBank(question)}
+            {renderTextInput(question, value, (v) => handleAnswerChange(question.id, v), {
+              placeholder: 'Nhập bài viết của bạn',
+              rows: 6,
+            })}
           </Box>
         );
       default:
         return (
-          <Box>
-            <Typography variant="body1" gutterBottom>
-              {question.question}
-            </Typography>
-            <TextField
-              fullWidth
-              multiline
-              rows={4}
-              variant="outlined"
-              value={answers[question.id] || ''}
-              onChange={(e) => handleAnswerChange(question.id, e.target.value)}
-              placeholder="Nhập câu trả lời của bạn"
-            />
+          <Box key={question.id} sx={{ mb: 3 }}>
+            {questionNumber}
+            {renderQuestionMedia(question)}
+            {renderQuestionWordBank(question)}
+            {renderTextInput(question, value, (v) => handleAnswerChange(question.id, v), { rows: 4 })}
           </Box>
         );
     }
   };
+
+  const isLastSection = currentSectionIndex === quiz.sections.length - 1;
 
   return (
     <Box>
@@ -220,28 +352,69 @@ export default function QuizDetail() {
               </Typography>
             </Box>
           </Box>
+
+          {/* Section info */}
+          <Box sx={{ mb: 2 }}>
+            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 1 }}>
+              <Typography variant="h6">
+                Phần {currentSectionIndex + 1}: {currentSection.title}
+              </Typography>
+              {currentSection.sectionType && (
+                <Chip
+                  label={sectionTypeMap[currentSection.sectionType]?.label || currentSection.sectionType}
+                  size="small"
+                  color={sectionTypeMap[currentSection.sectionType]?.color}
+                />
+              )}
+            </Box>
+            {currentSection.description && (
+              <Typography variant="body2" color="text.secondary" sx={{ mb: 1 }}>
+                {currentSection.description}
+              </Typography>
+            )}
+            <Typography variant="body2" color="text.secondary">
+              Phần {currentSectionIndex + 1} / {quiz.sections.length} · {currentSection.questions.length} câu hỏi
+            </Typography>
+          </Box>
+
           <LinearProgress variant="determinate" value={progress} sx={{ mt: 2, mb: 2 }} />
-          <Typography variant="body2" color="text.secondary">
-            Câu hỏi {currentQuestionIndex + 1} / {quiz.questions.length}
+          <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
+            Tổng tiến độ: {questionsCompleted + currentSection.questions.length} / {totalQuestions} câu hỏi
           </Typography>
 
-          <Box sx={{ minHeight: 200, mb: 3, mt: 3 }}>
-            {renderQuestion(currentQuestion)}
+          <Divider sx={{ my: 2 }} />
+
+          {/* Section media (audio, video, image, passage) */}
+          {renderSectionMedia(currentSection) && <Box sx={{ mb: 3 }}>{renderSectionMedia(currentSection)}</Box>}
+
+          {/* Word bank cho toàn phần (nếu có) */}
+          {renderSectionWordBank(currentSection) && (
+            <Box sx={{ mb: 3 }}>
+              <Typography variant="subtitle2" sx={{ width: '100%', mb: 1 }}>Word Bank:</Typography>
+              {renderSectionWordBank(currentSection)}
+            </Box>
+          )}
+
+          {/* Hiển thị tất cả câu hỏi trong section */}
+          <Box sx={{ mb: 3 }}>
+            {currentSection.questions.map((question, index) => 
+              renderQuestion(question, currentSection, index)
+            )}
           </Box>
 
           <Box sx={{ display: 'flex', justifyContent: 'space-between' }}>
             <Button
               variant="outlined"
               onClick={handlePrevious}
-              disabled={currentQuestionIndex === 0}
+              disabled={currentSectionIndex === 0}
             >
-              Câu trước
+              Phần trước
             </Button>
             <Button
               variant="contained"
               onClick={handleNext}
             >
-              {currentQuestionIndex === quiz.questions.length - 1 ? 'Nộp bài' : 'Câu tiếp'}
+              {isLastSection ? 'Nộp bài' : 'Phần tiếp'}
             </Button>
           </Box>
         </CardContent>
@@ -273,11 +446,10 @@ export default function QuizDetail() {
         </DialogContent>
         <DialogActions>
           <Button onClick={() => navigate('/quizzes')} variant="contained">
-            Quay lại danh sách
+            Quay lại danh sách quiz
           </Button>
         </DialogActions>
       </Dialog>
     </Box>
   );
 }
-
