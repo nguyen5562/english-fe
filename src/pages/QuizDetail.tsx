@@ -22,8 +22,8 @@ import {
   TextField,
 } from '@mui/material';
 import { ArrowBack as ArrowBackIcon, CheckCircle as CheckCircleIcon, Timer as TimerIcon } from '@mui/icons-material';
-import { getQuiz, getUser, saveQuizAttempt } from '../services/storage';
-import type { Quiz, Question, Section } from '../types';
+import { getQuiz, getUser, saveQuizAttempt } from '../types old/storage';
+import type { Quiz, Question, Section } from '../types old';
 import { sectionTypeMap, renderSectionMedia, renderSectionWordBank, calculateScore, renderMultipleChoice, renderTextInput, renderQuestionMedia, renderQuestionWordBank } from '../utils/questionHelpers';
 
 export default function QuizDetail() {

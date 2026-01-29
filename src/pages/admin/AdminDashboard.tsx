@@ -17,7 +17,7 @@ import {
   BarChart as BarChartIcon,
   Settings as SettingsIcon,
 } from '@mui/icons-material';
-import { getCourses, getExercises, getQuizzes, getUser } from '../../services/storage';
+import { getCourses, getExercises, getQuizzes, getUser } from '../../types old/storage';
 
 export default function AdminDashboard() {
   const navigate = useNavigate();

@@ -12,7 +12,7 @@ import type {
   ExerciseAttempt,
   QuizAttempt,
   Statistics,
-} from '../types';
+} from '.';
 
 const STORAGE_KEYS = {
   USER: 'english_learning_user',

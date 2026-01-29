@@ -23,8 +23,8 @@ import {
   PictureAsPdf as PdfIcon,
   Link as LinkIcon,
 } from '@mui/icons-material';
-import { getCourses, getCourse } from '../services/storage';
-import type { Course, Lesson } from '../types';
+import { getCourses, getCourse } from '../types old/storage';
+import type { Course, Lesson } from '../types old';
 
 interface TabPanelProps {
   children?: React.ReactNode;

@@ -53,8 +53,8 @@ import {
   addReference,
   deleteReference,
   getUser,
-} from '../../services/storage';
-import type { Course, Lesson, Slide, Video, Reference } from '../../types';
+} from '../../types old/storage';
+import type { Course, Lesson, Slide, Video, Reference } from '../../types old';
 
 export default function AdminContent() {
   const [courses, setCourses] = useState(getCourses());

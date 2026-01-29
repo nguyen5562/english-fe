@@ -1,182 +1,111 @@
-// Types cho ứng dụng học tiếng Anh
-export interface User {
-  id: string;
-  name: string;
+// User
+export type User = {
+  _id: string;
   email: string;
-  role: "student" | "teacher";
-  studentId?: string;
-}
+  username: string;
+  password?: string;
+  role: string;
+};
 
-export interface Course {
-  id: string;
+// Course
+export type Course = {
+  _id: string;
   name: string;
-  code: string; // Tiếng Anh 1, Tiếng Anh 2
+  code: string;
   description: string;
-  lessons: Lesson[];
-}
+};
 
-export interface Lesson {
-  id: string;
+// Lesson
+export type LessonObj = {
+  _id: string;
+  title: string;
+  url: string;
+};
+
+export type Lesson = {
+  _id: string;
   courseId: string;
   title: string;
-  order: number;
-  slides?: Slide[];
-  videos?: Video[];
-  references?: Reference[];
-}
+  slides: LessonObj[];
+  videos: LessonObj[];
+  references: LessonObj[];
+};
 
-export interface Slide {
-  id: string;
-  lessonId: string;
+// Shared
+export type Question = {
+  _id: string;
   title: string;
-  fileUrl: string; // URL đến file PowerPoint (.pptx)
-  order: number;
-}
+  options: string[];
+  correctAnswer: string[];
+  point: number;
+  audioUrl: string | null;
+  videoUrl: string | null;
+  imageUrl: string | null;
+  wordBank: string[];
+};
 
-export interface Video {
-  id: string;
-  lessonId: string;
+export type Section = {
+  _id: string;
   title: string;
-  url: string;
-  duration: number; // seconds
-  order: number;
-}
-
-export interface Reference {
-  id: string;
-  lessonId: string;
-  title: string;
-  type: "pdf" | "link" | "document";
-  url: string;
-}
-
-export type QuestionType =
-  | "multiple-choice"
-  | "fill-sentence"
-  | "listening"
-  | "word-order" // sắp xếp lại từ
-  | "word-bank" // chọn từ trong hộp
-  | "picture-choice" // chọn tranh đúng
-  | "reading-mcq" // đọc hiểu – trắc nghiệm
-  | "pronunciation" // luyện âm / ghi âm
-  | "writing" // bài viết dài
-  | "paragraph-fill" // điền vào đoạn văn (nhiều chỗ trống trong 1 đoạn)
-  | "fill-blank" // điền từ vào chỗ trống (mỗi câu nhiều chỗ trống)
-  | "dropdown-choice" // chọn từ dropdown (ví dụ: Choose the correct verbs)
-  | "video-recording"; // xem video rồi ghi âm lại
-
-// Section dùng chung cho cả Exercise và Quiz
-export interface Section {
-  id: string;
-  title: string;
-  description?: string;
-  audioUrl?: string; // audio chung cho cả phần (ví dụ bài nghe dài)
-  videoUrl?: string; // video chung cho cả phần (cho video-recording)
-  imageUrl?: string; // hình minh họa cho phần
-  wordBank?: string[]; // word bank dùng chung cho cả phần (nếu có)
-  passage?: string; // đoạn văn để đọc (cho reading-mcq, paragraph-fill)
-  // Kỹ năng chính của phần (grammar / vocabulary / listening / ...)
-  sectionType:
-    | "grammar"
-    | "vocabulary"
-    | "listening"
-    | "reading"
-    | "speaking"
-    | "writing"
-    | "pronunciation"
-    | "mixed";
-  // Kiểu câu hỏi hiển thị (tất cả câu trong phần nên cùng 1 kiểu)
-  questionType: QuestionType;
+  description: string | null;
+  audioUrl: string | null;
+  videoUrl: string | null;
+  imageUrl: string | null;
+  wordBank: string[];
+  passage: string | null;
+  sectionType: string;
+  questionType: string;
   questions: Question[];
-}
+};
 
-export interface Exercise {
-  id: string;
+// Exercise
+export type Exercise = {
+  _id: string;
   courseId: string;
   title: string;
+  description: string | null;
   sections: Section[];
-}
+};
 
-export interface Question {
-  id: string;
-  sectionId: string; // ID của section mà question này thuộc về
-  question: string;
-  // Trong thiết kế mới, type chủ yếu lấy từ Section.questionType.
-  // Trường này là optional để vẫn hỗ trợ các câu hỏi đặc biệt nếu cần.
-  type?: QuestionType;
-  options?: string[]; // For multiple choice
-  correctAnswer: string | string[];
-  points: number;
-  // Media / extra data cho các dạng đặc biệt
-  audioUrl?: string; // listening, pronunciation, social phrases
-  videoUrl?: string; // video-recording, video bài học
-  imageUrl?: string; // picture-choice, mô tả bằng hình
-  wordBank?: string[]; // word-bank, gợi ý từ cho điền chỗ trống
-}
-
-export interface Quiz {
-  id: string;
+// Quiz
+export type Quiz = {
+  _id: string;
   courseId: string;
   title: string;
-  description: string;
-  sections: Section[]; // Quiz làm theo phần, làm hết tất cả các phần rồi mới nộp bài
-  timeLimit: number; // minutes
-  passingScore: number; // percentage
-}
+  description: string | null;
+  sections: Section[];
+  timeLimit: number;
+};
 
-export interface StudentProgress {
-  studentId: string;
-  courseId: string;
-  completedLessons: string[];
-  exerciseAttempts: ExerciseAttempt[];
-  quizAttempts: QuizAttempt[];
-  totalScore: number;
-  lastAccessed: Date;
-}
+// Exercise Attempt
+export type Answer = {
+  questionId: string;
+  answer: string[];
+};
 
-export interface ExerciseAttempt {
-  id: string;
+export type SectionAttempt = {
+  sectionId: string;
+  tries: number;
+  score: number;
+  answers: Answer[];
+};
+
+export type ExerciseAttempt = {
+  _id: string;
   exerciseId: string;
-  studentId: string;
-  // Nếu là attempt cho 1 phần, lưu index phần ở đây (0-based). Nếu không có thì là attempt cho cả bài.
-  sectionIndex?: number;
-  answers: { questionId: string; answer: string | string[] }[];
-  // Số lần thử: tăng +1 mỗi lần nhấn Kiểm tra (lưu lần mới ghi đè)
-  tries?: number;
-  score: number;
-  maxScore: number;
-  completedAt: Date;
-}
+  userId: string;
+  sectionAttempts: SectionAttempt[];
+  totalScore: number;
+};
 
-export interface QuizAttempt {
-  id: string;
+// Quiz Attempt
+export type QuizAttempt = {
+  _id: string;
   quizId: string;
-  studentId: string;
-  answers: { questionId: string; answer: string | string[] }[];
-  score: number;
-  maxScore: number;
-  percentage: number;
-  passed: boolean;
-  completedAt: Date;
-  timeSpent: number; // minutes
-  // Lưu thông tin về section hiện tại (optional, có thể dùng để theo dõi tiến độ)
-  currentSectionIndex?: number;
-}
-
-export interface Statistics {
-  totalStudents: number;
-  totalExercises: number;
-  totalQuizzes: number;
-  averageScore: number;
-  completionRate: number;
-  courseStats: CourseStatistics[];
-}
-
-export interface CourseStatistics {
-  courseId: string;
-  courseName: string;
-  enrolledStudents: number;
-  averageScore: number;
-  completionRate: number;
-  topPerformers: { studentId: string; name: string; score: number }[];
-}
+  userId: string;
+  status: string;
+  startedAt: Date;
+  submittedAt: Date | null;
+  answers: Answer[];
+  totalScore: number;
+};

@@ -24,8 +24,8 @@ import {
   getCourses,
   getExerciseAttempts,
   getUser,
-} from "../services/storage";
-import type { Exercise } from "../types";
+} from "../types old/storage";
+import type { Exercise } from "../types old";
 
 export default function Exercises() {
   const [exercises] = useState<Exercise[]>(() => getExercises());

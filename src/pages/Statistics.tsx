@@ -22,8 +22,8 @@ import {
   Quiz as QuizIcon,
   TrendingUp as TrendingUpIcon,
 } from '@mui/icons-material';
-import { getStatistics, getUser } from '../services/storage';
-import type { Statistics as StatisticsType } from '../types';
+import { getStatistics, getUser } from '../types old/storage';
+import type { Statistics as StatisticsType } from '../types old';
 
 export default function Statistics() {
   const user = getUser();

@@ -1,5 +1,5 @@
-import { useState } from 'react';
-import { Outlet, useNavigate, useLocation } from 'react-router-dom';
+import { useState } from "react";
+import { Outlet, useNavigate, useLocation } from "react-router-dom";
 import {
   Box,
   Drawer,
@@ -25,7 +25,7 @@ import {
   TextField,
   Button,
   Alert,
-} from '@mui/material';
+} from "@mui/material";
 import {
   Menu as MenuIcon,
   Dashboard as DashboardIcon,
@@ -40,19 +40,22 @@ import {
   Logout as LogoutIcon,
   Person as PersonIcon,
   Lock as LockIcon,
-} from '@mui/icons-material';
-import { getUser, logout, updateUserProfile, changePassword } from '../../services/storage';
-import type { User } from '../../types';
+} from "@mui/icons-material";
+import axios from "axios";
+import { useAuthStore } from "../../store/auth.store";
+import { userService } from "../../services/user.service";
+import { authService } from "../../services/auth.service";
+import type { User } from "../../types";
 
 const drawerWidth = 260;
 
 const adminMenuItems = [
-  { text: 'Dashboard', icon: <DashboardIcon />, path: '/admin' },
-  { text: 'Quản lý Nội dung', icon: <SchoolIcon />, path: '/admin/content' },
-  { text: 'Quản lý Bài tập', icon: <AssignmentIcon />, path: '/admin/exercises' },
-  { text: 'Quản lý Quiz', icon: <QuizIcon />, path: '/admin/quizzes' },
-  { text: 'Quản lý Sinh viên', icon: <PeopleIcon />, path: '/admin/students' },
-  { text: 'Báo cáo thống kê', icon: <BarChartIcon />, path: '/admin/statistics' },
+  { text: "Dashboard", icon: <DashboardIcon />, path: "/admin" },
+  { text: "Quản lý Nội dung", icon: <SchoolIcon />, path: "/admin/content" },
+  { text: "Quản lý Bài tập", icon: <AssignmentIcon />, path: "/admin/exercises" },
+  { text: "Quản lý Quiz", icon: <QuizIcon />, path: "/admin/quizzes" },
+  { text: "Quản lý Sinh viên", icon: <PeopleIcon />, path: "/admin/students" },
+  { text: "Báo cáo thống kê", icon: <BarChartIcon />, path: "/admin/statistics" },
 ];
 
 export default function AdminLayout() {
@@ -60,14 +63,23 @@ export default function AdminLayout() {
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
   const [profileOpen, setProfileOpen] = useState(false);
   const [changePasswordOpen, setChangePasswordOpen] = useState(false);
-  const [formData, setFormData] = useState({ name: '', email: '', studentId: '' });
-  const [passwordData, setPasswordData] = useState({ oldPassword: '', newPassword: '', confirmPassword: '' });
-  const [passwordError, setPasswordError] = useState('');
+  const [formData, setFormData] = useState({ username: "", email: "" });
+  const [passwordData, setPasswordData] = useState({
+    oldPassword: "",
+    newPassword: "",
+    confirmPassword: "",
+  });
+  const [passwordError, setPasswordError] = useState("");
+  const [profileError, setProfileError] = useState("");
+  const [profileSaving, setProfileSaving] = useState(false);
+  const [passwordSaving, setPasswordSaving] = useState(false);
   const theme = useTheme();
-  const isMobile = useMediaQuery(theme.breakpoints.down('md'));
+  const isMobile = useMediaQuery(theme.breakpoints.down("md"));
   const navigate = useNavigate();
   const location = useLocation();
-  const user = getUser();
+  const user = useAuthStore((s) => s.user);
+  const logout = useAuthStore((s) => s.logout);
+  const updateUserInStore = useAuthStore((s) => s.updateUser);
 
   const handleDrawerToggle = () => {
     setMobileOpen(!mobileOpen);
@@ -92,10 +104,10 @@ export default function AdminLayout() {
     handleMenuClose();
     if (user) {
       setFormData({
-        name: user.name || '',
-        email: user.email || '',
-        studentId: user.studentId || '',
+        username: user.username || "",
+        email: user.email || "",
       });
+      setProfileError("");
       setProfileOpen(true);
     }
   };
@@ -105,9 +117,8 @@ export default function AdminLayout() {
     // Reset form data to original values
     if (user) {
       setFormData({
-        name: user.name || '',
-        email: user.email || '',
-        studentId: user.studentId || '',
+        username: user.username || "",
+        email: user.email || "",
       });
     }
   };
@@ -116,89 +127,107 @@ export default function AdminLayout() {
     // Reset form data to original values
     if (user) {
       setFormData({
-        name: user.name || '',
-        email: user.email || '',
-        studentId: user.studentId || '',
+        username: user.username || "",
+        email: user.email || "",
       });
     }
     setProfileOpen(false);
   };
 
-  const handleProfileSave = () => {
-    if (user) {
-      const updatedUser: User = {
-        ...user,
-        name: formData.name,
+  const handleProfileSave = async () => {
+    if (!user) return;
+    setProfileError("");
+    setProfileSaving(true);
+    try {
+      const dto: Partial<User> = {
+        username: formData.username,
         email: formData.email,
-        ...(user.role === 'student' && { studentId: formData.studentId }),
       };
-      updateUserProfile(updatedUser);
+      const updated: User = await userService.updateUser(user._id, dto);
+      updateUserInStore(updated);
       setProfileOpen(false);
-      // Reload page to update user info
-      window.location.reload();
+    } catch (e) {
+      if (axios.isAxiosError(e)) {
+        const msg =
+          (e.response?.data as any)?.message ??
+          e.response?.statusText ??
+          "Cập nhật thông tin thất bại";
+        setProfileError(String(msg));
+      } else {
+        setProfileError("Cập nhật thông tin thất bại");
+      }
+    } finally {
+      setProfileSaving(false);
     }
   };
 
   const handleChangePasswordClick = () => {
     handleMenuClose();
-    setPasswordData({ oldPassword: '', newPassword: '', confirmPassword: '' });
-    setPasswordError('');
+    setPasswordData({ oldPassword: "", newPassword: "", confirmPassword: "" });
+    setPasswordError("");
     setChangePasswordOpen(true);
   };
 
   const handleChangePasswordClose = () => {
     setChangePasswordOpen(false);
-    setPasswordData({ oldPassword: '', newPassword: '', confirmPassword: '' });
-    setPasswordError('');
+    setPasswordData({ oldPassword: "", newPassword: "", confirmPassword: "" });
+    setPasswordError("");
   };
 
-  const handleChangePasswordSave = () => {
-    setPasswordError('');
-    
-    if (!passwordData.oldPassword || !passwordData.newPassword || !passwordData.confirmPassword) {
-      setPasswordError('Vui lòng điền đầy đủ thông tin');
-      return;
-    }
+  const handleChangePasswordSave = async () => {
+    setPasswordError("");
 
-    if (passwordData.newPassword.length < 6) {
-      setPasswordError('Mật khẩu mới phải có ít nhất 6 ký tự');
+    if (!passwordData.oldPassword || !passwordData.newPassword || !passwordData.confirmPassword) {
+      setPasswordError("Vui lòng điền đầy đủ thông tin");
       return;
     }
 
     if (passwordData.newPassword !== passwordData.confirmPassword) {
-      setPasswordError('Mật khẩu xác nhận không khớp');
+      setPasswordError("Mật khẩu xác nhận không khớp");
       return;
     }
 
-    if (user) {
-      const result = changePassword(user.id, passwordData.oldPassword, passwordData.newPassword);
-      if (result.success) {
-        setChangePasswordOpen(false);
-        setPasswordData({ oldPassword: '', newPassword: '', confirmPassword: '' });
-        setPasswordError('');
-        alert('Đổi mật khẩu thành công!');
+    setPasswordSaving(true);
+    try {
+      await authService.changePassword(
+        passwordData.oldPassword,
+        passwordData.newPassword
+      );
+      setChangePasswordOpen(false);
+      setPasswordData({ oldPassword: "", newPassword: "", confirmPassword: "" });
+      setPasswordError("");
+      alert("Đổi mật khẩu thành công!");
+    } catch (e) {
+      if (axios.isAxiosError(e)) {
+        const msg =
+          (e.response?.data as any)?.message ??
+          e.response?.statusText ??
+          "Đổi mật khẩu thất bại";
+        setPasswordError(String(msg));
       } else {
-        setPasswordError(result.message);
+        setPasswordError("Đổi mật khẩu thất bại");
       }
+    } finally {
+      setPasswordSaving(false);
     }
   };
 
   const handleBackToMain = () => {
     handleMenuClose();
-    navigate('/');
+    navigate("/");
   };
 
   const handleLogout = () => {
     handleMenuClose();
     logout();
-    navigate('/login');
+    navigate("/login");
   };
 
   const isMenuOpen = Boolean(anchorEl);
 
   const drawer = (
     <Box>
-      <Toolbar sx={{ bgcolor: 'secondary.main', color: 'white' }}>
+      <Toolbar sx={{ bgcolor: "secondary.main", color: "white" }}>
         <SettingsIcon sx={{ mr: 2 }} />
         <Box>
           <Typography variant="h6" noWrap component="div">
@@ -217,7 +246,14 @@ export default function AdminLayout() {
               selected={location.pathname === item.path}
               onClick={() => handleNavigation(item.path)}
             >
-              <ListItemIcon sx={{ color: location.pathname === item.path ? 'secondary.main' : 'inherit' }}>
+              <ListItemIcon
+                sx={{
+                  color:
+                    location.pathname === item.path
+                      ? "secondary.main"
+                      : "inherit",
+                }}
+              >
                 {item.icon}
               </ListItemIcon>
               <ListItemText primary={item.text} />
@@ -229,13 +265,13 @@ export default function AdminLayout() {
   );
 
   return (
-    <Box sx={{ display: 'flex' }}>
+    <Box sx={{ display: "flex" }}>
       <AppBar
         position="fixed"
         sx={{
           width: { md: `calc(100% - ${drawerWidth}px)` },
           ml: { md: `${drawerWidth}px` },
-          bgcolor: 'secondary.main',
+          bgcolor: "secondary.main",
         }}
       >
         <Toolbar>
@@ -244,7 +280,7 @@ export default function AdminLayout() {
             aria-label="open drawer"
             edge="start"
             onClick={handleDrawerToggle}
-            sx={{ mr: 2, display: { md: 'none' } }}
+            sx={{ mr: 2, display: { md: "none" } }}
           >
             <MenuIcon />
           </IconButton>
@@ -255,13 +291,15 @@ export default function AdminLayout() {
             size="large"
             edge="end"
             aria-label="account menu"
-            aria-controls={isMenuOpen ? 'account-menu' : undefined}
+            aria-controls={isMenuOpen ? "account-menu" : undefined}
             aria-haspopup="true"
             onClick={handleMenuOpen}
             color="inherit"
           >
-            <Avatar sx={{ width: 32, height: 32, bgcolor: 'rgba(255,255,255,0.2)' }}>
-              {user?.name?.charAt(0).toUpperCase() || 'A'}
+            <Avatar
+              sx={{ width: 32, height: 32, bgcolor: "rgba(255,255,255,0.2)" }}
+            >
+              {user?.username?.charAt(0).toUpperCase() || "A"}
             </Avatar>
           </IconButton>
           <Menu
@@ -273,42 +311,42 @@ export default function AdminLayout() {
             PaperProps={{
               elevation: 0,
               sx: {
-                overflow: 'visible',
-                filter: 'drop-shadow(0px 2px 8px rgba(0,0,0,0.32))',
+                overflow: "visible",
+                filter: "drop-shadow(0px 2px 8px rgba(0,0,0,0.32))",
                 mt: 1.5,
-                '& .MuiAvatar-root': {
+                "& .MuiAvatar-root": {
                   width: 32,
                   height: 32,
                   ml: -0.5,
                   mr: 1,
                 },
-                '&:before': {
+                "&:before": {
                   content: '""',
-                  display: 'block',
-                  position: 'absolute',
+                  display: "block",
+                  position: "absolute",
                   top: 0,
                   right: 14,
                   width: 10,
                   height: 10,
-                  bgcolor: 'background.paper',
-                  transform: 'translateY(-50%) rotate(45deg)',
+                  bgcolor: "background.paper",
+                  transform: "translateY(-50%) rotate(45deg)",
                   zIndex: 0,
                 },
               },
             }}
-            transformOrigin={{ horizontal: 'right', vertical: 'top' }}
-            anchorOrigin={{ horizontal: 'right', vertical: 'bottom' }}
+            transformOrigin={{ horizontal: "right", vertical: "top" }}
+            anchorOrigin={{ horizontal: "right", vertical: "bottom" }}
           >
             <MenuItem onClick={handleProfileClick}>
-              <Avatar sx={{ bgcolor: 'secondary.main' }}>
+              <Avatar sx={{ bgcolor: "secondary.main" }}>
                 <PersonIcon />
               </Avatar>
               <Box sx={{ flexGrow: 1 }}>
                 <Typography variant="body1" sx={{ fontWeight: 500 }}>
-                  {user?.name || 'Admin'}
+                  {user?.username || "Admin"}
                 </Typography>
                 <Typography variant="body2" color="text.secondary">
-                  {user?.email || ''}
+                  {user?.email || ""}
                 </Typography>
               </Box>
             </MenuItem>
@@ -352,8 +390,8 @@ export default function AdminLayout() {
             keepMounted: true,
           }}
           sx={{
-            display: { xs: 'block', md: 'none' },
-            '& .MuiDrawer-paper': { boxSizing: 'border-box', width: drawerWidth },
+            display: { xs: "block", md: "none" },
+            "& .MuiDrawer-paper": { boxSizing: "border-box", width: drawerWidth },
           }}
         >
           {drawer}
@@ -361,8 +399,8 @@ export default function AdminLayout() {
         <Drawer
           variant="permanent"
           sx={{
-            display: { xs: 'none', md: 'block' },
-            '& .MuiDrawer-paper': { boxSizing: 'border-box', width: drawerWidth },
+            display: { xs: "none", md: "block" },
+            "& .MuiDrawer-paper": { boxSizing: "border-box", width: drawerWidth },
           }}
           open
         >
@@ -375,8 +413,8 @@ export default function AdminLayout() {
           flexGrow: 1,
           p: 3,
           width: { md: `calc(100% - ${drawerWidth}px)` },
-          minHeight: '100vh',
-          bgcolor: 'background.default',
+          minHeight: "100vh",
+          bgcolor: "background.default",
         }}
       >
         <Toolbar />
@@ -388,11 +426,22 @@ export default function AdminLayout() {
         <DialogTitle>Thông tin cá nhân</DialogTitle>
         <DialogContent>
           <Box sx={{ pt: 2 }}>
+            {profileError && (
+              <Alert
+                severity="error"
+                sx={{ mb: 2 }}
+                onClose={() => setProfileError("")}
+              >
+                {profileError}
+              </Alert>
+            )}
             <TextField
               fullWidth
-              label="Họ và tên"
-              value={formData.name}
-              onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+              label="Tên người dùng"
+              value={formData.username}
+              onChange={(e) =>
+                setFormData({ ...formData, username: e.target.value })
+              }
               margin="normal"
             />
             <TextField
@@ -400,31 +449,30 @@ export default function AdminLayout() {
               label="Email"
               type="email"
               value={formData.email}
-              onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+              onChange={(e) =>
+                setFormData({ ...formData, email: e.target.value })
+              }
               margin="normal"
             />
-            {user?.role === 'student' && (
-              <TextField
-                fullWidth
-                label="Mã sinh viên"
-                value={formData.studentId}
-                onChange={(e) => setFormData({ ...formData, studentId: e.target.value })}
-                margin="normal"
-              />
-            )}
             <TextField
               fullWidth
               label="Vai trò"
-              value={user?.role === 'teacher' ? 'Giảng viên' : 'Sinh viên'}
+              value={user?.role === "teacher" ? "Giảng viên" : "Sinh viên"}
               disabled
               margin="normal"
             />
           </Box>
         </DialogContent>
         <DialogActions>
-          <Button onClick={handleProfileCancel}>Hủy</Button>
-          <Button onClick={handleProfileSave} variant="contained">
-            Lưu
+          <Button onClick={handleProfileCancel} disabled={profileSaving}>
+            Hủy
+          </Button>
+          <Button
+            onClick={handleProfileSave}
+            variant="contained"
+            disabled={profileSaving}
+          >
+            {profileSaving ? "Đang lưu..." : "Lưu"}
           </Button>
         </DialogActions>
       </Dialog>
@@ -435,7 +483,11 @@ export default function AdminLayout() {
         <DialogContent>
           <Box sx={{ pt: 2 }}>
             {passwordError && (
-              <Alert severity="error" sx={{ mb: 2 }} onClose={() => setPasswordError('')}>
+              <Alert
+                severity="error"
+                sx={{ mb: 2 }}
+                onClose={() => setPasswordError("")}
+              >
                 {passwordError}
               </Alert>
             )}
@@ -443,33 +495,47 @@ export default function AdminLayout() {
               fullWidth
               label="Mật khẩu cũ"
               type="password"
-              value={passwordData.oldPassword}
-              onChange={(e) => setPasswordData({ ...passwordData, oldPassword: e.target.value })}
+                value={passwordData.oldPassword}
+                onChange={(e) =>
+                  setPasswordData({ ...passwordData, oldPassword: e.target.value })
+                }
               margin="normal"
             />
             <TextField
               fullWidth
               label="Mật khẩu mới"
               type="password"
-              value={passwordData.newPassword}
-              onChange={(e) => setPasswordData({ ...passwordData, newPassword: e.target.value })}
+                value={passwordData.newPassword}
+                onChange={(e) =>
+                  setPasswordData({ ...passwordData, newPassword: e.target.value })
+                }
               margin="normal"
-              helperText="Mật khẩu phải có ít nhất 6 ký tự"
             />
             <TextField
               fullWidth
               label="Nhập lại mật khẩu mới"
               type="password"
-              value={passwordData.confirmPassword}
-              onChange={(e) => setPasswordData({ ...passwordData, confirmPassword: e.target.value })}
+                value={passwordData.confirmPassword}
+                onChange={(e) =>
+                  setPasswordData({
+                    ...passwordData,
+                    confirmPassword: e.target.value,
+                  })
+                }
               margin="normal"
             />
           </Box>
         </DialogContent>
         <DialogActions>
-          <Button onClick={handleChangePasswordClose}>Hủy</Button>
-          <Button onClick={handleChangePasswordSave} variant="contained">
-            Lưu
+          <Button onClick={handleChangePasswordClose} disabled={passwordSaving}>
+            Hủy
+          </Button>
+          <Button
+            onClick={handleChangePasswordSave}
+            variant="contained"
+            disabled={passwordSaving}
+          >
+            {passwordSaving ? "Đang lưu..." : "Lưu"}
           </Button>
         </DialogActions>
       </Dialog>

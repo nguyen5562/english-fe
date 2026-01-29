@@ -24,8 +24,8 @@ import {
   InputLabel,
 } from '@mui/material';
 import { ArrowBack as ArrowBackIcon, CheckCircle as CheckCircleIcon } from '@mui/icons-material';
-import { getExercise, getUser, saveExerciseAttempt, getExerciseAttempts } from '../services/storage';
-import type { Exercise, Question, QuestionType, ExerciseAttempt } from '../types';
+import { getExercise, getUser, saveExerciseAttempt, getExerciseAttempts } from '../types old/storage';
+import type { Exercise, Question, QuestionType, ExerciseAttempt } from '../types old';
 import { sectionTypeMap, renderQuestionMedia, renderQuestionWordBank, renderSectionMedia, renderSectionWordBank, formatAnswer, calculateScore } from '../utils/questionHelpers';
 
 export default function ExerciseDetail() {

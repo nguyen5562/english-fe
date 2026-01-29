@@ -1,5 +1,5 @@
-import { useState } from 'react';
-import { useNavigate, Link } from 'react-router-dom';
+import { useState } from "react";
+import { useNavigate, Link } from "react-router-dom";
 import {
   Container,
   Paper,
@@ -8,10 +8,6 @@ import {
   Typography,
   Box,
   Alert,
-  FormControl,
-  InputLabel,
-  Select,
-  MenuItem,
   InputAdornment,
   IconButton,
 } from '@mui/material';
@@ -20,63 +16,61 @@ import {
   Visibility,
   VisibilityOff,
 } from '@mui/icons-material';
-import { registerUser } from '../services/storage';
-import type { User } from '../types';
+import axios from "axios";
+import { authService } from "../services/auth.service";
+import type { RegisterDto } from "../types/dto";
 
 export default function Register() {
-  const [name, setName] = useState('');
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
-  const [confirmPassword, setConfirmPassword] = useState('');
-  const [role, setRole] = useState<'student' | 'teacher'>('student');
-  const [studentId, setStudentId] = useState('');
+  const [username, setUsername] = useState("");
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
-  const [error, setError] = useState('');
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
   const [success, setSuccess] = useState(false);
   const navigate = useNavigate();
 
-  const handleRegister = () => {
-    setError('');
+  const handleRegister = async () => {
+    setError("");
     setSuccess(false);
 
-    if (!name || !email || !password || !confirmPassword) {
-      setError('Vui lòng điền đầy đủ thông tin');
-      return;
-    }
-
-    if (role === 'student' && !studentId) {
-      setError('Vui lòng nhập mã sinh viên');
-      return;
-    }
-
-    if (password.length < 6) {
-      setError('Mật khẩu phải có ít nhất 6 ký tự');
+    if (!username || !email || !password || !confirmPassword) {
+      setError("Vui lòng điền đầy đủ thông tin");
       return;
     }
 
     if (password !== confirmPassword) {
-      setError('Mật khẩu xác nhận không khớp');
+      setError("Mật khẩu xác nhận không khớp");
       return;
     }
 
-    const user: User & { password: string } = {
-      id: Date.now().toString(),
-      name,
+    const dto: RegisterDto = {
+      username,
       email,
-      role,
       password,
-      ...(role === 'student' && { studentId }),
     };
 
-    const success = registerUser(user);
-    if (success) {
+    try {
+      setLoading(true);
+      await authService.register(dto);
       setSuccess(true);
       setTimeout(() => {
         navigate('/login');
       }, 1500);
-    } else {
-      setError('Email này đã được sử dụng');
+    } catch (e) {
+      if (axios.isAxiosError(e)) {
+        const msg =
+          (e.response?.data as any)?.message ??
+          e.response?.statusText ??
+          "Đăng ký thất bại";
+        setError(String(msg));
+      } else {
+        setError("Đăng ký thất bại");
+      }
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -121,11 +115,12 @@ export default function Register() {
               margin="normal"
               required
               fullWidth
-              label="Họ và tên"
-              value={name}
-              onChange={(e) => setName(e.target.value)}
+              label="Tên người dùng"
+              value={username}
+              onChange={(e) => setUsername(e.target.value)}
               autoFocus
               onKeyPress={handleKeyPress}
+              disabled={loading}
             />
             <TextField
               margin="normal"
@@ -136,29 +131,8 @@ export default function Register() {
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               onKeyPress={handleKeyPress}
+              disabled={loading}
             />
-            <FormControl fullWidth margin="normal" required>
-              <InputLabel>Vai trò</InputLabel>
-              <Select
-                value={role}
-                label="Vai trò"
-                onChange={(e) => setRole(e.target.value as 'student' | 'teacher')}
-              >
-                <MenuItem value="student">Sinh viên</MenuItem>
-                <MenuItem value="teacher">Giảng viên</MenuItem>
-              </Select>
-            </FormControl>
-            {role === 'student' && (
-              <TextField
-                margin="normal"
-                required
-                fullWidth
-                label="Mã sinh viên"
-                value={studentId}
-                onChange={(e) => setStudentId(e.target.value)}
-                onKeyPress={handleKeyPress}
-              />
-            )}
             <TextField
               margin="normal"
               required
@@ -168,7 +142,7 @@ export default function Register() {
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               onKeyPress={handleKeyPress}
-              helperText="Mật khẩu phải có ít nhất 6 ký tự"
+              disabled={loading}
               InputProps={{
                 endAdornment: (
                   <InputAdornment position="end">
@@ -192,6 +166,7 @@ export default function Register() {
               value={confirmPassword}
               onChange={(e) => setConfirmPassword(e.target.value)}
               onKeyPress={handleKeyPress}
+              disabled={loading}
               InputProps={{
                 endAdornment: (
                   <InputAdornment position="end">
@@ -212,8 +187,9 @@ export default function Register() {
               variant="contained"
               sx={{ mt: 3, mb: 2 }}
               onClick={handleRegister}
+              disabled={loading}
             >
-              Đăng ký
+              {loading ? "Đang đăng ký..." : "Đăng ký"}
             </Button>
             <Box sx={{ textAlign: 'center', mt: 2 }}>
               <Typography variant="body2" color="text.secondary">

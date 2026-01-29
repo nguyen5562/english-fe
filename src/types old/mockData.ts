@@ -1,5 +1,5 @@
 // Mock data để khởi tạo ứng dụng
-import type { Course, Exercise, Quiz } from '../types';
+import type { Course, Exercise, Quiz } from '.';
 import { saveCourses, saveExercises, saveQuizzes } from './storage';
 
 export const initializeMockData = (): void => {
@@ -41,7 +41,7 @@ export const initializeMockData = (): void => {
               lessonId: 'lesson-1-1',
               title: 'Word List',
               type: 'pdf',
-              url: '/WordList.pdf',
+              url: '/test.docx',
             },
           ],
         },

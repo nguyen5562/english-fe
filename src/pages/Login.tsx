@@ -1,5 +1,5 @@
-import { useState } from 'react';
-import { useNavigate, Link } from 'react-router-dom';
+import { useState } from "react";
+import { useNavigate, Link } from "react-router-dom";
 import {
   Container,
   Paper,
@@ -16,26 +16,43 @@ import {
   Visibility,
   VisibilityOff,
 } from '@mui/icons-material';
-import { loginUser } from '../services/storage';
+import axios from "axios";
+import { authService } from "../services/auth.service";
+import { useAuthStore } from "../store/auth.store";
 
 export default function Login() {
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
-  const [error, setError] = useState('');
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
   const navigate = useNavigate();
+  const setAuth = useAuthStore((s) => s.setAuth);
 
-  const handleLogin = () => {
+  const handleLogin = async () => {
     if (!email || !password) {
-      setError('Vui lòng điền đầy đủ thông tin');
+      setError("Vui lòng điền đầy đủ thông tin");
       return;
     }
 
-    const user = loginUser(email, password);
-    if (user) {
+    try {
+      setLoading(true);
+      setError("");
+      const { user, access_token } = await authService.login(email, password);
+      setAuth({ user, accessToken: access_token });
       navigate('/');
-    } else {
-      setError('Email hoặc mật khẩu không đúng');
+    } catch (e) {
+      if (axios.isAxiosError(e)) {
+        const msg =
+          (e.response?.data as any)?.message ??
+          e.response?.statusText ??
+          "Đăng nhập thất bại";
+        setError(String(msg));
+      } else {
+        setError("Đăng nhập thất bại");
+      }
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -80,6 +97,7 @@ export default function Login() {
               onChange={(e) => setEmail(e.target.value)}
               autoFocus
               onKeyPress={handleKeyPress}
+              disabled={loading}
             />
             <TextField
               margin="normal"
@@ -90,6 +108,7 @@ export default function Login() {
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               onKeyPress={handleKeyPress}
+              disabled={loading}
               InputProps={{
                 endAdornment: (
                   <InputAdornment position="end">
@@ -110,8 +129,9 @@ export default function Login() {
               variant="contained"
               sx={{ mt: 3, mb: 2 }}
               onClick={handleLogin}
+              disabled={loading}
             >
-              Đăng nhập
+              {loading ? "Đang đăng nhập..." : "Đăng nhập"}
             </Button>
             <Box sx={{ textAlign: 'center', mt: 2 }}>
               <Typography variant="body2" color="text.secondary">

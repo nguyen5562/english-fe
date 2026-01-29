@@ -14,7 +14,7 @@ import {
   Chip,
 } from '@mui/material';
 import { People as PeopleIcon } from '@mui/icons-material';
-import { getQuizAttempts, getExerciseAttempts } from '../../services/storage';
+import { getQuizAttempts, getExerciseAttempts } from '../../types old/storage';
 
 export default function AdminStudents() {
   // Get all unique students from attempts

@@ -1,5 +1,5 @@
-import { useMemo } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useMemo } from "react";
+import { useNavigate } from "react-router-dom";
 import {
   Grid,
   Card,
@@ -8,21 +8,22 @@ import {
   Button,
   Box,
   LinearProgress,
-} from '@mui/material';
+} from "@mui/material";
 import {
   MenuBook as MenuBookIcon,
   Assignment as AssignmentIcon,
   Quiz as QuizIcon,
   Assessment as AssessmentIcon,
-} from '@mui/icons-material';
-import { getCourses, getAllStudentProgress, getUser } from '../services/storage';
+} from "@mui/icons-material";
+import { getCourses, getAllStudentProgress } from "../types old/storage";
+import { useAuthStore } from "../store/auth.store";
 
 export default function Dashboard() {
   const courses = useMemo(() => getCourses(), []);
-  const user = getUser();
+  const user = useAuthStore((s) => s.user);
   const progress = useMemo(() => {
-    if (user?.role === 'student' && user.id) {
-      return getAllStudentProgress(user.id);
+    if (user?.role === "student" && user?._id) {
+      return getAllStudentProgress(user._id);
     }
     return [];
   }, [user]);
@@ -39,7 +40,7 @@ export default function Dashboard() {
   return (
     <Box>
       <Typography variant="h4" gutterBottom>
-        Chào mừng, {user?.name}!
+        Chào mừng, {user?.username ?? "bạn"}!
       </Typography>
       <Typography variant="body1" color="text.secondary" paragraph>
         {user?.role === 'teacher'

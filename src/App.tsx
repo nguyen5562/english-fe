@@ -1,4 +1,3 @@
-import { useEffect } from 'react';
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { ThemeProvider } from '@mui/material/styles';
 import CssBaseline from '@mui/material/CssBaseline';
@@ -14,25 +13,23 @@ import Quizzes from './pages/Quizzes';
 import QuizDetail from './pages/QuizDetail';
 import Progress from './pages/Progress';
 import Statistics from './pages/Statistics';
-import Profile from './pages/Profile';
 import AdminLayout from './components/Layout/AdminLayout';
 import AdminDashboard from './pages/admin/AdminDashboard';
 import AdminContent from './pages/admin/AdminContent';
 import AdminExercises from './pages/admin/AdminExercises';
 import AdminQuizzes from './pages/admin/AdminQuizzes';
 import AdminStudents from './pages/admin/AdminStudents';
-import { getUser } from './services/storage';
-import { initializeMockData } from './services/mockData';
+import { useAuthStore } from './store/auth.store';
 
 // Protected Route component
 function ProtectedRoute({ children }: { children: React.ReactNode }) {
-  const user = getUser();
+  const user = useAuthStore((s) => s.user);
   return user ? <>{children}</> : <Navigate to="/login" replace />;
 }
 
 // Admin Protected Route - chỉ cho phép teacher
 function AdminProtectedRoute({ children }: { children: React.ReactNode }) {
-  const user = getUser();
+  const user = useAuthStore((s) => s.user);
   if (!user) {
     return <Navigate to="/login" replace />;
   }
@@ -43,14 +40,6 @@ function AdminProtectedRoute({ children }: { children: React.ReactNode }) {
 }
 
 function App() {
-  useEffect(() => {
-    // Initialize mock data on first load
-    const courses = localStorage.getItem('english_learning_courses');
-    if (!courses) {
-      initializeMockData();
-    }
-  }, []);
-
   return (
     <ThemeProvider theme={theme}>
       <CssBaseline />
@@ -74,7 +63,6 @@ function App() {
             <Route path="quizzes/:id" element={<QuizDetail />} />
             <Route path="progress" element={<Progress />} />
             <Route path="statistics" element={<Statistics />} />
-            <Route path="profile" element={<Profile />} />
           </Route>
           <Route
             path="/admin"

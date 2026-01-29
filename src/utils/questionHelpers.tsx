@@ -1,5 +1,5 @@
 import { Box, Typography, Chip, FormControl, FormLabel, RadioGroup, Radio, FormControlLabel, TextField } from '@mui/material';
-import type { Question, Section } from '../types';
+import type { Question, Section } from '../types old';
 
 // Map sectionType to label and color (used for Chips in detail view)
 export const sectionTypeMap: Record<string, { label: string; color?: 'primary'|'secondary'|'error'|'info'|'success'|'warning' }> = {

@@ -21,8 +21,8 @@ import {
   PlayArrow as PlayArrowIcon,
   CheckCircle as CheckCircleIcon,
 } from '@mui/icons-material';
-import { getQuizzes, getCourses, getQuizAttempts, getUser } from '../services/storage';
-import type { Quiz } from '../types';
+import { getQuizzes, getCourses, getQuizAttempts, getUser } from '../types old/storage';
+import type { Quiz } from '../types old';
 
 export default function Quizzes() {
   const [quizzes] = useState<Quiz[]>(() => getQuizzes());

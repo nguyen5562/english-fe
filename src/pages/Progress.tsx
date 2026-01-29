@@ -20,8 +20,8 @@ import {
   CheckCircle as CheckCircleIcon,
   TrendingUp as TrendingUpIcon,
 } from '@mui/icons-material';
-import { getAllStudentProgress, getCourses, getExerciseAttempts, getQuizAttempts, getUser, getExercise, getQuiz } from '../services/storage';
-import type { StudentProgress } from '../types';
+import { getAllStudentProgress, getCourses, getExerciseAttempts, getQuizAttempts, getUser, getExercise, getQuiz } from '../types old/storage';
+import type { StudentProgress } from '../types old';
 
 export default function Progress() {
   const user = getUser();
