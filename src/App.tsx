@@ -1,6 +1,7 @@
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { ThemeProvider } from '@mui/material/styles';
 import CssBaseline from '@mui/material/CssBaseline';
+import { Toaster } from 'sonner';
 import { theme } from './theme/theme';
 import MainLayout from './components/Layout/MainLayout';
 import Login from './pages/Login';
@@ -45,6 +46,7 @@ function App() {
   return (
     <ThemeProvider theme={theme}>
       <CssBaseline />
+      <Toaster position="top-right" richColors />
       <BrowserRouter>
         <Routes>
           <Route path="/login" element={<Login />} />
@@ -61,8 +63,8 @@ function App() {
           >
             <Route index element={<Dashboard />} />
             <Route path="materials" element={<Materials />} />
-            <Route path="exercises" element={<Exercises />} />
-            <Route path="exercises/:id" element={<ExerciseDetail />} />
+            {/* <Route path="exercises" element={<Exercises />} /> */}
+            {/* <Route path="exercises/:id" element={<ExerciseDetail />} /> */}
             <Route path="quizzes" element={<Quizzes />} />
             <Route path="quizzes/:id" element={<QuizDetail />} />
             <Route path="progress" element={<Progress />} />
@@ -79,7 +81,7 @@ function App() {
             <Route index element={<AdminDashboard />} />
             <Route path="content" element={<AdminContent />} />
             <Route path="exercises" element={<AdminExercises />} />
-            <Route path="quizzes" element={<AdminQuizzes />} />
+            {/* <Route path="quizzes" element={<AdminQuizzes />} /> */}
             <Route path="students" element={<AdminStudents />} />
             <Route path="statistics" element={<Statistics />} />
             <Route path="content" element={<AdminContent />} />

@@ -17,6 +17,8 @@ import {
   Quiz as QuizIcon,
 } from '@mui/icons-material';
 import { getQuizzes, getCourses, saveQuizzes } from '../../types old/storage';
+import { useConfirm } from '../../components/ConfirmDialog';
+import { toast } from '../../utils/toast';
 
 export default function AdminQuizzes() {
   const [quizzes, setQuizzes] = useState(() => getQuizzes());
@@ -49,6 +51,14 @@ export default function AdminQuizzes() {
 
       {quizzes.length === 0 ? (
         <Card>
+          onClick={() => toast.info('Tính năng thêm quiz sẽ được phát triển sau')}
+        >
+          Thêm Quiz
+        </Button>
+      </Box>
+
+      {quizzes.length === 0 ? (
+        <Card>
           <CardContent>
             <Alert severity="info">Chưa có quiz nào. Hãy thêm quiz mới!</Alert>
           </CardContent>
@@ -73,15 +83,7 @@ export default function AdminQuizzes() {
                     <Box>
                       <IconButton
                         size="small"
-                        onClick={() => alert('Tính năng sửa sẽ được phát triển sau')}
-                      >
-                        <EditIcon fontSize="small" />
-                      </IconButton>
-                      <IconButton
-                        size="small"
-                        color="error"
-                        onClick={() => handleDelete(quiz.id)}
-                      >
+                        onClick={() => toast.info('Tính năng sửa sẽ được phát triển sau')}
                         <DeleteIcon fontSize="small" />
                       </IconButton>
                     </Box>

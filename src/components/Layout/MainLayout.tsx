@@ -46,6 +46,7 @@ import axios from "axios";
 import { useAuthStore } from "../../store/auth.store";
 import { userService } from "../../services/user.service";
 import { authService } from "../../services/auth.service";
+import { toast } from "../../utils/toast";
 import type { User } from "../../types";
 
 const drawerWidth = 240;
@@ -197,7 +198,7 @@ export default function MainLayout() {
       setChangePasswordOpen(false);
       setPasswordData({ oldPassword: "", newPassword: "", confirmPassword: "" });
       setPasswordError("");
-      alert("Đổi mật khẩu thành công!");
+      toast.success("Đổi mật khẩu thành công!");
     } catch (e: unknown) {
       if (axios.isAxiosError(e)) {
         const msg =
@@ -221,6 +222,7 @@ export default function MainLayout() {
   const handleLogout = () => {
     handleMenuClose();
     logout();
+    toast.success("Đăng xuất thành công!");
     navigate("/login");
   };
 

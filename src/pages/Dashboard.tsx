@@ -1,4 +1,4 @@
-import { useMemo } from "react";
+import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import {
   Grid,
@@ -7,35 +7,48 @@ import {
   Typography,
   Button,
   Box,
-  LinearProgress,
+  CircularProgress,
 } from "@mui/material";
 import {
   MenuBook as MenuBookIcon,
   Assignment as AssignmentIcon,
   Quiz as QuizIcon,
-  Assessment as AssessmentIcon,
 } from "@mui/icons-material";
-import { getCourses, getAllStudentProgress } from "../types old/storage";
+import axios from "axios";
 import { useAuthStore } from "../store/auth.store";
+import { courseService } from "../services/course.service";
+import { toast } from "../utils/toast";
+import type { Course } from "../types";
 
 export default function Dashboard() {
-  const courses = useMemo(() => getCourses(), []);
+  const [courses, setCourses] = useState<Course[]>([]);
+  const [loading, setLoading] = useState(false);
   const user = useAuthStore((s) => s.user);
-  const progress = useMemo(() => {
-    if (user?.role === "student" && user?._id) {
-      return getAllStudentProgress(user._id);
-    }
-    return [];
-  }, [user]);
   const navigate = useNavigate();
 
-  const getCourseProgress = (courseId: string): number => {
-    const courseProgress = progress.find(p => p.courseId === courseId);
-    if (!courseProgress) return 0;
-    const course = courses.find(c => c.id === courseId);
-    if (!course) return 0;
-    return (courseProgress.completedLessons.length / course.lessons.length) * 100;
-  };
+  useEffect(() => {
+    const fetchCourses = async () => {
+      try {
+        setLoading(true);
+        const coursesData = await courseService.getAllCourse();
+        setCourses(coursesData);
+      } catch (e: unknown) {
+        if (axios.isAxiosError(e)) {
+          const msg =
+            (e.response?.data as { message?: string })?.message ??
+            e.response?.statusText ??
+            "Không thể tải danh sách khóa học";
+          toast.error(String(msg));
+        } else {
+          toast.error("Không thể tải danh sách khóa học");
+        }
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchCourses();
+  }, []);
 
   return (
     <Box>
@@ -48,47 +61,50 @@ export default function Dashboard() {
           : 'Bắt đầu hành trình học tiếng Anh của bạn'}
       </Typography>
 
-      <Grid container spacing={3} sx={{ mt: 2 }}>
-        {courses.map((course) => {
-          const progressPercent = getCourseProgress(course.id);
-          return (
-            // @ts-expect-error - MUI v7 Grid still works with item prop
-            <Grid item xs={12} md={6} key={course.id}>
-              <Card>
-                <CardContent>
-                  <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
-                    <MenuBookIcon sx={{ fontSize: 40, color: 'primary.main', mr: 2 }} />
-                    <Box>
-                      <Typography variant="h5">{course.name}</Typography>
-                      <Typography variant="body2" color="text.secondary">
-                        {course.code}
-                      </Typography>
-                    </Box>
-                  </Box>
-                  <Typography variant="body2" paragraph>
-                    {course.description}
-                  </Typography>
-                  {user?.role === 'student' && (
-                    <Box sx={{ mb: 2 }}>
-                      <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 1 }}>
-                        <Typography variant="body2">Tiến độ</Typography>
-                        <Typography variant="body2">{Math.round(progressPercent)}%</Typography>
+      {loading ? (
+        <Box sx={{ display: "flex", justifyContent: "center", p: 4 }}>
+          <CircularProgress />
+        </Box>
+      ) : courses.length === 0 ? (
+        <Card>
+          <CardContent>
+            <Typography color="text.secondary" align="center">
+              Chưa có khóa học nào
+            </Typography>
+          </CardContent>
+        </Card>
+      ) : (
+        <Grid container spacing={3} sx={{ mt: 2 }}>
+          {courses.map((course) => {
+            return (
+              // @ts-expect-error - MUI v7 Grid still works with item prop
+              <Grid item xs={12} md={6} key={course._id}>
+                <Card>
+                  <CardContent>
+                    <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
+                      <MenuBookIcon sx={{ fontSize: 40, color: 'primary.main', mr: 2 }} />
+                      <Box>
+                        <Typography variant="h5">{course.name}</Typography>
+                        <Typography variant="body2" color="text.secondary">
+                          {course.code}
+                        </Typography>
                       </Box>
-                      <LinearProgress variant="determinate" value={progressPercent} />
                     </Box>
-                  )}
-                  <Button
-                    variant="contained"
-                    fullWidth
-                    onClick={() => navigate(`/materials?course=${course.id}`)}
-                  >
-                    Xem chi tiết
-                  </Button>
-                </CardContent>
-              </Card>
-            </Grid>
-          );
-        })}
+                    <Typography variant="body2" paragraph>
+                      {course.description}
+                    </Typography>
+                    <Button
+                      variant="contained"
+                      fullWidth
+                      onClick={() => navigate(`/materials?course=${course._id}`)}
+                    >
+                      Xem chi tiết
+                    </Button>
+                  </CardContent>
+                </Card>
+              </Grid>
+            );
+          })}
 
         {/* @ts-expect-error - MUI v7 Grid still works with item prop */}
         <Grid item xs={12} md={4}>
@@ -136,31 +152,8 @@ export default function Dashboard() {
           </Card>
         </Grid>
 
-        {user?.role === 'student' && (
-          // @ts-expect-error - MUI v7 Grid still works with item prop
-          <Grid item xs={12} md={4}>
-            <Card sx={{ height: '100%', bgcolor: 'success.main', color: 'white' }}>
-              <CardContent>
-                <AssessmentIcon sx={{ fontSize: 48, mb: 2 }} />
-                <Typography variant="h6" gutterBottom>
-                  Tiến độ học tập
-                </Typography>
-                <Typography variant="body2" paragraph>
-                  Theo dõi kết quả và sự tiến bộ của bạn
-                </Typography>
-                <Button
-                  variant="contained"
-                  sx={{ bgcolor: 'white', color: 'success.main', '&:hover': { bgcolor: 'grey.100' } }}
-                  fullWidth
-                  onClick={() => navigate('/progress')}
-                >
-                  Xem tiến độ
-                </Button>
-              </CardContent>
-            </Card>
-          </Grid>
-        )}
-      </Grid>
+        </Grid>
+      )}
     </Box>
   );
 }

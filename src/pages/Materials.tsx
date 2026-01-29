@@ -1,4 +1,4 @@
-import { useState, useMemo, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import {
   Box,
@@ -13,6 +13,7 @@ import {
   AccordionDetails,
   Chip,
   Button,
+  CircularProgress,
 } from '@mui/material';
 import {
   ExpandMore as ExpandMoreIcon,
@@ -23,8 +24,11 @@ import {
   PictureAsPdf as PdfIcon,
   Link as LinkIcon,
 } from '@mui/icons-material';
-import { getCourses, getCourse } from '../types old/storage';
-import type { Course, Lesson } from '../types old';
+import axios from 'axios';
+import { courseService } from '../services/course.service';
+import { lessonService } from '../services/lesson.service';
+import { toast } from '../utils/toast';
+import type { Course, Lesson } from '../types';
 
 interface TabPanelProps {
   children?: React.ReactNode;
@@ -43,39 +47,91 @@ function TabPanel(props: TabPanelProps) {
 
 export default function Materials() {
   const [searchParams] = useSearchParams();
-  const courseId = searchParams.get('course');
-  const [courses] = useState<Course[]>(() => getCourses());
-  const initialCourse = useMemo(() => {
-    const loadedCourses = getCourses();
-    if (courseId) {
-      const course = getCourse(courseId);
-      return course || (loadedCourses.length > 0 ? loadedCourses[0] : null);
-    }
-    return loadedCourses.length > 0 ? loadedCourses[0] : null;
-  }, [courseId]);
-  
-  const [selectedCourse, setSelectedCourse] = useState<Course | null>(initialCourse);
+  const courseIdFromUrl = searchParams.get('course');
+  const [courses, setCourses] = useState<Course[]>([]);
+  const [lessons, setLessons] = useState<Lesson[]>([]);
+  const [loadingCourses, setLoadingCourses] = useState(false);
+  const [loadingLessons, setLoadingLessons] = useState(false);
+  const [selectedCourse, setSelectedCourse] = useState<Course | null>(null);
   const [tabValue, setTabValue] = useState(0);
-  
-  // Update when courseId changes - this is necessary for URL parameter changes
+
   useEffect(() => {
-    if (courseId) {
-      const course = getCourse(courseId);
-      if (course) {
-        setSelectedCourse(course);
+    const fetchCourses = async () => {
+      try {
+        setLoadingCourses(true);
+        const data = await courseService.getAllCourse();
+        setCourses(data);
+      } catch (e: unknown) {
+        if (axios.isAxiosError(e)) {
+          const msg =
+            (e.response?.data as { message?: string })?.message ??
+            e.response?.statusText ??
+            'Không thể tải danh sách khóa học';
+          toast.error(String(msg));
+        } else {
+          toast.error('Không thể tải danh sách khóa học');
+        }
+      } finally {
+        setLoadingCourses(false);
       }
-    } else if (courses.length > 0 && !selectedCourse) {
-      setSelectedCourse(courses[0]);
+    };
+    fetchCourses();
+  }, []);
+
+  useEffect(() => {
+    if (courses.length === 0) return;
+    if (courseIdFromUrl) {
+      const found = courses.find((c) => c._id === courseIdFromUrl);
+      if (found) {
+        setSelectedCourse(found);
+      } else {
+        courseService.getCourseById(courseIdFromUrl).then((course) => {
+          setSelectedCourse(course);
+        }).catch(() => {
+          setSelectedCourse(courses[0]);
+        });
+      }
+    } else {
+      setSelectedCourse((prev) => prev ?? courses[0]);
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [courseId]);
+  }, [courseIdFromUrl, courses]);
+
+  useEffect(() => {
+    if (!selectedCourse?._id) {
+      setLessons([]);
+      return;
+    }
+    let cancelled = false;
+    setLoadingLessons(true);
+    lessonService.getLessonByCourseId(selectedCourse._id).then((data) => {
+      if (!cancelled) {
+        setLessons(data);
+      }
+    }).catch((e: unknown) => {
+      if (!cancelled) {
+        if (axios.isAxiosError(e)) {
+          const msg =
+            (e.response?.data as { message?: string })?.message ??
+            e.response?.statusText ??
+            'Không thể tải bài học';
+          toast.error(String(msg));
+        } else {
+          toast.error('Không thể tải bài học');
+        }
+        setLessons([]);
+      }
+    }).finally(() => {
+      if (!cancelled) setLoadingLessons(false);
+    });
+    return () => { cancelled = true; };
+  }, [selectedCourse?._id]);
 
   const handleTabChange = (_event: React.SyntheticEvent, newValue: number) => {
     setTabValue(newValue);
   };
 
   const renderLessonContent = (lesson: Lesson) => (
-    <Accordion key={lesson.id}>
+    <Accordion key={lesson._id}>
       <AccordionSummary expandIcon={<ExpandMoreIcon />}>
         <Typography variant="h6">{lesson.title}</Typography>
       </AccordionSummary>
@@ -90,7 +146,7 @@ export default function Materials() {
           {lesson.slides && lesson.slides.length > 0 ? (
             <List>
               {lesson.slides.map((slide) => (
-                <Card key={slide.id} sx={{ mb: 2 }}>
+                <Card key={slide._id} sx={{ mb: 2 }}>
                   <CardContent>
                     <Box sx={{ display: 'flex', alignItems: 'center', mb: 1 }}>
                       <SlideshowIcon sx={{ mr: 1, color: 'primary.main' }} />
@@ -98,11 +154,12 @@ export default function Materials() {
                     </Box>
                     <Button
                       variant="outlined"
-                      href={slide.fileUrl}
+                      href={slide.url}
                       target="_blank"
+                      rel="noopener noreferrer"
                       sx={{ mt: 1 }}
                     >
-                      Tải PowerPoint
+                      Xem slide
                     </Button>
                   </CardContent>
                 </Card>
@@ -117,18 +174,18 @@ export default function Materials() {
           {lesson.videos && lesson.videos.length > 0 ? (
             <List>
               {lesson.videos.map((video) => (
-                <Card key={video.id} sx={{ mb: 2 }}>
+                <Card key={video._id} sx={{ mb: 2 }}>
                   <CardContent>
                     <Box sx={{ display: 'flex', alignItems: 'center', mb: 1 }}>
                       <VideoLibraryIcon sx={{ mr: 1, color: 'primary.main' }} />
                       <Typography variant="h6">{video.title}</Typography>
-                      <Chip label={`${Math.floor(video.duration / 60)}:${video.duration % 60}`} size="small" sx={{ ml: 2 }} />
                     </Box>
                     <Button
                       variant="outlined"
                       startIcon={<PlayArrowIcon />}
                       href={video.url}
                       target="_blank"
+                      rel="noopener noreferrer"
                       sx={{ mt: 1 }}
                     >
                       Xem video
@@ -145,29 +202,33 @@ export default function Materials() {
         <TabPanel value={tabValue} index={2}>
           {lesson.references && lesson.references.length > 0 ? (
             <List>
-              {lesson.references.map((ref) => (
-                <Card key={ref.id} sx={{ mb: 2 }}>
-                  <CardContent>
-                    <Box sx={{ display: 'flex', alignItems: 'center', mb: 1 }}>
-                      {ref.type === 'pdf' ? (
-                        <PdfIcon sx={{ mr: 1, color: 'error.main' }} />
-                      ) : (
-                        <LinkIcon sx={{ mr: 1, color: 'primary.main' }} />
-                      )}
-                      <Typography variant="h6">{ref.title}</Typography>
-                      <Chip label={ref.type.toUpperCase()} size="small" sx={{ ml: 2 }} />
-                    </Box>
-                    <Button
-                      variant="outlined"
-                      href={ref.url}
-                      target="_blank"
-                      sx={{ mt: 1 }}
-                    >
-                      Mở tài liệu
-                    </Button>
-                  </CardContent>
-                </Card>
-              ))}
+              {lesson.references.map((ref) => {
+                const isPdf = /\.pdf$/i.test(ref.url);
+                return (
+                  <Card key={ref._id} sx={{ mb: 2 }}>
+                    <CardContent>
+                      <Box sx={{ display: 'flex', alignItems: 'center', mb: 1 }}>
+                        {isPdf ? (
+                          <PdfIcon sx={{ mr: 1, color: 'error.main' }} />
+                        ) : (
+                          <LinkIcon sx={{ mr: 1, color: 'primary.main' }} />
+                        )}
+                        <Typography variant="h6">{ref.title}</Typography>
+                        {isPdf && <Chip label="PDF" size="small" sx={{ ml: 2 }} />}
+                      </Box>
+                      <Button
+                        variant="outlined"
+                        href={ref.url}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        sx={{ mt: 1 }}
+                      >
+                        Mở tài liệu
+                      </Button>
+                    </CardContent>
+                  </Card>
+                );
+              })}
             </List>
           ) : (
             <Typography color="text.secondary">Chưa có tài liệu tham khảo cho bài học này</Typography>
@@ -177,13 +238,26 @@ export default function Materials() {
     </Accordion>
   );
 
+  if (loadingCourses || (!selectedCourse && courses.length === 0)) {
+    return (
+      <Box>
+        <Typography variant="h4" gutterBottom>
+          Tài liệu học tập
+        </Typography>
+        <Box sx={{ display: 'flex', justifyContent: 'center', p: 4 }}>
+          <CircularProgress />
+        </Box>
+      </Box>
+    );
+  }
+
   if (!selectedCourse) {
     return (
       <Box>
         <Typography variant="h4" gutterBottom>
           Tài liệu học tập
         </Typography>
-        <Typography color="text.secondary">Đang tải...</Typography>
+        <Typography color="text.secondary">Chưa có khóa học nào.</Typography>
       </Box>
     );
   }
@@ -203,10 +277,10 @@ export default function Materials() {
           <Box>
             {courses.map((course) => (
               <Chip
-                key={course.id}
+                key={course._id}
                 label={course.name}
                 onClick={() => setSelectedCourse(course)}
-                color={selectedCourse.id === course.id ? 'primary' : 'default'}
+                color={selectedCourse._id === course._id ? 'primary' : 'default'}
                 sx={{ mr: 1 }}
               />
             ))}
@@ -217,7 +291,15 @@ export default function Materials() {
       <Typography variant="h6" gutterBottom sx={{ mt: 3 }}>
         Danh sách bài học
       </Typography>
-      {selectedCourse.lessons.map((lesson) => renderLessonContent(lesson))}
+      {loadingLessons ? (
+        <Box sx={{ display: 'flex', justifyContent: 'center', py: 3 }}>
+          <CircularProgress />
+        </Box>
+      ) : lessons.length === 0 ? (
+        <Typography color="text.secondary">Chưa có bài học nào trong khóa này.</Typography>
+      ) : (
+        lessons.map((lesson) => renderLessonContent(lesson))
+      )}
     </Box>
   );
 }

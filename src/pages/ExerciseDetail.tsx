@@ -27,6 +27,7 @@ import { ArrowBack as ArrowBackIcon, CheckCircle as CheckCircleIcon } from '@mui
 import { getExercise, getUser, saveExerciseAttempt, getExerciseAttempts } from '../types old/storage';
 import type { Exercise, Question, QuestionType, ExerciseAttempt } from '../types old';
 import { sectionTypeMap, renderQuestionMedia, renderQuestionWordBank, renderSectionMedia, renderSectionWordBank, formatAnswer, calculateScore } from '../utils/questionHelpers';
+import { toast } from '../utils/toast';
 
 export default function ExerciseDetail() {
   const { id } = useParams<{ id: string }>();
@@ -203,7 +204,7 @@ export default function ExerciseDetail() {
   const startRecording = async (questionId: string) => {
     try {
       if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
-        alert('Trình duyệt không hỗ trợ ghi âm.');
+        toast.error('Trình duyệt không hỗ trợ ghi âm.');
         return;
       }
 
@@ -229,7 +230,7 @@ export default function ExerciseDetail() {
       setRecordingStatus((prev) => ({ ...prev, [questionId]: 'recording' }));
     } catch (error) {
       console.error(error);
-      alert('Không thể bắt đầu ghi âm. Vui lòng kiểm tra quyền micro.');
+      toast.error('Không thể bắt đầu ghi âm. Vui lòng kiểm tra quyền micro.');
     }
   };
 

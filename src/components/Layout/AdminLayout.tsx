@@ -45,16 +45,17 @@ import axios from "axios";
 import { useAuthStore } from "../../store/auth.store";
 import { userService } from "../../services/user.service";
 import { authService } from "../../services/auth.service";
+import { toast } from "../../utils/toast";
 import type { User } from "../../types";
 
 const drawerWidth = 260;
 
 const adminMenuItems = [
   { text: "Dashboard", icon: <DashboardIcon />, path: "/admin" },
-  { text: "Quản lý Nội dung", icon: <SchoolIcon />, path: "/admin/content" },
-  { text: "Quản lý Bài tập", icon: <AssignmentIcon />, path: "/admin/exercises" },
-  { text: "Quản lý Quiz", icon: <QuizIcon />, path: "/admin/quizzes" },
-  { text: "Quản lý Sinh viên", icon: <PeopleIcon />, path: "/admin/students" },
+  { text: "Quản lý khóa học", icon: <SchoolIcon />, path: "/admin/content" },
+  { text: "Quản lý bài tập", icon: <AssignmentIcon />, path: "/admin/exercises" },
+  { text: "Quản lý quiz", icon: <QuizIcon />, path: "/admin/quizzes" },
+  { text: "Quản lý sinh viên", icon: <PeopleIcon />, path: "/admin/students" },
   { text: "Báo cáo thống kê", icon: <BarChartIcon />, path: "/admin/statistics" },
 ];
 
@@ -149,6 +150,7 @@ export default function AdminLayout() {
     } catch (e) {
       if (axios.isAxiosError(e)) {
         const msg =
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
           (e.response?.data as any)?.message ??
           e.response?.statusText ??
           "Cập nhật thông tin thất bại";
@@ -196,10 +198,11 @@ export default function AdminLayout() {
       setChangePasswordOpen(false);
       setPasswordData({ oldPassword: "", newPassword: "", confirmPassword: "" });
       setPasswordError("");
-      alert("Đổi mật khẩu thành công!");
+      toast.success("Đổi mật khẩu thành công!");
     } catch (e) {
       if (axios.isAxiosError(e)) {
         const msg =
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
           (e.response?.data as any)?.message ??
           e.response?.statusText ??
           "Đổi mật khẩu thất bại";
@@ -220,6 +223,7 @@ export default function AdminLayout() {
   const handleLogout = () => {
     handleMenuClose();
     logout();
+    toast.success("Đăng xuất thành công!");
     navigate("/login");
   };
 

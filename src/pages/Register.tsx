@@ -7,7 +7,6 @@ import {
   Button,
   Typography,
   Box,
-  Alert,
   InputAdornment,
   IconButton,
 } from '@mui/material';
@@ -18,6 +17,7 @@ import {
 } from '@mui/icons-material';
 import axios from "axios";
 import { authService } from "../services/auth.service";
+import { toast } from "../utils/toast";
 import type { RegisterDto } from "../types/dto";
 
 export default function Register() {
@@ -28,21 +28,16 @@ export default function Register() {
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [loading, setLoading] = useState(false);
-  const [error, setError] = useState("");
-  const [success, setSuccess] = useState(false);
   const navigate = useNavigate();
 
   const handleRegister = async () => {
-    setError("");
-    setSuccess(false);
-
     if (!username || !email || !password || !confirmPassword) {
-      setError("Vui lòng điền đầy đủ thông tin");
+      toast.error("Vui lòng điền đầy đủ thông tin");
       return;
     }
 
     if (password !== confirmPassword) {
-      setError("Mật khẩu xác nhận không khớp");
+      toast.error("Mật khẩu xác nhận không khớp");
       return;
     }
 
@@ -55,19 +50,19 @@ export default function Register() {
     try {
       setLoading(true);
       await authService.register(dto);
-      setSuccess(true);
+      toast.success("Đăng ký thành công! Đang chuyển đến trang đăng nhập...");
       setTimeout(() => {
         navigate('/login');
       }, 1500);
     } catch (e) {
       if (axios.isAxiosError(e)) {
         const msg =
-          (e.response?.data as any)?.message ??
+          (e.response?.data as { message?: string })?.message ??
           e.response?.statusText ??
           "Đăng ký thất bại";
-        setError(String(msg));
+        toast.error(String(msg));
       } else {
-        setError("Đăng ký thất bại");
+        toast.error("Đăng ký thất bại");
       }
     } finally {
       setLoading(false);
@@ -98,17 +93,6 @@ export default function Register() {
             </Typography>
           </Box>
 
-          {error && (
-            <Alert severity="error" sx={{ mb: 2 }} onClose={() => setError('')}>
-              {error}
-            </Alert>
-          )}
-
-          {success && (
-            <Alert severity="success" sx={{ mb: 2 }}>
-              Đăng ký thành công! Đang chuyển đến trang đăng nhập...
-            </Alert>
-          )}
 
           <Box component="form" sx={{ mt: 1 }}>
             <TextField

@@ -7,7 +7,6 @@ import {
   Button,
   Typography,
   Box,
-  Alert,
   InputAdornment,
   IconButton,
 } from '@mui/material';
@@ -19,37 +18,37 @@ import {
 import axios from "axios";
 import { authService } from "../services/auth.service";
 import { useAuthStore } from "../store/auth.store";
+import { toast } from "../utils/toast";
 
 export default function Login() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
-  const [error, setError] = useState("");
   const navigate = useNavigate();
   const setAuth = useAuthStore((s) => s.setAuth);
 
   const handleLogin = async () => {
     if (!email || !password) {
-      setError("Vui lòng điền đầy đủ thông tin");
+      toast.error("Vui lòng điền đầy đủ thông tin");
       return;
     }
 
     try {
       setLoading(true);
-      setError("");
       const { user, access_token } = await authService.login(email, password);
       setAuth({ user, accessToken: access_token });
+      toast.success("Đăng nhập thành công!");
       navigate('/');
     } catch (e) {
       if (axios.isAxiosError(e)) {
         const msg =
-          (e.response?.data as any)?.message ??
+          (e.response?.data as { message?: string })?.message ??
           e.response?.statusText ??
           "Đăng nhập thất bại";
-        setError(String(msg));
+        toast.error(String(msg));
       } else {
-        setError("Đăng nhập thất bại");
+        toast.error("Đăng nhập thất bại");
       }
     } finally {
       setLoading(false);
@@ -80,11 +79,6 @@ export default function Login() {
             </Typography>
           </Box>
 
-          {error && (
-            <Alert severity="error" sx={{ mb: 2 }} onClose={() => setError('')}>
-              {error}
-            </Alert>
-          )}
 
           <Box component="form" sx={{ mt: 1 }}>
             <TextField

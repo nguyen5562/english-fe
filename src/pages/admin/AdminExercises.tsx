@@ -17,8 +17,11 @@ import {
   Assignment as AssignmentIcon,
 } from '@mui/icons-material';
 import { getExercises, getCourses, saveExercises } from '../../types old/storage';
+import { useConfirm } from '../../components/ConfirmDialog';
+import { toast } from '../../utils/toast';
 
 export default function AdminExercises() {
+  const { confirm, ConfirmDialog } = useConfirm();
   const [exercises, setExercises] = useState(() => getExercises());
   const courses = useMemo(() => getCourses(), []);
 
@@ -26,11 +29,18 @@ export default function AdminExercises() {
     setExercises(getExercises());
   };
 
-  const handleDelete = (id: string) => {
-    if (confirm('Bạn có chắc chắn muốn xóa bài tập này?')) {
+  const handleDelete = async (id: string) => {
+    const confirmed = await confirm({
+      title: "Xác nhận xóa bài tập",
+      message: "Bạn có chắc chắn muốn xóa bài tập này?",
+      confirmText: "Xóa",
+      confirmColor: "error",
+    });
+    if (confirmed) {
       const updated = exercises.filter(e => e.id !== id);
       saveExercises(updated);
       refreshExercises();
+      toast.success("Đã xóa bài tập thành công");
     }
   };
 
@@ -41,7 +51,7 @@ export default function AdminExercises() {
         <Button
           variant="contained"
           startIcon={<AddIcon />}
-          onClick={() => alert('Tính năng thêm bài tập sẽ được phát triển sau')}
+          onClick={() => toast.info('Tính năng thêm bài tập sẽ được phát triển sau')}
         >
           Thêm Bài tập
         </Button>
@@ -73,7 +83,7 @@ export default function AdminExercises() {
                     <Box>
                       <IconButton
                         size="small"
-                        onClick={() => alert('Tính năng sửa sẽ được phát triển sau')}
+                        onClick={() => toast.info('Tính năng sửa sẽ được phát triển sau')}
                       >
                         <EditIcon fontSize="small" />
                       </IconButton>
@@ -107,6 +117,7 @@ export default function AdminExercises() {
           ))}
         </Grid>
       )}
+      {ConfirmDialog}
     </Box>
   );
 }
