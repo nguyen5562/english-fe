@@ -20,6 +20,8 @@ import AdminExercises from './pages/admin/AdminExercises';
 import AdminQuizzes from './pages/admin/AdminQuizzes';
 import AdminStudents from './pages/admin/AdminStudents';
 import { useAuthStore } from './store/auth.store';
+import FilePickerWithSvar from './pages/FilePickerWithSvar';
+import FileManagerPopup from './pages/FileManagerPopup';
 
 // Protected Route component
 function ProtectedRoute({ children }: { children: React.ReactNode }) {
@@ -47,6 +49,8 @@ function App() {
         <Routes>
           <Route path="/login" element={<Login />} />
           <Route path="/register" element={<Register />} />
+          <Route path="/file-picker" element={<FilePickerWithSvar />} />
+          <Route path="/file-manager-popup" element={<FileManagerPopup />} />
           <Route
             path="/"
             element={
