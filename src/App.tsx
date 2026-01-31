@@ -18,10 +18,13 @@ import AdminLayout from './components/Layout/AdminLayout';
 import AdminDashboard from './pages/admin/AdminDashboard';
 import AdminContent from './pages/admin/AdminContent';
 import AdminExercises from './pages/admin/AdminExercises';
+import AdminExerciseEdit from './pages/admin/AdminExerciseEdit';
+import AdminSectionEdit from './pages/admin/AdminSectionEdit';
 import AdminQuizzes from './pages/admin/AdminQuizzes';
+import AdminQuizEdit from './pages/admin/AdminQuizEdit';
+import AdminQuizSectionEdit from './pages/admin/AdminQuizSectionEdit';
 import AdminStudents from './pages/admin/AdminStudents';
 import { useAuthStore } from './store/auth.store';
-import FilePickerWithSvar from './pages/FilePickerWithSvar';
 import FileManagerPopup from './pages/FileManagerPopup';
 
 // Protected Route component
@@ -51,7 +54,6 @@ function App() {
         <Routes>
           <Route path="/login" element={<Login />} />
           <Route path="/register" element={<Register />} />
-          <Route path="/file-picker" element={<FilePickerWithSvar />} />
           <Route path="/file-manager-popup" element={<FileManagerPopup />} />
           <Route
             path="/"
@@ -63,10 +65,10 @@ function App() {
           >
             <Route index element={<Dashboard />} />
             <Route path="materials" element={<Materials />} />
-            {/* <Route path="exercises" element={<Exercises />} /> */}
-            {/* <Route path="exercises/:id" element={<ExerciseDetail />} /> */}
+            <Route path="exercises" element={<Exercises />} />
+            <Route path="exercises/:slug" element={<ExerciseDetail />} />
             <Route path="quizzes" element={<Quizzes />} />
-            <Route path="quizzes/:id" element={<QuizDetail />} />
+            <Route path="quizzes/:slug" element={<QuizDetail />} />
             <Route path="progress" element={<Progress />} />
             <Route path="statistics" element={<Statistics />} />
           </Route>
@@ -81,7 +83,11 @@ function App() {
             <Route index element={<AdminDashboard />} />
             <Route path="content" element={<AdminContent />} />
             <Route path="exercises" element={<AdminExercises />} />
-            {/* <Route path="quizzes" element={<AdminQuizzes />} /> */}
+            <Route path="exercises/:slug" element={<AdminExerciseEdit />} />
+            <Route path="exercises/:exerciseSlug/sections/:sectionId" element={<AdminSectionEdit />} />
+            <Route path="quizzes" element={<AdminQuizzes />} />
+            <Route path="quizzes/:slug" element={<AdminQuizEdit />} />
+            <Route path="quizzes/:quizSlug/sections/:sectionId" element={<AdminQuizSectionEdit />} />
             <Route path="students" element={<AdminStudents />} />
             <Route path="statistics" element={<Statistics />} />
             <Route path="content" element={<AdminContent />} />

@@ -26,6 +26,7 @@ import { exerciseService } from "../services/exercise.service";
 import { courseService } from "../services/course.service";
 import { exerciseAttemptService } from "../services/exercise-attempt.service";
 import { toast } from "../utils/toast";
+import { buildSlugId } from "../utils/slug";
 import type { Exercise, Course, ExerciseAttempt } from "../types";
 
 export default function Exercises() {
@@ -289,7 +290,7 @@ export default function Exercises() {
                         <ListItemButton
                           key={section._id}
                           onClick={() =>
-                            navigate(`/exercises/${exercise._id}?section=${idx}`)
+                            navigate(`/exercises/${buildSlugId(exercise.title ?? "", exercise._id)}?section=${idx}`)
                           }
                           sx={{
                             display: "flex",

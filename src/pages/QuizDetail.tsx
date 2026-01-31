@@ -1,5 +1,5 @@
-import { useEffect, useState } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
+import { useEffect, useState, useRef } from "react";
+import { useParams, useNavigate } from "react-router-dom";
 import {
   Box,
   Typography,
@@ -20,203 +20,349 @@ import {
   FormControl,
   InputLabel,
   TextField,
-} from '@mui/material';
-import { ArrowBack as ArrowBackIcon, CheckCircle as CheckCircleIcon, Timer as TimerIcon } from '@mui/icons-material';
-import { getQuiz, getUser, saveQuizAttempt } from '../types old/storage';
-import type { Quiz, Question, Section } from '../types old';
-import { sectionTypeMap, renderSectionMedia, renderSectionWordBank, calculateScore, renderMultipleChoice, renderTextInput, renderQuestionMedia, renderQuestionWordBank } from '../utils/questionHelpers';
+  FormControlLabel,
+  FormLabel,
+  Radio,
+  RadioGroup,
+} from "@mui/material";
+import {
+  ArrowBack as ArrowBackIcon,
+  CheckCircle as CheckCircleIcon,
+  Timer as TimerIcon,
+} from "@mui/icons-material";
+import axios from "axios";
+import { quizService } from "../services/quiz.service";
+import { quizAttemptService } from "../services/quiz-attempt.service";
+import { useAuthStore } from "../store/auth.store";
+import type { Quiz, Question, QuestionType, Section } from "../types";
+import {
+  sectionTypeMap,
+  renderSectionMedia,
+  renderSectionWordBank,
+  calculateScore,
+  renderQuestionMedia,
+  renderQuestionWordBank,
+} from "../utils/questionHelpers";
+import { toast } from "../utils/toast";
+import { parseSlugId } from "../utils/slug";
 
 export default function QuizDetail() {
-  const { id } = useParams<{ id: string }>();
+  const { slug } = useParams<{ slug: string }>();
+  const id = parseSlugId(slug);
   const navigate = useNavigate();
+  const user = useAuthStore((s) => s.user);
+  const userId = user?._id;
+
   const [quiz, setQuiz] = useState<Quiz | null>(null);
+  const [loading, setLoading] = useState(true);
   const [currentSectionIndex, setCurrentSectionIndex] = useState(0);
   const [answers, setAnswers] = useState<Record<string, string | string[]>>({});
   const [showResult, setShowResult] = useState(false);
-  const [result, setResult] = useState<{ score: number; maxScore: number; percentage: number; passed: boolean } | null>(null);
-  const [timeRemaining, setTimeRemaining] = useState<number>(0); // in seconds
+  const [result, setResult] = useState<{
+    score: number;
+    maxScore: number;
+    percentage: number;
+  } | null>(null);
+  const [timeRemaining, setTimeRemaining] = useState<number>(0);
   const [startTime, setStartTime] = useState<Date | null>(null);
-  const user = getUser();
+  const [submitting, setSubmitting] = useState(false);
+  const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
   useEffect(() => {
-    if (id) {
-      const loadedQuiz = getQuiz(id);
-      if (loadedQuiz) {
-        setQuiz(loadedQuiz);
-        setTimeRemaining(loadedQuiz.timeLimit * 60); // Convert minutes to seconds
-        setStartTime(new Date());
-        // Initialize answers for all questions in all sections
-        const initialAnswers: Record<string, string | string[]> = {};
-        loadedQuiz.sections.forEach(section => {
-          section.questions.forEach(q => {
-            const effectiveType = q.type ?? section.questionType;
-            if (effectiveType === 'fill-blank') {
-              initialAnswers[q.id] = [];
-            } else {
-              initialAnswers[q.id] = '';
-            }
-          });
-        });
-        setAnswers(initialAnswers);
-      }
+    if (!id) {
+      setQuiz(null);
+      setLoading(false);
+      return;
     }
+    let cancelled = false;
+    setLoading(true);
+    quizService
+      .getQuizById(id)
+      .then((data) => {
+        if (!cancelled) {
+          setQuiz(data);
+          setTimeRemaining((data.timeLimit ?? 60) * 60);
+          setStartTime(new Date());
+          const initial: Record<string, string | string[]> = {};
+          (data.sections ?? []).forEach((section) => {
+            (section.questions ?? []).forEach((q) => {
+              initial[q._id] = (q.correctAnswer?.length ?? 0) > 0 ? [] : "";
+            });
+          });
+          setAnswers(initial);
+        }
+      })
+      .catch((e: unknown) => {
+        if (!cancelled && axios.isAxiosError(e)) {
+          const msg =
+            (e.response?.data as { message?: string })?.message ??
+            e.response?.statusText ??
+            "Không thể tải quiz";
+          toast.error(String(msg));
+        }
+      })
+      .finally(() => {
+        if (!cancelled) setLoading(false);
+      });
+    return () => {
+      cancelled = true;
+    };
   }, [id]);
 
   useEffect(() => {
-    if (timeRemaining > 0 && !showResult) {
-      const timer = setInterval(() => {
-        setTimeRemaining(prev => {
-          if (prev <= 1) {
-            handleSubmit();
-            return 0;
+    if (!quiz || showResult || timeRemaining <= 0) return;
+    timerRef.current = setInterval(() => {
+      setTimeRemaining((prev) => {
+        if (prev <= 1) {
+          if (timerRef.current) {
+            clearInterval(timerRef.current);
+            timerRef.current = null;
           }
-          return prev - 1;
-        });
-      }, 1000);
-      return () => clearInterval(timer);
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [timeRemaining, showResult]);
+          handleSubmitRef.current?.();
+          return 0;
+        }
+        return prev - 1;
+      });
+    }, 1000);
+    return () => {
+      if (timerRef.current) {
+        clearInterval(timerRef.current);
+        timerRef.current = null;
+      }
+    };
+  }, [quiz, showResult]);
 
-  if (!quiz) {
-    return (
-      <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: 400 }}>
-        <CircularProgress />
-      </Box>
-    );
-  }
+  const handleSubmitRef = useRef<() => void>(() => {});
 
-  const currentSection = quiz.sections[currentSectionIndex];
-  const allQuestions = quiz.sections.flatMap(section => section.questions);
+  const allQuestions = (quiz?.sections ?? []).flatMap(
+    (s) => s.questions ?? []
+  ) as Question[];
+  const currentSection = quiz?.sections?.[currentSectionIndex];
   const totalQuestions = allQuestions.length;
-  const questionsCompleted = quiz.sections
+  const questionsCompleted = (quiz?.sections ?? [])
     .slice(0, currentSectionIndex)
-    .reduce((sum, section) => sum + section.questions.length, 0);
-  const progress = ((questionsCompleted + currentSection.questions.length) / totalQuestions) * 100;
-  const minutes = Math.floor(timeRemaining / 60);
-  const seconds = timeRemaining % 60;
+    .reduce((sum, s) => sum + (s.questions?.length ?? 0), 0);
+  const progress =
+    totalQuestions > 0
+      ? ((questionsCompleted + (currentSection?.questions?.length ?? 0)) /
+          totalQuestions) *
+        100
+      : 0;
 
   const handleAnswerChange = (questionId: string, value: string | string[]) => {
-    setAnswers(prev => ({ ...prev, [questionId]: value }));
+    setAnswers((prev) => ({ ...prev, [questionId]: value }));
   };
 
+  const handleSubmit = async () => {
+    if (!quiz || !userId || submitting) return;
+    setSubmitting(true);
+    const answersPayload = allQuestions.map((q) => {
+      const a = answers[q._id];
+      const arr = Array.isArray(a) ? a : a != null ? [String(a)] : [];
+      return { questionId: q._id, answer: arr };
+    });
+
+    const { score: totalScore, maxScore } = calculateScore(
+      allQuestions,
+      answers
+    );
+    const percentage = maxScore > 0 ? (totalScore / maxScore) * 100 : 0;
+
+    try {
+      const attempt = await quizAttemptService.createQuizAttempt({
+        quizId: quiz._id,
+        userId,
+      });
+      await quizAttemptService.submitQuiz(attempt._id, {
+        answers: answersPayload,
+      });
+      setResult({ score: totalScore, maxScore, percentage });
+      setShowResult(true);
+    } catch (e: unknown) {
+      if (axios.isAxiosError(e)) {
+        const msg =
+          (e.response?.data as { message?: string })?.message ??
+          e.response?.statusText ??
+          "Không thể nộp bài";
+        toast.error(String(msg));
+      } else {
+        toast.error("Không thể nộp bài");
+      }
+    } finally {
+      setSubmitting(false);
+    }
+  };
+
+  handleSubmitRef.current = handleSubmit;
+
   const handleNext = () => {
-    // Chuyển sang section tiếp theo
-    if (currentSectionIndex < quiz.sections.length - 1) {
-      setCurrentSectionIndex(prev => prev + 1);
+    if (!quiz) return;
+    if (currentSectionIndex < (quiz.sections?.length ?? 1) - 1) {
+      setCurrentSectionIndex((prev) => prev + 1);
     } else {
-      // Đã làm hết tất cả các phần, nộp bài
       handleSubmit();
     }
   };
 
-  const handlePrevious = () => {
-    // Chuyển về section trước
-    if (currentSectionIndex > 0) {
-      setCurrentSectionIndex(prev => prev - 1);
-    }
-  };
+  const renderQuestion = (
+    question: Question,
+    section: Section,
+    index: number
+  ) => {
+    const effectiveType: QuestionType | undefined =
+      (question as Question & { type?: QuestionType }).type ??
+      section.questionType;
+    const answerValue = answers[question._id] ?? "";
+    const value = Array.isArray(answerValue) ? "" : (answerValue as string);
+    const disabled = showResult || submitting;
 
-  const handleSubmit = () => {
-    const { score: totalScore, maxScore } = calculateScore(allQuestions, answers);
-    const percentage = (totalScore / maxScore) * 100;
-    const passed = percentage >= quiz.passingScore;
-    const timeSpent = startTime ? Math.round((new Date().getTime() - startTime.getTime()) / 60000) : 0;
+    const questionNumber = (
+      <Typography variant="subtitle1" sx={{ mb: 1, fontWeight: "bold" }}>
+        Câu {index + 1}
+      </Typography>
+    );
 
-    setResult({ score: totalScore, maxScore, percentage, passed });
-    setShowResult(true);
+    const renderMultipleChoice = () => (
+      <Box sx={{ mb: 3 }}>
+        {questionNumber}
+        {renderQuestionMedia(question)}
+        {renderQuestionWordBank(question)}
+        <FormControl component="fieldset" fullWidth>
+          <FormLabel component="legend">{question.title}</FormLabel>
+          <RadioGroup
+            value={value}
+            onChange={(e) => handleAnswerChange(question._id, e.target.value)}
+          >
+            {(question.options ?? []).map((option, idx) => (
+              <FormControlLabel
+                key={idx}
+                value={option}
+                control={<Radio disabled={disabled} />}
+                label={option}
+              />
+            ))}
+          </RadioGroup>
+        </FormControl>
+      </Box>
+    );
 
-    // Save attempt
-    if (user) {
-      saveQuizAttempt({
-        id: Date.now().toString(),
-        quizId: quiz.id,
-        studentId: user.id,
-        answers: Object.entries(answers).map(([questionId, answer]) => ({
-          questionId,
-          answer: Array.isArray(answer) ? answer : [answer],
-        })),
-        score: totalScore,
-        maxScore,
-        percentage,
-        passed,
-        completedAt: new Date(),
-        timeSpent,
-        currentSectionIndex: currentSectionIndex,
-      });
-    }
-  };
-
-  const renderQuestion = (question: Question, section: Section, index: number) => {
-    const effectiveType = question.type ?? section.questionType;
-    const answerValue = answers[question.id] || '';
-    const value = Array.isArray(answerValue) ? '' : answerValue;
-    const questionNumber = <Typography variant="subtitle1" sx={{ mb: 1, fontWeight: 'bold' }}>Câu {index + 1}</Typography>;
-    
     switch (effectiveType) {
-      case 'multiple-choice':
-      case 'reading-mcq':
-      case 'picture-choice':
+      case "multiple-choice":
+      case "reading-mcq":
+      case "picture-choice":
+        return renderMultipleChoice();
+      case "listening":
         return (
-          <Box key={question.id} sx={{ mb: 3 }}>
-            {questionNumber}
-            {renderQuestionMedia(question)}
-            {renderQuestionWordBank(question)}
-            {renderMultipleChoice(question, value, (v) => handleAnswerChange(question.id, v))}
-          </Box>
-        );
-      case 'listening':
-        return (
-          <Box key={question.id} sx={{ mb: 3 }}>
+          <Box sx={{ mb: 3 }}>
             {questionNumber}
             {renderQuestionMedia(question)}
             {renderQuestionWordBank(question)}
             {question.options && question.options.length > 0
-              ? renderMultipleChoice(question, value, (v) => handleAnswerChange(question.id, v))
-              : renderTextInput(question, value, (v) => handleAnswerChange(question.id, v))
-            }
+              ? (() => {
+                  return (
+                    <FormControl component="fieldset" fullWidth>
+                      <FormLabel component="legend">{question.title}</FormLabel>
+                      <RadioGroup
+                        value={value}
+                        onChange={(e) =>
+                          handleAnswerChange(question._id, e.target.value)
+                        }
+                      >
+                        {(question.options ?? []).map((option, idx) => (
+                          <FormControlLabel
+                            key={idx}
+                            value={option}
+                            control={<Radio disabled={disabled} />}
+                            label={option}
+                          />
+                        ))}
+                      </RadioGroup>
+                    </FormControl>
+                  );
+                })()
+              : (() => (
+                  <>
+                    <Typography variant="body1" gutterBottom>
+                      {question.title}
+                    </Typography>
+                    <TextField
+                      fullWidth
+                      variant="outlined"
+                      value={value}
+                      onChange={(e) =>
+                        handleAnswerChange(question._id, e.target.value)
+                      }
+                      placeholder="Nhập câu trả lời"
+                      disabled={disabled}
+                    />
+                  </>
+                ))()}
           </Box>
         );
-      case 'fill-sentence':
-      case 'word-order':
-      case 'word-bank':
+      case "fill-sentence":
+      case "word-order":
+      case "word-bank":
+      case "writing":
         return (
-          <Box key={question.id} sx={{ mb: 3 }}>
+          <Box sx={{ mb: 3 }}>
             {questionNumber}
             {renderQuestionMedia(question)}
             {renderQuestionWordBank(question)}
-            {renderTextInput(question, value, (v) => handleAnswerChange(question.id, v))}
+            <Typography variant="body1" gutterBottom>
+              {question.title}
+            </Typography>
+            <TextField
+              fullWidth
+              multiline={effectiveType === "writing"}
+              rows={effectiveType === "writing" ? 6 : 2}
+              variant="outlined"
+              value={value}
+              onChange={(e) =>
+                handleAnswerChange(question._id, e.target.value)
+              }
+              placeholder="Nhập câu trả lời"
+              disabled={disabled}
+            />
           </Box>
         );
-      case 'fill-blank': {
-        // Điền từ vào nhiều chỗ trống trong câu
-        const blanks = question.question.split('____');
+      case "fill-blank": {
+        const blanks = question.title.split("____");
         const answerArray = Array.isArray(answerValue)
           ? answerValue
-          : typeof answerValue === 'string' && answerValue
-            ? answerValue.split(',').map((s) => s.trim())
-            : Array(blanks.length - 1).fill('');
-        
+          : typeof answerValue === "string" && answerValue
+            ? answerValue.split(",").map((s) => s.trim())
+            : Array(blanks.length - 1).fill("");
         return (
-          <Box key={question.id} sx={{ mb: 3 }}>
+          <Box sx={{ mb: 3 }}>
             {questionNumber}
             {renderQuestionMedia(question)}
             {renderQuestionWordBank(question)}
-            <Box sx={{ display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: 1 }}>
+            <Box
+              sx={{
+                display: "flex",
+                flexWrap: "wrap",
+                alignItems: "center",
+                gap: 1,
+              }}
+            >
               {blanks.map((part, idx) => (
-                <Box key={idx} sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
+                <Box
+                  key={idx}
+                  sx={{ display: "flex", alignItems: "center", gap: 0.5 }}
+                >
                   <Typography component="span">{part}</Typography>
                   {idx < blanks.length - 1 && (
                     <TextField
                       size="small"
-                      value={answerArray[idx] || ''}
+                      value={answerArray[idx] ?? ""}
                       onChange={(e) => {
-                        const newArray = [...answerArray];
-                        newArray[idx] = e.target.value;
-                        handleAnswerChange(question.id, newArray);
+                        const next = [...answerArray];
+                        next[idx] = e.target.value;
+                        handleAnswerChange(question._id, next);
                       }}
                       sx={{ width: 100 }}
                       placeholder="..."
+                      disabled={disabled}
                     />
                   )}
                 </Box>
@@ -225,44 +371,69 @@ export default function QuizDetail() {
           </Box>
         );
       }
-      case 'paragraph-fill':
+      case "paragraph-fill":
         return (
-          <Box key={question.id} sx={{ mb: 3 }}>
+          <Box sx={{ mb: 3 }}>
             {questionNumber}
             {renderQuestionMedia(question)}
             {renderQuestionWordBank(question)}
             <Typography variant="body2" color="text.secondary" sx={{ mb: 1 }}>
-              Điền từ vào chỗ trống số {question.question}:
+              Điền từ vào chỗ trống:
             </Typography>
-            {renderTextInput(question, value, (v) => handleAnswerChange(question.id, v), {
-              placeholder: 'Nhập từ cần điền',
-            })}
+            <TextField
+              fullWidth
+              size="small"
+              value={value}
+              onChange={(e) =>
+                handleAnswerChange(question._id, e.target.value)
+              }
+              placeholder="Nhập từ cần điền"
+              disabled={disabled}
+            />
           </Box>
         );
-      case 'dropdown-choice': {
-        const parts = question.question.split('____');
+      case "dropdown-choice": {
+        const parts = question.title.split("____");
         const hasBlank = parts.length > 1;
-        
         return (
-          <Box key={question.id} sx={{ mb: 3 }}>
+          <Box sx={{ mb: 3 }}>
             {questionNumber}
             {renderQuestionMedia(question)}
             {renderQuestionWordBank(question)}
             {hasBlank ? (
-              <Box sx={{ display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: 1 }}>
+              <Box
+                sx={{
+                  display: "flex",
+                  flexWrap: "wrap",
+                  alignItems: "center",
+                  gap: 1,
+                }}
+              >
                 {parts.map((part, idx) => (
-                  <Box key={idx} sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
-                    <Typography component="span" variant="body1">{part}</Typography>
+                  <Box
+                    key={idx}
+                    sx={{ display: "flex", alignItems: "center", gap: 0.5 }}
+                  >
+                    <Typography component="span" variant="body1">
+                      {part}
+                    </Typography>
                     {idx < parts.length - 1 && (
                       <FormControl size="small" sx={{ minWidth: 120 }}>
                         <Select
-                          value={value || ''}
-                          onChange={(e) => handleAnswerChange(question.id, e.target.value)}
+                          value={value || ""}
+                          onChange={(e) =>
+                            handleAnswerChange(question._id, e.target.value)
+                          }
                           displayEmpty
+                          disabled={disabled}
                         >
-                          <MenuItem value="" disabled><em></em></MenuItem>
-                          {question.options?.map((option, optIdx) => (
-                            <MenuItem key={optIdx} value={option}>{option}</MenuItem>
+                          <MenuItem value="" disabled>
+                            <em></em>
+                          </MenuItem>
+                          {(question.options ?? []).map((opt, i) => (
+                            <MenuItem key={i} value={opt}>
+                              {opt}
+                            </MenuItem>
                           ))}
                         </Select>
                       </FormControl>
@@ -272,14 +443,19 @@ export default function QuizDetail() {
               </Box>
             ) : (
               <FormControl fullWidth>
-                <InputLabel>{question.question}</InputLabel>
+                <InputLabel>{question.title}</InputLabel>
                 <Select
-                  value={value || ''}
-                  onChange={(e) => handleAnswerChange(question.id, e.target.value)}
-                  label={question.question}
+                  value={value || ""}
+                  onChange={(e) =>
+                    handleAnswerChange(question._id, e.target.value)
+                  }
+                  label={question.title}
+                  disabled={disabled}
                 >
-                  {question.options?.map((option, optIdx) => (
-                    <MenuItem key={optIdx} value={option}>{option}</MenuItem>
+                  {(question.options ?? []).map((opt, i) => (
+                    <MenuItem key={i} value={opt}>
+                      {opt}
+                    </MenuItem>
                   ))}
                 </Select>
               </FormControl>
@@ -287,165 +463,280 @@ export default function QuizDetail() {
           </Box>
         );
       }
-      case 'pronunciation':
-      case 'video-recording':
-        // Trong quiz, pronunciation và video-recording có thể chỉ cần text input
-        // (hoặc có thể thêm recording sau nếu cần)
+      case "pronunciation":
+      case "video-recording":
         return (
-          <Box key={question.id} sx={{ mb: 3 }}>
+          <Box sx={{ mb: 3 }}>
             {questionNumber}
             {renderQuestionMedia(question)}
             {renderQuestionWordBank(question)}
             <Typography variant="body1" gutterBottom>
-              {question.question}
+              {question.title}
             </Typography>
             <Typography variant="body2" color="text.secondary" sx={{ mb: 1 }}>
-              {effectiveType === 'pronunciation' 
-                ? 'Nhập câu trả lời của bạn (hoặc mô tả phát âm)'
-                : 'Nhập câu trả lời của bạn (mô tả nội dung video)'}
+              Nhập câu trả lời của bạn (mô tả hoặc nội dung)
             </Typography>
-            {renderTextInput(question, value, (v) => handleAnswerChange(question.id, v), {
-              rows: 4,
-            })}
-          </Box>
-        );
-      case 'writing':
-        return (
-          <Box key={question.id} sx={{ mb: 3 }}>
-            {questionNumber}
-            {renderQuestionMedia(question)}
-            {renderQuestionWordBank(question)}
-            {renderTextInput(question, value, (v) => handleAnswerChange(question.id, v), {
-              placeholder: 'Nhập bài viết của bạn',
-              rows: 6,
-            })}
+            <TextField
+              fullWidth
+              multiline
+              rows={4}
+              value={value}
+              onChange={(e) =>
+                handleAnswerChange(question._id, e.target.value)
+              }
+              placeholder="Nhập câu trả lời"
+              disabled={disabled}
+            />
           </Box>
         );
       default:
         return (
-          <Box key={question.id} sx={{ mb: 3 }}>
+          <Box sx={{ mb: 3 }}>
             {questionNumber}
             {renderQuestionMedia(question)}
             {renderQuestionWordBank(question)}
-            {renderTextInput(question, value, (v) => handleAnswerChange(question.id, v), { rows: 4 })}
+            <Typography variant="body1" gutterBottom>
+              {question.title}
+            </Typography>
+            <TextField
+              fullWidth
+              variant="outlined"
+              value={value}
+              onChange={(e) =>
+                handleAnswerChange(question._id, e.target.value)
+              }
+              placeholder="Nhập câu trả lời"
+              disabled={disabled}
+            />
           </Box>
         );
     }
   };
 
-  const isLastSection = currentSectionIndex === quiz.sections.length - 1;
+  if (loading || !id) {
+    return (
+      <Box
+        sx={{
+          display: "flex",
+          justifyContent: "center",
+          alignItems: "center",
+          minHeight: 400,
+        }}
+      >
+        <CircularProgress />
+      </Box>
+    );
+  }
+
+  if (!quiz) {
+    return (
+      <Box>
+        <Button
+          startIcon={<ArrowBackIcon />}
+          onClick={() => navigate("/quizzes")}
+          sx={{ mb: 2 }}
+        >
+          Quay lại
+        </Button>
+        <Typography color="text.secondary">
+          Không tìm thấy quiz hoặc đã hết hạn.
+        </Typography>
+      </Box>
+    );
+  }
+
+  const isLastSection =
+    currentSectionIndex === (quiz.sections?.length ?? 1) - 1;
+  const minutes = Math.floor(timeRemaining / 60);
+  const seconds = timeRemaining % 60;
 
   return (
     <Box>
-      <Button startIcon={<ArrowBackIcon />} onClick={() => navigate('/quizzes')} sx={{ mb: 2 }}>
+      <Button
+        startIcon={<ArrowBackIcon />}
+        onClick={() => navigate("/quizzes")}
+        sx={{ mb: 2 }}
+      >
         Quay lại
       </Button>
 
       <Card>
         <CardContent>
-          <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
+          <Box
+            sx={{
+              display: "flex",
+              justifyContent: "space-between",
+              alignItems: "center",
+              mb: 2,
+            }}
+          >
             <Typography variant="h5">{quiz.title}</Typography>
-            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+            <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
               <TimerIcon />
-              <Typography variant="h6" color={timeRemaining < 60 ? 'error.main' : 'inherit'}>
-                {String(minutes).padStart(2, '0')}:{String(seconds).padStart(2, '0')}
+              <Typography
+                variant="h6"
+                color={timeRemaining < 60 ? "error.main" : "inherit"}
+              >
+                {String(minutes).padStart(2, "0")}:
+                {String(seconds).padStart(2, "0")}
               </Typography>
             </Box>
           </Box>
 
-          {/* Section info */}
-          <Box sx={{ mb: 2 }}>
-            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 1 }}>
-              <Typography variant="h6">
-                Phần {currentSectionIndex + 1}: {currentSection.title}
+          {currentSection && (
+            <>
+              <Box sx={{ mb: 2 }}>
+                <Box
+                  sx={{
+                    display: "flex",
+                    alignItems: "center",
+                    gap: 1,
+                    mb: 1,
+                  }}
+                >
+                  <Typography variant="h6">
+                    Phần {currentSectionIndex + 1}: {currentSection.title}
+                  </Typography>
+                  {currentSection.sectionType && (
+                    <Chip
+                      label={
+                        sectionTypeMap[currentSection.sectionType]?.label ??
+                        currentSection.sectionType
+                      }
+                      size="small"
+                      color={
+                        sectionTypeMap[currentSection.sectionType]
+                          ?.color as "primary" | "default"
+                      }
+                    />
+                  )}
+                </Box>
+                {currentSection.description && (
+                  <Typography
+                    variant="body2"
+                    color="text.secondary"
+                    sx={{ mb: 1 }}
+                  >
+                    {currentSection.description}
+                  </Typography>
+                )}
+                <Typography variant="body2" color="text.secondary">
+                  Phần {currentSectionIndex + 1} / {quiz.sections?.length ?? 0} ·{" "}
+                  {currentSection.questions?.length ?? 0} câu hỏi
+                </Typography>
+              </Box>
+
+              <LinearProgress
+                variant="determinate"
+                value={progress}
+                sx={{ mt: 2, mb: 2 }}
+              />
+              <Typography
+                variant="body2"
+                color="text.secondary"
+                sx={{ mb: 2 }}
+              >
+                Tổng tiến độ:{" "}
+                {questionsCompleted +
+                  (currentSection.questions?.length ?? 0)}{" "}
+                / {totalQuestions} câu hỏi
               </Typography>
-              {currentSection.sectionType && (
-                <Chip
-                  label={sectionTypeMap[currentSection.sectionType]?.label || currentSection.sectionType}
-                  size="small"
-                  color={sectionTypeMap[currentSection.sectionType]?.color}
-                />
+
+              <Divider sx={{ my: 2 }} />
+
+              {renderSectionMedia(currentSection) && (
+                <Box sx={{ mb: 3 }}>
+                  {renderSectionMedia(currentSection)}
+                </Box>
               )}
-            </Box>
-            {currentSection.description && (
-              <Typography variant="body2" color="text.secondary" sx={{ mb: 1 }}>
-                {currentSection.description}
-              </Typography>
-            )}
-            <Typography variant="body2" color="text.secondary">
-              Phần {currentSectionIndex + 1} / {quiz.sections.length} · {currentSection.questions.length} câu hỏi
-            </Typography>
-          </Box>
+              {renderSectionWordBank(currentSection) && (
+                <Box sx={{ mb: 3 }}>
+                  <Typography
+                    variant="subtitle2"
+                    sx={{ width: "100%", mb: 1 }}
+                  >
+                    Word Bank:
+                  </Typography>
+                  {renderSectionWordBank(currentSection)}
+                </Box>
+              )}
 
-          <LinearProgress variant="determinate" value={progress} sx={{ mt: 2, mb: 2 }} />
-          <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
-            Tổng tiến độ: {questionsCompleted + currentSection.questions.length} / {totalQuestions} câu hỏi
-          </Typography>
+              <Box sx={{ mb: 3 }}>
+                {(currentSection.questions ?? []).map((question, index) =>
+                  renderQuestion(question, currentSection, index)
+                )}
+              </Box>
 
-          <Divider sx={{ my: 2 }} />
-
-          {/* Section media (audio, video, image, passage) */}
-          {renderSectionMedia(currentSection) && <Box sx={{ mb: 3 }}>{renderSectionMedia(currentSection)}</Box>}
-
-          {/* Word bank cho toàn phần (nếu có) */}
-          {renderSectionWordBank(currentSection) && (
-            <Box sx={{ mb: 3 }}>
-              <Typography variant="subtitle2" sx={{ width: '100%', mb: 1 }}>Word Bank:</Typography>
-              {renderSectionWordBank(currentSection)}
-            </Box>
+              <Box sx={{ display: "flex", justifyContent: "space-between" }}>
+                <Button
+                  variant="outlined"
+                  onClick={() =>
+                    setCurrentSectionIndex((prev) => Math.max(0, prev - 1))
+                  }
+                  disabled={currentSectionIndex === 0 || submitting}
+                >
+                  Phần trước
+                </Button>
+                <Button
+                  variant="contained"
+                  onClick={handleNext}
+                  disabled={submitting}
+                >
+                  {isLastSection ? "Nộp bài" : "Phần tiếp"}
+                </Button>
+              </Box>
+            </>
           )}
-
-          {/* Hiển thị tất cả câu hỏi trong section */}
-          <Box sx={{ mb: 3 }}>
-            {currentSection.questions.map((question, index) => 
-              renderQuestion(question, currentSection, index)
-            )}
-          </Box>
-
-          <Box sx={{ display: 'flex', justifyContent: 'space-between' }}>
-            <Button
-              variant="outlined"
-              onClick={handlePrevious}
-              disabled={currentSectionIndex === 0}
-            >
-              Phần trước
-            </Button>
-            <Button
-              variant="contained"
-              onClick={handleNext}
-            >
-              {isLastSection ? 'Nộp bài' : 'Phần tiếp'}
-            </Button>
-          </Box>
         </CardContent>
       </Card>
 
       <Dialog open={showResult} onClose={() => {}} maxWidth="sm" fullWidth>
         <DialogTitle>
-          <Box sx={{ display: 'flex', alignItems: 'center' }}>
-            <CheckCircleIcon sx={{ color: result?.passed ? 'success.main' : 'error.main', mr: 1 }} />
+          <Box sx={{ display: "flex", alignItems: "center" }}>
+            <CheckCircleIcon
+              sx={{
+                color:
+                  result && result.percentage >= 60 ? "success.main" : "warning.main",
+                mr: 1,
+              }}
+            />
             Kết quả bài kiểm tra
           </Box>
         </DialogTitle>
         <DialogContent>
           {result && (
             <Box>
-              <Typography variant="h4" align="center" gutterBottom color={result.passed ? 'success.main' : 'error.main'}>
+              <Typography
+                variant="h4"
+                align="center"
+                gutterBottom
+                color={
+                  result.percentage >= 60 ? "success.main" : "text.primary"
+                }
+              >
                 {result.percentage.toFixed(1)}%
               </Typography>
-              <Typography variant="body1" align="center" color="text.secondary" gutterBottom>
+              <Typography
+                variant="body1"
+                align="center"
+                color="text.secondary"
+                gutterBottom
+              >
                 Điểm số: {result.score} / {result.maxScore}
               </Typography>
-              <Alert severity={result.passed ? 'success' : 'warning'} sx={{ mt: 2 }}>
-                {result.passed
-                  ? `Chúc mừng! Bạn đã đạt yêu cầu (${quiz.passingScore}%)`
-                  : `Bạn chưa đạt yêu cầu. Cần ${quiz.passingScore}% để đạt.`}
+              <Alert
+                severity={result.percentage >= 60 ? "success" : "info"}
+                sx={{ mt: 2 }}
+              >
+                {result.percentage >= 60
+                  ? "Chúc mừng! Bạn đã hoàn thành bài quiz."
+                  : "Bạn có thể làm lại để cải thiện điểm số."}
               </Alert>
             </Box>
           )}
         </DialogContent>
         <DialogActions>
-          <Button onClick={() => navigate('/quizzes')} variant="contained">
+          <Button onClick={() => navigate("/quizzes")} variant="contained">
             Quay lại danh sách quiz
           </Button>
         </DialogActions>

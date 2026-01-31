@@ -51,15 +51,6 @@ import type { User } from "../../types";
 
 const drawerWidth = 240;
 
-const menuItems = [
-  { text: "Trang chủ", icon: <DashboardIcon />, path: "/" },
-  { text: "Tài liệu học tập", icon: <MenuBookIcon />, path: "/materials" },
-  { text: "Bài tập", icon: <AssignmentIcon />, path: "/exercises" },
-  { text: "Quiz & Kiểm tra", icon: <QuizIcon />, path: "/quizzes" },
-  { text: "Tiến độ học tập", icon: <AssessmentIcon />, path: "/progress" },
-  { text: "Báo cáo thống kê", icon: <BarChartIcon />, path: "/statistics" },
-];
-
 export default function MainLayout() {
   const [mobileOpen, setMobileOpen] = useState(false);
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
@@ -82,6 +73,28 @@ export default function MainLayout() {
   const user = useAuthStore((s) => s.user);
   const logout = useAuthStore((s) => s.logout);
   const updateUserInStore = useAuthStore((s) => s.updateUser);
+
+  const menuItems = () => [
+    { text: "Trang chủ", icon: <DashboardIcon />, path: "/" },
+    { text: "Tài liệu học tập", icon: <MenuBookIcon />, path: "/materials" },
+    { text: "Bài tập", icon: <AssignmentIcon />, path: "/exercises" },
+    { text: "Quiz", icon: <QuizIcon />, path: "/quizzes" },
+    ...(user?.role === "teacher"
+      ? [
+          {
+            text: "Báo cáo thống kê",
+            icon: <BarChartIcon />,
+            path: "/statistics",
+          },
+        ]
+      : [
+          {
+            text: "Tiến độ học tập",
+            icon: <AssessmentIcon />,
+            path: "/progress",
+          },
+        ]),
+  ];
 
   const handleDrawerToggle = () => {
     setMobileOpen(!mobileOpen);
@@ -179,7 +192,11 @@ export default function MainLayout() {
   const handleChangePasswordSave = async () => {
     setPasswordError("");
 
-    if (!passwordData.oldPassword || !passwordData.newPassword || !passwordData.confirmPassword) {
+    if (
+      !passwordData.oldPassword ||
+      !passwordData.newPassword ||
+      !passwordData.confirmPassword
+    ) {
       setPasswordError("Vui lòng điền đầy đủ thông tin");
       return;
     }
@@ -193,10 +210,14 @@ export default function MainLayout() {
     try {
       await authService.changePassword(
         passwordData.oldPassword,
-        passwordData.newPassword
+        passwordData.newPassword,
       );
       setChangePasswordOpen(false);
-      setPasswordData({ oldPassword: "", newPassword: "", confirmPassword: "" });
+      setPasswordData({
+        oldPassword: "",
+        newPassword: "",
+        confirmPassword: "",
+      });
       setPasswordError("");
       toast.success("Đổi mật khẩu thành công!");
     } catch (e: unknown) {
@@ -216,7 +237,7 @@ export default function MainLayout() {
 
   const handleAdminClick = () => {
     handleMenuClose();
-    navigate('/admin');
+    navigate("/admin");
   };
 
   const handleLogout = () => {
@@ -233,26 +254,28 @@ export default function MainLayout() {
       <Toolbar sx={{ bgcolor: "primary.main", color: "white" }}>
         <SchoolIcon sx={{ mr: 2 }} />
         <Typography variant="h6" noWrap component="div">
-            Học Tiếng Anh
+          Học Tiếng Anh
         </Typography>
       </Toolbar>
       <Divider />
       <List>
-        {menuItems.map((item) => {
+        {menuItems().map((item) => {
           // Hide teacher-only items for students
           if (user?.role === "student" && item.path === "/statistics") {
             return null;
           }
           return (
             <ListItem key={item.text} disablePadding>
-                <ListItemButton
+              <ListItemButton
                 selected={location.pathname === item.path}
                 onClick={() => handleNavigation(item.path)}
               >
                 <ListItemIcon
                   sx={{
                     color:
-                      location.pathname === item.path ? "primary.main" : "inherit",
+                      location.pathname === item.path
+                        ? "primary.main"
+                        : "inherit",
                   }}
                 >
                   {item.icon}
@@ -292,7 +315,7 @@ export default function MainLayout() {
             size="large"
             edge="end"
             aria-label="account menu"
-            aria-controls={isMenuOpen ? 'account-menu' : undefined}
+            aria-controls={isMenuOpen ? "account-menu" : undefined}
             aria-haspopup="true"
             onClick={handleMenuOpen}
             color="inherit"
@@ -349,7 +372,9 @@ export default function MainLayout() {
                 </Typography>
                 <Box sx={{ mt: 1 }}>
                   <Chip
-                    label={user?.role === "teacher" ? "Giảng viên" : "Sinh viên"}
+                    label={
+                      user?.role === "teacher" ? "Giảng viên" : "Sinh viên"
+                    }
                     size="small"
                     color="secondary"
                   />
@@ -399,7 +424,10 @@ export default function MainLayout() {
           }}
           sx={{
             display: { xs: "block", md: "none" },
-            "& .MuiDrawer-paper": { boxSizing: "border-box", width: drawerWidth },
+            "& .MuiDrawer-paper": {
+              boxSizing: "border-box",
+              width: drawerWidth,
+            },
           }}
         >
           {drawer}
@@ -408,7 +436,10 @@ export default function MainLayout() {
           variant="permanent"
           sx={{
             display: { xs: "none", md: "block" },
-            "& .MuiDrawer-paper": { boxSizing: "border-box", width: drawerWidth },
+            "& .MuiDrawer-paper": {
+              boxSizing: "border-box",
+              width: drawerWidth,
+            },
           }}
           open
         >
@@ -430,7 +461,12 @@ export default function MainLayout() {
       </Box>
 
       {/* Profile Dialog */}
-      <Dialog open={profileOpen} onClose={handleProfileClose} maxWidth="sm" fullWidth>
+      <Dialog
+        open={profileOpen}
+        onClose={handleProfileClose}
+        maxWidth="sm"
+        fullWidth
+      >
         <DialogTitle>Thông tin cá nhân</DialogTitle>
         <DialogContent>
           <Box sx={{ pt: 2 }}>
@@ -486,7 +522,12 @@ export default function MainLayout() {
       </Dialog>
 
       {/* Change Password Dialog */}
-      <Dialog open={changePasswordOpen} onClose={handleChangePasswordClose} maxWidth="sm" fullWidth>
+      <Dialog
+        open={changePasswordOpen}
+        onClose={handleChangePasswordClose}
+        maxWidth="sm"
+        fullWidth
+      >
         <DialogTitle>Đổi mật khẩu</DialogTitle>
         <DialogContent>
           <Box sx={{ pt: 2 }}>
@@ -503,33 +544,39 @@ export default function MainLayout() {
               fullWidth
               label="Mật khẩu cũ"
               type="password"
-                value={passwordData.oldPassword}
-                onChange={(e) =>
-                  setPasswordData({ ...passwordData, oldPassword: e.target.value })
-                }
+              value={passwordData.oldPassword}
+              onChange={(e) =>
+                setPasswordData({
+                  ...passwordData,
+                  oldPassword: e.target.value,
+                })
+              }
               margin="normal"
             />
             <TextField
               fullWidth
               label="Mật khẩu mới"
               type="password"
-                value={passwordData.newPassword}
-                onChange={(e) =>
-                  setPasswordData({ ...passwordData, newPassword: e.target.value })
-                }
+              value={passwordData.newPassword}
+              onChange={(e) =>
+                setPasswordData({
+                  ...passwordData,
+                  newPassword: e.target.value,
+                })
+              }
               margin="normal"
             />
             <TextField
               fullWidth
               label="Nhập lại mật khẩu mới"
               type="password"
-                value={passwordData.confirmPassword}
-                onChange={(e) =>
-                  setPasswordData({
-                    ...passwordData,
-                    confirmPassword: e.target.value,
-                  })
-                }
+              value={passwordData.confirmPassword}
+              onChange={(e) =>
+                setPasswordData({
+                  ...passwordData,
+                  confirmPassword: e.target.value,
+                })
+              }
               margin="normal"
             />
           </Box>
@@ -550,4 +597,3 @@ export default function MainLayout() {
     </Box>
   );
 }
-

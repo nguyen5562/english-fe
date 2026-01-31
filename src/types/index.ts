@@ -44,6 +44,30 @@ export type Question = {
   wordBank: string[];
 };
 
+export type QuestionType =
+  | "multiple-choice"
+  | "fill-sentence"
+  | "listening"
+  | "word-order"
+  | "word-bank"
+  | "picture-choice"
+  | "reading-mcq"
+  | "pronunciation"
+  | "writing"
+  | "paragraph-fill"
+  | "fill-blank"
+  | "dropdown-choice"
+  | "video-recording";
+
+export type SectionType =
+  | "grammar"
+  | "vocabulary"
+  | "listening"
+  | "reading"
+  | "speaking"
+  | "writing"
+  | "pronunciation"
+
 export type Section = {
   _id: string;
   title: string;
@@ -53,8 +77,8 @@ export type Section = {
   imageUrl: string | null;
   wordBank: string[];
   passage: string | null;
-  sectionType: string;
-  questionType: string;
+  sectionType: SectionType;
+  questionType: QuestionType;
   questions: Question[];
 };
 

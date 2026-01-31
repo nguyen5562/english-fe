@@ -28,10 +28,15 @@ const getAllStudent = async (): Promise<User[]> => {
   return response.data;
 };
 
+const deleteUser = async (id: string): Promise<void> => {
+  await api.delete(API_ROUTES.USER + "/" + id);
+};
+
 export const userService = {
   createUser,
   updateUser,
   getAllUser,
   getUserById,
   getAllStudent,
+  deleteUser,
 };

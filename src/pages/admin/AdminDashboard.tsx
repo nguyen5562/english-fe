@@ -30,7 +30,7 @@ type AdminStats = {
   courses: number;
   exercises: number;
   quizzes: number;
-  students: number;
+  users: number;
 };
 
 export default function AdminDashboard() {
@@ -40,7 +40,7 @@ export default function AdminDashboard() {
     courses: 0,
     exercises: 0,
     quizzes: 0,
-    students: 0,
+    users: 0,
   });
   const [loading, setLoading] = useState(false);
 
@@ -48,18 +48,18 @@ export default function AdminDashboard() {
     const fetchStats = async () => {
       try {
         setLoading(true);
-        const [courses, exercises, quizzes, students] = await Promise.all([
+        const [courses, exercises, quizzes, users] = await Promise.all([
           courseService.getAllCourse(),
           exerciseService.getAllExercise(),
           quizService.getAllQuiz(),
-          userService.getAllStudent(),
+          userService.getAllUser(),
         ]);
 
         setStats({
           courses: courses.length,
           exercises: exercises.length,
           quizzes: quizzes.length,
-          students: students.length,
+          users: users.length,
         });
       } catch (e: unknown) {
         if (axios.isAxiosError(e)) {
@@ -102,8 +102,8 @@ export default function AdminDashboard() {
       path: "/admin/quizzes",
     },
     {
-      title: "Sinh viên",
-      count: stats.students,
+      title: "Người dùng",
+      count: stats.users,
       icon: <PeopleIcon sx={{ fontSize: 40 }} />,
       color: "success.main",
       path: "/admin/students",

@@ -55,7 +55,7 @@ const adminMenuItems = [
   { text: "Quản lý khóa học", icon: <SchoolIcon />, path: "/admin/content" },
   { text: "Quản lý bài tập", icon: <AssignmentIcon />, path: "/admin/exercises" },
   { text: "Quản lý quiz", icon: <QuizIcon />, path: "/admin/quizzes" },
-  { text: "Quản lý sinh viên", icon: <PeopleIcon />, path: "/admin/students" },
+  { text: "Quản lý người dùng", icon: <PeopleIcon />, path: "/admin/students" },
   { text: "Báo cáo thống kê", icon: <BarChartIcon />, path: "/admin/statistics" },
 ];
 

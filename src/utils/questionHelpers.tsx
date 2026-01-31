@@ -1,5 +1,5 @@
 import { Box, Typography, Chip, FormControl, FormLabel, RadioGroup, Radio, FormControlLabel, TextField } from '@mui/material';
-import type { Question, Section } from '../types old';
+import type { Question, Section } from '../types';
 
 // Map sectionType to label and color (used for Chips in detail view)
 export const sectionTypeMap: Record<string, { label: string; color?: 'primary'|'secondary'|'error'|'info'|'success'|'warning' }> = {
@@ -21,7 +21,7 @@ export const renderQuestionMedia = (question: Question) => (
         <Box
           component="img"
           src={question.imageUrl}
-          alt={question.question}
+          alt={question.title}
           sx={{ maxWidth: '100%', borderRadius: 1 }}
         />
       </Box>
@@ -141,18 +141,12 @@ export const calculateScore = (
   let maxScore = 0;
 
   questions.forEach((question) => {
-    maxScore += question.points;
-    const userAnswer = answers[question.id];
+    maxScore += question.point;
+    const userAnswer = answers[question._id];
     const correctAnswer = question.correctAnswer;
-
-    if (Array.isArray(correctAnswer)) {
-      if (Array.isArray(userAnswer) && JSON.stringify(userAnswer.sort()) === JSON.stringify(correctAnswer.sort())) {
-        totalScore += question.points;
-      }
-    } else {
-      if (userAnswer === correctAnswer) {
-        totalScore += question.points;
-      }
+    const userArr = Array.isArray(userAnswer) ? userAnswer : userAnswer != null ? [String(userAnswer)] : [];
+    if (userArr.length === correctAnswer.length && JSON.stringify([...userArr].sort()) === JSON.stringify([...correctAnswer].sort())) {
+      totalScore += question.point;
     }
   });
 
@@ -168,9 +162,9 @@ export const renderMultipleChoice = (
   retryKey?: number
 ) => (
   <FormControl component="fieldset" fullWidth>
-    <FormLabel component="legend">{question.question}</FormLabel>
+    <FormLabel component="legend">{question.title}</FormLabel>
     <RadioGroup
-      key={retryKey !== undefined ? `${question.id}-rg-${retryKey}` : undefined}
+      key={retryKey !== undefined ? `${question._id}-rg-${retryKey}` : undefined}
       value={Array.isArray(value) ? '' : (value || '')}
       onChange={(e) => onChange(e.target.value)}
     >
@@ -180,7 +174,7 @@ export const renderMultipleChoice = (
           value={option}
           control={
             <Radio
-              key={retryKey !== undefined ? `${question.id}-${index}-${retryKey}` : undefined}
+              key={retryKey !== undefined ? `${question._id}-${index}-${retryKey}` : undefined}
               disabled={disabled}
             />
           }
@@ -205,10 +199,10 @@ export const renderTextInput = (
 ) => (
   <>
     <Typography variant="body1" gutterBottom>
-      {question.question}
+      {question.title}
     </Typography>
     <TextField
-      key={options?.retryKey !== undefined ? `${question.id}-${options.retryKey}` : undefined}
+      key={options?.retryKey !== undefined ? `${question._id}-${options.retryKey}` : undefined}
       fullWidth
       multiline={!!options?.rows}
       rows={options?.rows}
