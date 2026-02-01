@@ -124,7 +124,7 @@ export default function Exercises() {
     let bestAttempt: { tries: number; score: number; maxScore: number } | null = null;
 
     attempts.forEach((attempt) => {
-      const sectionAttempt = attempt.sectionAttempts.find(
+      const sectionAttempt = attempt.sectionAttempts?.find(
         (sa) => sa.sectionId === sectionId
       );
       if (sectionAttempt && sectionAttempt.tries > maxTries) {
@@ -192,7 +192,7 @@ export default function Exercises() {
             // Calculate sections completed and overall percent
             const attempts = getAttemptsForExercise(exercise._id);
             const sectionsCompleted = new Set(
-              attempts.flatMap((a) => a.sectionAttempts.map((sa) => sa.sectionId))
+              attempts.flatMap((a) => a.sectionAttempts?.map((sa) => sa.sectionId))
             ).size;
 
             const totalSections = exercise.sections.length;

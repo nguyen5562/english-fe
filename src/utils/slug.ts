@@ -29,7 +29,6 @@ const OBJECT_ID_REGEX = /^[a-f0-9]{24}$/i;
 export function buildSlugId(slugOrTitle: string, id: string): string {
   const slug = slugOrTitle && slugOrTitle.length > 0 ? toSlug(slugOrTitle) : "item";
   return `${slug}-${id}`;
-  return slug;
 }
 
 /**
