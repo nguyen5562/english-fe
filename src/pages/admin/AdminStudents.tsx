@@ -34,6 +34,7 @@ import axios from 'axios';
 import { userService } from '../../services/user.service';
 import { useConfirm } from '../../components/ConfirmDialog';
 import { toast } from '../../utils/toast';
+import { useAuthStore } from '../../store/auth.store';
 import type { User } from '../../types';
 import type { CreateUserDto, UpdateUserDto } from '../../types/dto';
 
@@ -43,6 +44,7 @@ const ROLE_OPTIONS = [
 ];
 
 export default function AdminStudents() {
+  const { user: currentUser, updateUser: updateAuthUser } = useAuthStore();
   const { confirm, ConfirmDialog } = useConfirm();
   const [users, setUsers] = useState<User[]>([]);
   const [loading, setLoading] = useState(false);
@@ -154,7 +156,13 @@ export default function AdminStudents() {
         email: editForm.email.trim(),
         role: editForm.role,
       };
-      await userService.updateUser(editingUser._id, dto);
+      const updated = await userService.updateUser(editingUser._id, dto);
+
+      // Update store if modifying current user
+      if (currentUser && currentUser._id === updated._id) {
+        updateAuthUser(updated);
+      }
+
       toast.success('Đã cập nhật tài khoản');
       setOpenEdit(false);
       setEditingUser(null);

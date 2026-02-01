@@ -27,6 +27,7 @@ import {
   Add as AddIcon,
   Delete as DeleteIcon,
   MenuBook as MenuBookIcon,
+  Edit as EditIcon,
 } from '@mui/icons-material';
 import axios from 'axios';
 import { exerciseService } from '../../services/exercise.service';
@@ -156,6 +157,9 @@ export default function AdminSectionEdit() {
   const [optionsList, setOptionsList] = useState<string[]>([]);
   const [correctAnswerList, setCorrectAnswerList] = useState<string[]>([]);
   const [correctAnswerSingle, setCorrectAnswerSingle] = useState('');
+  const [editingQuestionId, setEditingQuestionId] = useState<string | null>(
+    null,
+  );
   const pendingFilePickRef = useRef<
     | { type: 'option'; index: number }
     | { type: 'correctBlank'; index: number }
@@ -350,6 +354,7 @@ export default function AdminSectionEdit() {
   };
 
   const openAddQuestion = () => {
+    setEditingQuestionId(null);
     setQuestionForm({
       title: '',
       point: 1,
@@ -423,11 +428,19 @@ export default function AdminSectionEdit() {
     }
     try {
       setSaving(true);
-      const updated = await exerciseService.addQuestion(
-        exerciseId,
-        sectionId,
-        dto,
-      );
+      let updated: Exercise;
+      if (editingQuestionId) {
+        updated = await exerciseService.updateQuestion(
+          exerciseId,
+          sectionId,
+          editingQuestionId,
+          dto,
+        );
+        toast.success('Đã cập nhật câu hỏi');
+      } else {
+        updated = await exerciseService.addQuestion(exerciseId, sectionId, dto);
+        toast.success('Đã thêm câu hỏi');
+      }
       setExercise(updated);
       setQuestionForm({
         title: '',
@@ -442,17 +455,23 @@ export default function AdminSectionEdit() {
       setOptionsList([]);
       setCorrectAnswerList([]);
       setCorrectAnswerSingle('');
+      setEditingQuestionId(null);
       setOpenQuestionDialog(false);
-      toast.success('Đã thêm câu hỏi');
     } catch (e: unknown) {
       if (axios.isAxiosError(e)) {
         const msg =
           (e.response?.data as { message?: string })?.message ??
           e.response?.statusText ??
-          'Không thể thêm câu hỏi';
+          (editingQuestionId
+            ? 'Không thể cập nhật câu hỏi'
+            : 'Không thể thêm câu hỏi');
         toast.error(String(msg));
       } else {
-        toast.error('Không thể thêm câu hỏi');
+        toast.error(
+          editingQuestionId
+            ? 'Không thể cập nhật câu hỏi'
+            : 'Không thể thêm câu hỏi',
+        );
       }
     } finally {
       setSaving(false);
@@ -490,6 +509,24 @@ export default function AdminSectionEdit() {
     } finally {
       setSaving(false);
     }
+  };
+
+  const handleEditQuestion = (q: any) => {
+    setEditingQuestionId(q._id);
+    setQuestionForm({
+      title: q.title,
+      point: q.point,
+      options: q.options || [],
+      correctAnswer: q.correctAnswer || [],
+      audioUrl: q.audioUrl || '',
+      videoUrl: q.videoUrl || '',
+      imageUrl: q.imageUrl || '',
+      wordBankStr: (q.wordBank || []).join(', '),
+    });
+    setOptionsList(q.options || []);
+    setCorrectAnswerList(q.correctAnswer || []);
+    setCorrectAnswerSingle(q.correctAnswer?.[0] || '');
+    setOpenQuestionDialog(true);
   };
 
   if (loading || !exerciseId) {
@@ -718,14 +755,23 @@ export default function AdminSectionEdit() {
                 <ListItem
                   key={q._id}
                   secondaryAction={
-                    <IconButton
-                      edge="end"
-                      color="error"
-                      onClick={() => handleRemoveQuestion(q._id)}
-                      disabled={saving}
-                    >
-                      <DeleteIcon />
-                    </IconButton>
+                    <Box>
+                      <IconButton
+                        color="primary"
+                        onClick={() => handleEditQuestion(q)}
+                        disabled={saving}
+                      >
+                        <EditIcon />
+                      </IconButton>
+                      <IconButton
+                        edge="end"
+                        color="error"
+                        onClick={() => handleRemoveQuestion(q._id)}
+                        disabled={saving}
+                      >
+                        <DeleteIcon />
+                      </IconButton>
+                    </Box>
                   }
                 >
                   <ListItemText
@@ -766,7 +812,7 @@ export default function AdminSectionEdit() {
         fullWidth
       >
         <DialogTitle>
-          Thêm câu hỏi — Kiểu:{' '}
+          {editingQuestionId ? 'Sửa câu hỏi' : 'Thêm câu hỏi'} — Kiểu:{' '}
           {QUESTION_TYPE_OPTIONS.find((o) => o.value === sectionQuestionType)
             ?.label ?? sectionQuestionType}
         </DialogTitle>
