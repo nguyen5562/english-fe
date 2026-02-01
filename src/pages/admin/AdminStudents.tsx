@@ -40,7 +40,6 @@ import type { CreateUserDto, UpdateUserDto } from "../../types/dto";
 const ROLE_OPTIONS = [
   { value: "student", label: "Sinh viên" },
   { value: "teacher", label: "Giáo viên" },
-  { value: "admin", label: "Quản trị" },
 ];
 
 export default function AdminStudents() {
