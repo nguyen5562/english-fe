@@ -1,8 +1,24 @@
-import { Box, Typography, Chip, FormControl, FormLabel, RadioGroup, Radio, FormControlLabel, TextField } from '@mui/material';
+import {
+  Box,
+  Typography,
+  Chip,
+  FormControl,
+  FormLabel,
+  RadioGroup,
+  Radio,
+  FormControlLabel,
+  TextField,
+} from '@mui/material';
 import type { Question, Section } from '../types';
 
 // Map sectionType to label and color (used for Chips in detail view)
-export const sectionTypeMap: Record<string, { label: string; color?: 'primary'|'secondary'|'error'|'info'|'success'|'warning' }> = {
+export const sectionTypeMap: Record<
+  string,
+  {
+    label: string;
+    color?: 'primary' | 'secondary' | 'error' | 'info' | 'success' | 'warning';
+  }
+> = {
   grammar: { label: 'Grammar', color: 'primary' },
   vocabulary: { label: 'Vocabulary', color: 'success' },
   listening: { label: 'Listening', color: 'info' },
@@ -35,7 +51,11 @@ export const renderQuestionMedia = (question: Question) => (
     )}
     {question.videoUrl && (
       <Box sx={{ mb: 2 }}>
-        <video controls src={question.videoUrl} style={{ width: '100%', maxWidth: '800px', borderRadius: '8px' }}>
+        <video
+          controls
+          src={question.videoUrl}
+          style={{ width: '100%', maxWidth: '800px', borderRadius: '8px' }}
+        >
           Trình duyệt của bạn không hỗ trợ video.
         </video>
       </Box>
@@ -46,7 +66,7 @@ export const renderQuestionMedia = (question: Question) => (
 // Helper: render wordBank for a question
 export const renderQuestionWordBank = (
   question: Question,
-  onWordClick?: (word: string) => void
+  onWordClick?: (word: string) => void,
 ) => {
   if (!question.wordBank || question.wordBank.length === 0) return null;
 
@@ -66,7 +86,12 @@ export const renderQuestionWordBank = (
 
 // Helper: render section media (audio, video, image, passage)
 export const renderSectionMedia = (section: Section) => {
-  if (!section.audioUrl && !section.videoUrl && !section.imageUrl && !section.passage) {
+  if (
+    !section.audioUrl &&
+    !section.videoUrl &&
+    !section.imageUrl &&
+    !section.passage
+  ) {
     return null;
   }
 
@@ -81,7 +106,11 @@ export const renderSectionMedia = (section: Section) => {
       )}
       {section.videoUrl && (
         <Box sx={{ mb: 1 }}>
-          <video controls src={section.videoUrl} style={{ width: '100%', maxWidth: '800px', borderRadius: '8px' }}>
+          <video
+            controls
+            src={section.videoUrl}
+            style={{ width: '100%', maxWidth: '800px', borderRadius: '8px' }}
+          >
             Trình duyệt của bạn không hỗ trợ video.
           </video>
         </Box>
@@ -135,7 +164,7 @@ export const formatAnswer = (ans: string | string[]): string => {
 // Helper: calculate score for answers
 export const calculateScore = (
   questions: Question[],
-  answers: Record<string, string | string[]>
+  answers: Record<string, string | string[]>,
 ): { score: number; maxScore: number } => {
   let totalScore = 0;
   let maxScore = 0;
@@ -144,8 +173,16 @@ export const calculateScore = (
     maxScore += question.point;
     const userAnswer = answers[question._id];
     const correctAnswer = question.correctAnswer;
-    const userArr = Array.isArray(userAnswer) ? userAnswer : userAnswer != null ? [String(userAnswer)] : [];
-    if (userArr.length === correctAnswer.length && JSON.stringify([...userArr].sort()) === JSON.stringify([...correctAnswer].sort())) {
+    const userArr = Array.isArray(userAnswer)
+      ? userAnswer
+      : userAnswer != null
+        ? [String(userAnswer)]
+        : [];
+    if (
+      userArr.length === correctAnswer.length &&
+      JSON.stringify([...userArr].sort()) ===
+        JSON.stringify([...correctAnswer].sort())
+    ) {
       totalScore += question.point;
     }
   });
@@ -159,13 +196,15 @@ export const renderMultipleChoice = (
   value: string,
   onChange: (value: string) => void,
   disabled?: boolean,
-  retryKey?: number
+  retryKey?: number,
 ) => (
   <FormControl component="fieldset" fullWidth>
     <FormLabel component="legend">{question.title}</FormLabel>
     <RadioGroup
-      key={retryKey !== undefined ? `${question._id}-rg-${retryKey}` : undefined}
-      value={Array.isArray(value) ? '' : (value || '')}
+      key={
+        retryKey !== undefined ? `${question._id}-rg-${retryKey}` : undefined
+      }
+      value={Array.isArray(value) ? '' : value || ''}
       onChange={(e) => onChange(e.target.value)}
     >
       {question.options?.map((option, index) => (
@@ -174,7 +213,11 @@ export const renderMultipleChoice = (
           value={option}
           control={
             <Radio
-              key={retryKey !== undefined ? `${question._id}-${index}-${retryKey}` : undefined}
+              key={
+                retryKey !== undefined
+                  ? `${question._id}-${index}-${retryKey}`
+                  : undefined
+              }
               disabled={disabled}
             />
           }
@@ -195,19 +238,23 @@ export const renderTextInput = (
     rows?: number;
     disabled?: boolean;
     retryKey?: number;
-  }
+  },
 ) => (
   <>
     <Typography variant="body1" gutterBottom>
       {question.title}
     </Typography>
     <TextField
-      key={options?.retryKey !== undefined ? `${question._id}-${options.retryKey}` : undefined}
+      key={
+        options?.retryKey !== undefined
+          ? `${question._id}-${options.retryKey}`
+          : undefined
+      }
       fullWidth
       multiline={!!options?.rows}
       rows={options?.rows}
       variant="outlined"
-      value={Array.isArray(value) ? '' : (value || '')}
+      value={Array.isArray(value) ? '' : value || ''}
       onChange={(e) => onChange(e.target.value)}
       placeholder={options?.placeholder || 'Nhập câu trả lời của bạn'}
       disabled={options?.disabled}

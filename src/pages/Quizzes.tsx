@@ -1,5 +1,5 @@
-import { useState, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
+import { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import {
   Box,
   Typography,
@@ -14,28 +14,28 @@ import {
   Select,
   MenuItem,
   CircularProgress,
-} from "@mui/material";
+} from '@mui/material';
 import {
   Quiz as QuizIcon,
   AccessTime as AccessTimeIcon,
   PlayArrow as PlayArrowIcon,
   CheckCircle as CheckCircleIcon,
-} from "@mui/icons-material";
-import axios from "axios";
-import { quizService } from "../services/quiz.service";
-import { courseService } from "../services/course.service";
-import { quizAttemptService } from "../services/quiz-attempt.service";
-import { useAuthStore } from "../store/auth.store";
-import { toast } from "../utils/toast";
-import { buildSlugId } from "../utils/slug";
-import type { Quiz, Course, QuizAttempt } from "../types";
+} from '@mui/icons-material';
+import axios from 'axios';
+import { quizService } from '../services/quiz.service';
+import { courseService } from '../services/course.service';
+import { quizAttemptService } from '../services/quiz-attempt.service';
+import { useAuthStore } from '../store/auth.store';
+import { toast } from '../utils/toast';
+import { toSlug } from '../utils/slug';
+import type { Quiz, Course, QuizAttempt } from '../types';
 
 export default function Quizzes() {
   const [quizzes, setQuizzes] = useState<Quiz[]>([]);
   const [courses, setCourses] = useState<Course[]>([]);
   const [quizAttempts, setQuizAttempts] = useState<QuizAttempt[]>([]);
   const [loading, setLoading] = useState(false);
-  const [selectedCourse, setSelectedCourse] = useState<string>("all");
+  const [selectedCourse, setSelectedCourse] = useState<string>('all');
   const navigate = useNavigate();
   const user = useAuthStore((s) => s.user);
 
@@ -52,10 +52,11 @@ export default function Quizzes() {
 
         if (user?._id) {
           try {
-            const attemptsData = await quizAttemptService.getQuizAttemptByUserId(user._id);
+            const attemptsData =
+              await quizAttemptService.getQuizAttemptByUserId(user._id);
             setQuizAttempts(attemptsData);
           } catch (e) {
-            console.error("Failed to load quiz attempts:", e);
+            console.error('Failed to load quiz attempts:', e);
           }
         }
       } catch (e: unknown) {
@@ -63,10 +64,10 @@ export default function Quizzes() {
           const msg =
             (e.response?.data as { message?: string })?.message ??
             e.response?.statusText ??
-            "Không thể tải danh sách quiz";
+            'Không thể tải danh sách quiz';
           toast.error(String(msg));
         } else {
-          toast.error("Không thể tải danh sách quiz");
+          toast.error('Không thể tải danh sách quiz');
         }
       } finally {
         setLoading(false);
@@ -77,26 +78,25 @@ export default function Quizzes() {
   }, [user?._id]);
 
   const filteredQuizzes =
-    selectedCourse === "all"
+    selectedCourse === 'all'
       ? quizzes
       : quizzes.filter((q) => q.courseId === selectedCourse);
 
   const getBestAttempt = (quizId: string): QuizAttempt | null => {
     const attempts = quizAttempts.filter(
-      (a) => a.quizId === quizId && a.submittedAt != null
+      (a) => a.quizId === quizId && a.submittedAt != null,
     );
     if (attempts.length === 0) return null;
     return attempts.reduce((best, current) =>
-      (current.totalScore ?? 0) > (best.totalScore ?? 0) ? current : best
+      (current.totalScore ?? 0) > (best.totalScore ?? 0) ? current : best,
     );
   };
 
   const getMaxScore = (quiz: Quiz): number => {
     return (quiz.sections ?? []).reduce(
       (sum, section) =>
-        sum +
-        (section.questions ?? []).reduce((s, q) => s + (q.point ?? 0), 0),
-      0
+        sum + (section.questions ?? []).reduce((s, q) => s + (q.point ?? 0), 0),
+      0,
     );
   };
 
@@ -104,9 +104,9 @@ export default function Quizzes() {
     <Box>
       <Box
         sx={{
-          display: "flex",
-          justifyContent: "space-between",
-          alignItems: "center",
+          display: 'flex',
+          justifyContent: 'space-between',
+          alignItems: 'center',
           mb: 3,
         }}
       >
@@ -129,7 +129,7 @@ export default function Quizzes() {
       </Box>
 
       {loading ? (
-        <Box sx={{ display: "flex", justifyContent: "center", p: 4 }}>
+        <Box sx={{ display: 'flex', justifyContent: 'center', p: 4 }}>
           <CircularProgress />
         </Box>
       ) : filteredQuizzes.length === 0 ? (
@@ -158,13 +158,13 @@ export default function Quizzes() {
                   <CardContent>
                     <Box
                       sx={{
-                        display: "flex",
-                        alignItems: "center",
+                        display: 'flex',
+                        alignItems: 'center',
                         mb: 2,
                       }}
                     >
                       <QuizIcon
-                        sx={{ fontSize: 40, color: "secondary.main", mr: 2 }}
+                        sx={{ fontSize: 40, color: 'secondary.main', mr: 2 }}
                       />
                       <Box sx={{ flexGrow: 1 }}>
                         <Typography variant="h6">{quiz.title}</Typography>
@@ -174,21 +174,21 @@ export default function Quizzes() {
                       </Box>
                     </Box>
                     <Typography variant="body2" paragraph>
-                      {quiz.description ?? ""}
+                      {quiz.description ?? ''}
                     </Typography>
                     <Box
                       sx={{
-                        display: "flex",
+                        display: 'flex',
                         gap: 1,
                         mb: 2,
-                        flexWrap: "wrap",
+                        flexWrap: 'wrap',
                       }}
                     >
                       <Chip
                         label={`${(quiz.sections ?? []).reduce(
                           (sum, section) =>
                             sum + (section.questions?.length ?? 0),
-                          0
+                          0,
                         )} câu hỏi`}
                         size="small"
                       />
@@ -201,28 +201,28 @@ export default function Quizzes() {
                         <Chip
                           label={`Điểm cao nhất: ${bestPercent}%`}
                           size="small"
-                          color={hasPassed ? "success" : "default"}
+                          color={hasPassed ? 'success' : 'default'}
                         />
                       )}
                     </Box>
                     {bestAttempt != null && (
                       <Box
                         sx={{
-                          display: "flex",
-                          alignItems: "center",
+                          display: 'flex',
+                          alignItems: 'center',
                           gap: 1,
                           mb: 1,
                         }}
                       >
                         <CheckCircleIcon
                           sx={{
-                            color: hasPassed ? "success.main" : "warning.main",
+                            color: hasPassed ? 'success.main' : 'warning.main',
                             fontSize: 20,
                           }}
                         />
                         <Typography variant="body2">
                           Điểm cao nhất: {bestPercent}%
-                          {hasPassed ? " (Đạt)" : " (Chưa đạt 60%)"}
+                          {hasPassed ? ' (Đạt)' : ' (Chưa đạt 60%)'}
                         </Typography>
                       </Box>
                     )}
@@ -232,12 +232,12 @@ export default function Quizzes() {
                       variant="contained"
                       startIcon={<PlayArrowIcon />}
                       fullWidth
-                      onClick={() => navigate(`/quizzes/${buildSlugId(quiz.title ?? "", quiz._id)}`)}
-                      color={
-                        bestAttempt && hasPassed ? "success" : "primary"
+                      onClick={() =>
+                        navigate(`/quizzes/${toSlug(quiz.title ?? '')}`)
                       }
+                      color={bestAttempt && hasPassed ? 'success' : 'primary'}
                     >
-                      {bestAttempt ? "Làm lại" : "Bắt đầu làm"}
+                      {bestAttempt ? 'Làm lại' : 'Bắt đầu làm'}
                     </Button>
                   </CardActions>
                 </Card>

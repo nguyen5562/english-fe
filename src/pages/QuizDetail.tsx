@@ -1,5 +1,5 @@
-import { useEffect, useState, useRef } from "react";
-import { useParams, useNavigate } from "react-router-dom";
+import { useEffect, useState, useRef } from 'react';
+import { useParams, useNavigate } from 'react-router-dom';
 import {
   Box,
   Typography,
@@ -24,17 +24,17 @@ import {
   FormLabel,
   Radio,
   RadioGroup,
-} from "@mui/material";
+} from '@mui/material';
 import {
   ArrowBack as ArrowBackIcon,
   CheckCircle as CheckCircleIcon,
   Timer as TimerIcon,
-} from "@mui/icons-material";
-import axios from "axios";
-import { quizService } from "../services/quiz.service";
-import { quizAttemptService } from "../services/quiz-attempt.service";
-import { useAuthStore } from "../store/auth.store";
-import type { Quiz, Question, QuestionType, Section } from "../types";
+} from '@mui/icons-material';
+import axios from 'axios';
+import { quizService } from '../services/quiz.service';
+import { quizAttemptService } from '../services/quiz-attempt.service';
+import { useAuthStore } from '../store/auth.store';
+import type { Quiz, Question, QuestionType, Section } from '../types';
 import {
   sectionTypeMap,
   renderSectionMedia,
@@ -42,14 +42,40 @@ import {
   calculateScore,
   renderQuestionMedia,
   renderQuestionWordBank,
-} from "../utils/questionHelpers";
-import { toast } from "../utils/toast";
-import { parseSlugId } from "../utils/slug";
+} from '../utils/questionHelpers';
+import { toast } from '../utils/toast';
+import { toSlug } from '../utils/slug';
 
 export default function QuizDetail() {
   const { slug } = useParams<{ slug: string }>();
-  const id = parseSlugId(slug);
+  const [id, setId] = useState<string | null>(null);
   const navigate = useNavigate();
+
+  useEffect(() => {
+    if (!slug) return;
+    setId(null);
+    setLoading(true);
+    const OBJECT_ID_REGEX = /^[a-f0-9]{24}$/i;
+    if (OBJECT_ID_REGEX.test(slug)) {
+      setId(slug);
+      return;
+    }
+    // Lookup ID from slug
+    quizService
+      .getAllQuiz()
+      .then((quizzes) => {
+        const found = quizzes.find((q) => toSlug(q.title) === slug);
+        setId(found?._id ?? null);
+        if (!found) {
+          toast.error('Không tìm thấy bài kiểm tra');
+          setLoading(false);
+        }
+      })
+      .catch(() => {
+        toast.error('Lỗi khi tìm bài kiểm tra');
+        setLoading(false);
+      });
+  }, [slug]);
   const user = useAuthStore((s) => s.user);
   const userId = user?._id;
 
@@ -64,16 +90,12 @@ export default function QuizDetail() {
     percentage: number;
   } | null>(null);
   const [timeRemaining, setTimeRemaining] = useState<number>(0);
-  const [startTime, setStartTime] = useState<Date | null>(null);
+  const [, setStartTime] = useState<Date | null>(null);
   const [submitting, setSubmitting] = useState(false);
   const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
   useEffect(() => {
-    if (!id) {
-      setQuiz(null);
-      setLoading(false);
-      return;
-    }
+    if (!id) return;
     let cancelled = false;
     setLoading(true);
     quizService
@@ -86,7 +108,7 @@ export default function QuizDetail() {
           const initial: Record<string, string | string[]> = {};
           (data.sections ?? []).forEach((section) => {
             (section.questions ?? []).forEach((q) => {
-              initial[q._id] = (q.correctAnswer?.length ?? 0) > 0 ? [] : "";
+              initial[q._id] = (q.correctAnswer?.length ?? 0) > 0 ? [] : '';
             });
           });
           setAnswers(initial);
@@ -97,7 +119,7 @@ export default function QuizDetail() {
           const msg =
             (e.response?.data as { message?: string })?.message ??
             e.response?.statusText ??
-            "Không thể tải quiz";
+            'Không thể tải quiz';
           toast.error(String(msg));
         }
       })
@@ -135,7 +157,7 @@ export default function QuizDetail() {
   const handleSubmitRef = useRef<() => void>(() => {});
 
   const allQuestions = (quiz?.sections ?? []).flatMap(
-    (s) => s.questions ?? []
+    (s) => s.questions ?? [],
   ) as Question[];
   const currentSection = quiz?.sections?.[currentSectionIndex];
   const totalQuestions = allQuestions.length;
@@ -164,7 +186,7 @@ export default function QuizDetail() {
 
     const { score: totalScore, maxScore } = calculateScore(
       allQuestions,
-      answers
+      answers,
     );
     const percentage = maxScore > 0 ? (totalScore / maxScore) * 100 : 0;
 
@@ -183,10 +205,10 @@ export default function QuizDetail() {
         const msg =
           (e.response?.data as { message?: string })?.message ??
           e.response?.statusText ??
-          "Không thể nộp bài";
+          'Không thể nộp bài';
         toast.error(String(msg));
       } else {
-        toast.error("Không thể nộp bài");
+        toast.error('Không thể nộp bài');
       }
     } finally {
       setSubmitting(false);
@@ -207,17 +229,17 @@ export default function QuizDetail() {
   const renderQuestion = (
     question: Question,
     section: Section,
-    index: number
+    index: number,
   ) => {
     const effectiveType: QuestionType | undefined =
       (question as Question & { type?: QuestionType }).type ??
       section.questionType;
-    const answerValue = answers[question._id] ?? "";
-    const value = Array.isArray(answerValue) ? "" : (answerValue as string);
+    const answerValue = answers[question._id] ?? '';
+    const value = Array.isArray(answerValue) ? '' : (answerValue as string);
     const disabled = showResult || submitting;
 
     const questionNumber = (
-      <Typography variant="subtitle1" sx={{ mb: 1, fontWeight: "bold" }}>
+      <Typography variant="subtitle1" sx={{ mb: 1, fontWeight: 'bold' }}>
         Câu {index + 1}
       </Typography>
     );
@@ -247,11 +269,11 @@ export default function QuizDetail() {
     );
 
     switch (effectiveType) {
-      case "multiple-choice":
-      case "reading-mcq":
-      case "picture-choice":
+      case 'multiple-choice':
+      case 'reading-mcq':
+      case 'picture-choice':
         return renderMultipleChoice();
-      case "listening":
+      case 'listening':
         return (
           <Box sx={{ mb: 3 }}>
             {questionNumber}
@@ -299,10 +321,10 @@ export default function QuizDetail() {
                 ))()}
           </Box>
         );
-      case "fill-sentence":
-      case "word-order":
-      case "word-bank":
-      case "writing":
+      case 'fill-sentence':
+      case 'word-order':
+      case 'word-bank':
+      case 'writing':
         return (
           <Box sx={{ mb: 3 }}>
             {questionNumber}
@@ -313,25 +335,23 @@ export default function QuizDetail() {
             </Typography>
             <TextField
               fullWidth
-              multiline={effectiveType === "writing"}
-              rows={effectiveType === "writing" ? 6 : 2}
+              multiline={effectiveType === 'writing'}
+              rows={effectiveType === 'writing' ? 6 : 2}
               variant="outlined"
               value={value}
-              onChange={(e) =>
-                handleAnswerChange(question._id, e.target.value)
-              }
+              onChange={(e) => handleAnswerChange(question._id, e.target.value)}
               placeholder="Nhập câu trả lời"
               disabled={disabled}
             />
           </Box>
         );
-      case "fill-blank": {
-        const blanks = question.title.split("____");
+      case 'fill-blank': {
+        const blanks = question.title.split('____');
         const answerArray = Array.isArray(answerValue)
           ? answerValue
-          : typeof answerValue === "string" && answerValue
-            ? answerValue.split(",").map((s) => s.trim())
-            : Array(blanks.length - 1).fill("");
+          : typeof answerValue === 'string' && answerValue
+            ? answerValue.split(',').map((s) => s.trim())
+            : Array(blanks.length - 1).fill('');
         return (
           <Box sx={{ mb: 3 }}>
             {questionNumber}
@@ -339,22 +359,22 @@ export default function QuizDetail() {
             {renderQuestionWordBank(question)}
             <Box
               sx={{
-                display: "flex",
-                flexWrap: "wrap",
-                alignItems: "center",
+                display: 'flex',
+                flexWrap: 'wrap',
+                alignItems: 'center',
                 gap: 1,
               }}
             >
               {blanks.map((part, idx) => (
                 <Box
                   key={idx}
-                  sx={{ display: "flex", alignItems: "center", gap: 0.5 }}
+                  sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}
                 >
                   <Typography component="span">{part}</Typography>
                   {idx < blanks.length - 1 && (
                     <TextField
                       size="small"
-                      value={answerArray[idx] ?? ""}
+                      value={answerArray[idx] ?? ''}
                       onChange={(e) => {
                         const next = [...answerArray];
                         next[idx] = e.target.value;
@@ -371,7 +391,7 @@ export default function QuizDetail() {
           </Box>
         );
       }
-      case "paragraph-fill":
+      case 'paragraph-fill':
         return (
           <Box sx={{ mb: 3 }}>
             {questionNumber}
@@ -384,16 +404,14 @@ export default function QuizDetail() {
               fullWidth
               size="small"
               value={value}
-              onChange={(e) =>
-                handleAnswerChange(question._id, e.target.value)
-              }
+              onChange={(e) => handleAnswerChange(question._id, e.target.value)}
               placeholder="Nhập từ cần điền"
               disabled={disabled}
             />
           </Box>
         );
-      case "dropdown-choice": {
-        const parts = question.title.split("____");
+      case 'dropdown-choice': {
+        const parts = question.title.split('____');
         const hasBlank = parts.length > 1;
         return (
           <Box sx={{ mb: 3 }}>
@@ -403,16 +421,16 @@ export default function QuizDetail() {
             {hasBlank ? (
               <Box
                 sx={{
-                  display: "flex",
-                  flexWrap: "wrap",
-                  alignItems: "center",
+                  display: 'flex',
+                  flexWrap: 'wrap',
+                  alignItems: 'center',
                   gap: 1,
                 }}
               >
                 {parts.map((part, idx) => (
                   <Box
                     key={idx}
-                    sx={{ display: "flex", alignItems: "center", gap: 0.5 }}
+                    sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}
                   >
                     <Typography component="span" variant="body1">
                       {part}
@@ -420,7 +438,7 @@ export default function QuizDetail() {
                     {idx < parts.length - 1 && (
                       <FormControl size="small" sx={{ minWidth: 120 }}>
                         <Select
-                          value={value || ""}
+                          value={value || ''}
                           onChange={(e) =>
                             handleAnswerChange(question._id, e.target.value)
                           }
@@ -445,7 +463,7 @@ export default function QuizDetail() {
               <FormControl fullWidth>
                 <InputLabel>{question.title}</InputLabel>
                 <Select
-                  value={value || ""}
+                  value={value || ''}
                   onChange={(e) =>
                     handleAnswerChange(question._id, e.target.value)
                   }
@@ -463,8 +481,8 @@ export default function QuizDetail() {
           </Box>
         );
       }
-      case "pronunciation":
-      case "video-recording":
+      case 'pronunciation':
+      case 'video-recording':
         return (
           <Box sx={{ mb: 3 }}>
             {questionNumber}
@@ -481,9 +499,7 @@ export default function QuizDetail() {
               multiline
               rows={4}
               value={value}
-              onChange={(e) =>
-                handleAnswerChange(question._id, e.target.value)
-              }
+              onChange={(e) => handleAnswerChange(question._id, e.target.value)}
               placeholder="Nhập câu trả lời"
               disabled={disabled}
             />
@@ -502,9 +518,7 @@ export default function QuizDetail() {
               fullWidth
               variant="outlined"
               value={value}
-              onChange={(e) =>
-                handleAnswerChange(question._id, e.target.value)
-              }
+              onChange={(e) => handleAnswerChange(question._id, e.target.value)}
               placeholder="Nhập câu trả lời"
               disabled={disabled}
             />
@@ -517,9 +531,9 @@ export default function QuizDetail() {
     return (
       <Box
         sx={{
-          display: "flex",
-          justifyContent: "center",
-          alignItems: "center",
+          display: 'flex',
+          justifyContent: 'center',
+          alignItems: 'center',
           minHeight: 400,
         }}
       >
@@ -533,7 +547,7 @@ export default function QuizDetail() {
       <Box>
         <Button
           startIcon={<ArrowBackIcon />}
-          onClick={() => navigate("/quizzes")}
+          onClick={() => navigate('/quizzes')}
           sx={{ mb: 2 }}
         >
           Quay lại
@@ -554,7 +568,7 @@ export default function QuizDetail() {
     <Box>
       <Button
         startIcon={<ArrowBackIcon />}
-        onClick={() => navigate("/quizzes")}
+        onClick={() => navigate('/quizzes')}
         sx={{ mb: 2 }}
       >
         Quay lại
@@ -564,21 +578,21 @@ export default function QuizDetail() {
         <CardContent>
           <Box
             sx={{
-              display: "flex",
-              justifyContent: "space-between",
-              alignItems: "center",
+              display: 'flex',
+              justifyContent: 'space-between',
+              alignItems: 'center',
               mb: 2,
             }}
           >
             <Typography variant="h5">{quiz.title}</Typography>
-            <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
+            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
               <TimerIcon />
               <Typography
                 variant="h6"
-                color={timeRemaining < 60 ? "error.main" : "inherit"}
+                color={timeRemaining < 60 ? 'error.main' : 'inherit'}
               >
-                {String(minutes).padStart(2, "0")}:
-                {String(seconds).padStart(2, "0")}
+                {String(minutes).padStart(2, '0')}:
+                {String(seconds).padStart(2, '0')}
               </Typography>
             </Box>
           </Box>
@@ -588,8 +602,8 @@ export default function QuizDetail() {
               <Box sx={{ mb: 2 }}>
                 <Box
                   sx={{
-                    display: "flex",
-                    alignItems: "center",
+                    display: 'flex',
+                    alignItems: 'center',
                     gap: 1,
                     mb: 1,
                   }}
@@ -605,8 +619,9 @@ export default function QuizDetail() {
                       }
                       size="small"
                       color={
-                        sectionTypeMap[currentSection.sectionType]
-                          ?.color as "primary" | "default"
+                        sectionTypeMap[currentSection.sectionType]?.color as
+                          | 'primary'
+                          | 'default'
                       }
                     />
                   )}
@@ -621,8 +636,8 @@ export default function QuizDetail() {
                   </Typography>
                 )}
                 <Typography variant="body2" color="text.secondary">
-                  Phần {currentSectionIndex + 1} / {quiz.sections?.length ?? 0} ·{" "}
-                  {currentSection.questions?.length ?? 0} câu hỏi
+                  Phần {currentSectionIndex + 1} / {quiz.sections?.length ?? 0}{' '}
+                  · {currentSection.questions?.length ?? 0} câu hỏi
                 </Typography>
               </Box>
 
@@ -631,30 +646,20 @@ export default function QuizDetail() {
                 value={progress}
                 sx={{ mt: 2, mb: 2 }}
               />
-              <Typography
-                variant="body2"
-                color="text.secondary"
-                sx={{ mb: 2 }}
-              >
-                Tổng tiến độ:{" "}
-                {questionsCompleted +
-                  (currentSection.questions?.length ?? 0)}{" "}
-                / {totalQuestions} câu hỏi
+              <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
+                Tổng tiến độ:{' '}
+                {questionsCompleted + (currentSection.questions?.length ?? 0)} /{' '}
+                {totalQuestions} câu hỏi
               </Typography>
 
               <Divider sx={{ my: 2 }} />
 
               {renderSectionMedia(currentSection) && (
-                <Box sx={{ mb: 3 }}>
-                  {renderSectionMedia(currentSection)}
-                </Box>
+                <Box sx={{ mb: 3 }}>{renderSectionMedia(currentSection)}</Box>
               )}
               {renderSectionWordBank(currentSection) && (
                 <Box sx={{ mb: 3 }}>
-                  <Typography
-                    variant="subtitle2"
-                    sx={{ width: "100%", mb: 1 }}
-                  >
+                  <Typography variant="subtitle2" sx={{ width: '100%', mb: 1 }}>
                     Word Bank:
                   </Typography>
                   {renderSectionWordBank(currentSection)}
@@ -663,11 +668,11 @@ export default function QuizDetail() {
 
               <Box sx={{ mb: 3 }}>
                 {(currentSection.questions ?? []).map((question, index) =>
-                  renderQuestion(question, currentSection, index)
+                  renderQuestion(question, currentSection, index),
                 )}
               </Box>
 
-              <Box sx={{ display: "flex", justifyContent: "space-between" }}>
+              <Box sx={{ display: 'flex', justifyContent: 'space-between' }}>
                 <Button
                   variant="outlined"
                   onClick={() =>
@@ -682,7 +687,7 @@ export default function QuizDetail() {
                   onClick={handleNext}
                   disabled={submitting}
                 >
-                  {isLastSection ? "Nộp bài" : "Phần tiếp"}
+                  {isLastSection ? 'Nộp bài' : 'Phần tiếp'}
                 </Button>
               </Box>
             </>
@@ -692,11 +697,13 @@ export default function QuizDetail() {
 
       <Dialog open={showResult} onClose={() => {}} maxWidth="sm" fullWidth>
         <DialogTitle>
-          <Box sx={{ display: "flex", alignItems: "center" }}>
+          <Box sx={{ display: 'flex', alignItems: 'center' }}>
             <CheckCircleIcon
               sx={{
                 color:
-                  result && result.percentage >= 60 ? "success.main" : "warning.main",
+                  result && result.percentage >= 60
+                    ? 'success.main'
+                    : 'warning.main',
                 mr: 1,
               }}
             />
@@ -711,7 +718,7 @@ export default function QuizDetail() {
                 align="center"
                 gutterBottom
                 color={
-                  result.percentage >= 60 ? "success.main" : "text.primary"
+                  result.percentage >= 60 ? 'success.main' : 'text.primary'
                 }
               >
                 {result.percentage.toFixed(1)}%
@@ -725,18 +732,18 @@ export default function QuizDetail() {
                 Điểm số: {result.score} / {result.maxScore}
               </Typography>
               <Alert
-                severity={result.percentage >= 60 ? "success" : "info"}
+                severity={result.percentage >= 60 ? 'success' : 'info'}
                 sx={{ mt: 2 }}
               >
                 {result.percentage >= 60
-                  ? "Chúc mừng! Bạn đã hoàn thành bài quiz."
-                  : "Bạn có thể làm lại để cải thiện điểm số."}
+                  ? 'Chúc mừng! Bạn đã hoàn thành bài quiz.'
+                  : 'Bạn có thể làm lại để cải thiện điểm số.'}
               </Alert>
             </Box>
           )}
         </DialogContent>
         <DialogActions>
-          <Button onClick={() => navigate("/quizzes")} variant="contained">
+          <Button onClick={() => navigate('/quizzes')} variant="contained">
             Quay lại danh sách quiz
           </Button>
         </DialogActions>

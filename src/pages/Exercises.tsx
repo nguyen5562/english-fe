@@ -1,5 +1,5 @@
-import { useState, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
+import { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import {
   Box,
   Typography,
@@ -17,24 +17,26 @@ import {
   ListItemButton,
   ListItemText,
   CircularProgress,
-} from "@mui/material";
-import { Assignment as AssignmentIcon } from "@mui/icons-material";
-import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
-import axios from "axios";
-import { useAuthStore } from "../store/auth.store";
-import { exerciseService } from "../services/exercise.service";
-import { courseService } from "../services/course.service";
-import { exerciseAttemptService } from "../services/exercise-attempt.service";
-import { toast } from "../utils/toast";
-import { buildSlugId } from "../utils/slug";
-import type { Exercise, Course, ExerciseAttempt } from "../types";
+} from '@mui/material';
+import { Assignment as AssignmentIcon } from '@mui/icons-material';
+import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
+import axios from 'axios';
+import { useAuthStore } from '../store/auth.store';
+import { exerciseService } from '../services/exercise.service';
+import { courseService } from '../services/course.service';
+import { exerciseAttemptService } from '../services/exercise-attempt.service';
+import { toast } from '../utils/toast';
+import { toSlug } from '../utils/slug';
+import type { Exercise, Course, ExerciseAttempt } from '../types';
 
 export default function Exercises() {
   const [exercises, setExercises] = useState<Exercise[]>([]);
   const [courses, setCourses] = useState<Course[]>([]);
-  const [exerciseAttempts, setExerciseAttempts] = useState<ExerciseAttempt[]>([]);
+  const [exerciseAttempts, setExerciseAttempts] = useState<ExerciseAttempt[]>(
+    [],
+  );
   const [loading, setLoading] = useState(false);
-  const [selectedCourse, setSelectedCourse] = useState<string>("all");
+  const [selectedCourse, setSelectedCourse] = useState<string>('all');
   const navigate = useNavigate();
   const user = useAuthStore((s) => s.user);
 
@@ -52,11 +54,12 @@ export default function Exercises() {
         // Fetch exercise attempts if user is logged in
         if (user?._id) {
           try {
-            const attemptsData = await exerciseAttemptService.getExerciseAttemptByUserId(user._id);
+            const attemptsData =
+              await exerciseAttemptService.getExerciseAttemptByUserId(user._id);
             setExerciseAttempts(attemptsData);
           } catch (e) {
             // Silently fail if attempts can't be loaded
-            console.error("Failed to load exercise attempts:", e);
+            console.error('Failed to load exercise attempts:', e);
           }
         }
       } catch (e: unknown) {
@@ -64,10 +67,10 @@ export default function Exercises() {
           const msg =
             (e.response?.data as { message?: string })?.message ??
             e.response?.statusText ??
-            "Không thể tải danh sách bài tập";
+            'Không thể tải danh sách bài tập';
           toast.error(String(msg));
         } else {
-          toast.error("Không thể tải danh sách bài tập");
+          toast.error('Không thể tải danh sách bài tập');
         }
       } finally {
         setLoading(false);
@@ -83,26 +86,26 @@ export default function Exercises() {
     {
       label: string;
       color?:
-        | "primary"
-        | "secondary"
-        | "error"
-        | "info"
-        | "success"
-        | "warning";
+        | 'primary'
+        | 'secondary'
+        | 'error'
+        | 'info'
+        | 'success'
+        | 'warning';
     }
   > = {
-    grammar: { label: "Grammar", color: "primary" },
-    vocabulary: { label: "Vocabulary", color: "success" },
-    listening: { label: "Listening", color: "info" },
-    reading: { label: "Reading", color: "warning" },
-    pronunciation: { label: "Pronunciation", color: "secondary" },
-    speaking: { label: "Speaking", color: "error" },
-    writing: { label: "Writing", color: "warning" },
-    mixed: { label: "Mixed" },
+    grammar: { label: 'Grammar', color: 'primary' },
+    vocabulary: { label: 'Vocabulary', color: 'success' },
+    listening: { label: 'Listening', color: 'info' },
+    reading: { label: 'Reading', color: 'warning' },
+    pronunciation: { label: 'Pronunciation', color: 'secondary' },
+    speaking: { label: 'Speaking', color: 'error' },
+    writing: { label: 'Writing', color: 'warning' },
+    mixed: { label: 'Mixed' },
   };
 
   const filteredExercises =
-    selectedCourse === "all"
+    selectedCourse === 'all'
       ? exercises
       : exercises.filter((e) => e.courseId === selectedCourse);
 
@@ -114,18 +117,19 @@ export default function Exercises() {
   // Helper function to get last attempt for a section
   const getLastAttemptForSection = (
     exerciseId: string,
-    sectionId: string
+    sectionId: string,
   ): { tries: number; score: number; maxScore: number } | null => {
     const attempts = getAttemptsForExercise(exerciseId);
     if (attempts.length === 0) return null;
 
     // Find the section attempt with most tries for this section
     let maxTries = 0;
-    let bestAttempt: { tries: number; score: number; maxScore: number } | null = null;
+    let bestAttempt: { tries: number; score: number; maxScore: number } | null =
+      null;
 
     attempts.forEach((attempt) => {
       const sectionAttempt = attempt.sectionAttempts?.find(
-        (sa) => sa.sectionId === sectionId
+        (sa) => sa.sectionId === sectionId,
       );
       if (sectionAttempt && sectionAttempt.tries > maxTries) {
         maxTries = sectionAttempt.tries;
@@ -150,9 +154,9 @@ export default function Exercises() {
     <Box>
       <Box
         sx={{
-          display: "flex",
-          justifyContent: "space-between",
-          alignItems: "center",
+          display: 'flex',
+          justifyContent: 'space-between',
+          alignItems: 'center',
           mb: 3,
         }}
       >
@@ -175,7 +179,7 @@ export default function Exercises() {
       </Box>
 
       {loading ? (
-        <Box sx={{ display: "flex", justifyContent: "center", p: 4 }}>
+        <Box sx={{ display: 'flex', justifyContent: 'center', p: 4 }}>
           <CircularProgress />
         </Box>
       ) : filteredExercises.length === 0 ? (
@@ -192,16 +196,22 @@ export default function Exercises() {
             // Calculate sections completed and overall percent
             const attempts = getAttemptsForExercise(exercise._id);
             const sectionsCompleted = new Set(
-              attempts.flatMap((a) => a.sectionAttempts?.map((sa) => sa.sectionId))
+              attempts.flatMap((a) =>
+                a.sectionAttempts?.map((sa) => sa.sectionId),
+              ),
             ).size;
 
             const totalSections = exercise.sections.length;
             let totalPercent = 0;
 
             exercise.sections.forEach((section) => {
-              const lastAttempt = getLastAttemptForSection(exercise._id, section._id);
+              const lastAttempt = getLastAttemptForSection(
+                exercise._id,
+                section._id,
+              );
               if (lastAttempt) {
-                totalPercent += (lastAttempt.score / lastAttempt.maxScore) * 100;
+                totalPercent +=
+                  (lastAttempt.score / lastAttempt.maxScore) * 100;
               }
             });
 
@@ -217,20 +227,20 @@ export default function Exercises() {
                 <AccordionSummary expandIcon={<ExpandMoreIcon />}>
                   <Box
                     sx={{
-                      display: "flex",
-                      alignItems: "center",
-                      width: "100%",
+                      display: 'flex',
+                      alignItems: 'center',
+                      width: '100%',
                     }}
                   >
                     <AssignmentIcon
-                      sx={{ fontSize: 36, color: "primary.main", mr: 2 }}
+                      sx={{ fontSize: 36, color: 'primary.main', mr: 2 }}
                     />
                     <Box sx={{ flexGrow: 1 }}>
                       <Typography variant="h6">{exercise.title}</Typography>
                       <Typography
                         variant="body2"
                         color="text.secondary"
-                        sx={{ display: "flex", gap: 1, alignItems: "center" }}
+                        sx={{ display: 'flex', gap: 1, alignItems: 'center' }}
                       >
                         <span>
                           {
@@ -240,13 +250,13 @@ export default function Exercises() {
                         </span>
                         <span>·</span>
                         <span>
-                          {sectionsCompleted}/{(exercise.sections ?? []).length}{" "}
+                          {sectionsCompleted}/{(exercise.sections ?? []).length}{' '}
                           phần đã làm
                         </span>
                         <span>·</span>
                         <span>Điểm tổng: {overallPercent}%</span>
                       </Typography>
-                      <Box sx={{ display: "flex", gap: 1, mt: 1 }}>
+                      <Box sx={{ display: 'flex', gap: 1, mt: 1 }}>
                         <Chip
                           label={`${(exercise.sections ?? []).length} phần`}
                           size="small"
@@ -257,7 +267,7 @@ export default function Exercises() {
                           label={`${(exercise.sections ?? []).reduce(
                             (total, section) =>
                               total + (section.questions?.length ?? 0),
-                            0
+                            0,
                           )} câu hỏi`}
                           size="small"
                         />
@@ -277,12 +287,12 @@ export default function Exercises() {
                     {(exercise.sections ?? []).map((section, idx) => {
                       const lastAttempt = getLastAttemptForSection(
                         exercise._id,
-                        section._id
+                        section._id,
                       );
                       const tries = lastAttempt ? lastAttempt.tries : 0;
                       const lastPercent = lastAttempt
                         ? Math.round(
-                            (lastAttempt.score / lastAttempt.maxScore) * 100
+                            (lastAttempt.score / lastAttempt.maxScore) * 100,
                           )
                         : null;
 
@@ -290,18 +300,20 @@ export default function Exercises() {
                         <ListItemButton
                           key={section._id}
                           onClick={() =>
-                            navigate(`/exercises/${buildSlugId(exercise.title ?? "", exercise._id)}?section=${idx}`)
+                            navigate(
+                              `/exercises/${toSlug(exercise.title ?? '')}?section=${idx}`,
+                            )
                           }
                           sx={{
-                            display: "flex",
-                            justifyContent: "space-between",
-                            alignItems: "center",
+                            display: 'flex',
+                            justifyContent: 'space-between',
+                            alignItems: 'center',
                           }}
                         >
                           <Box
                             sx={{
-                              display: "flex",
-                              alignItems: "center",
+                              display: 'flex',
+                              alignItems: 'center',
                               gap: 1,
                             }}
                           >
@@ -317,27 +329,27 @@ export default function Exercises() {
                               }
                               size="small"
                               color={
+                                // eslint-disable-next-line @typescript-eslint/no-explicit-any
                                 sectionTypeMap[section.sectionType]
-                                  // eslint-disable-next-line @typescript-eslint/no-explicit-any
                                   ?.color as any
                               }
                               variant={
                                 sectionTypeMap[section.sectionType]?.color
-                                  ? "filled"
-                                  : "outlined"
+                                  ? 'filled'
+                                  : 'outlined'
                               }
-                              sx={{ textTransform: "capitalize", ml: 1 }}
+                              sx={{ textTransform: 'capitalize', ml: 1 }}
                             />
                           </Box>
 
                           <Box
                             sx={{
-                              display: "flex",
+                              display: 'flex',
                               gap: 2,
-                              alignItems: "center",
+                              alignItems: 'center',
                             }}
                           >
-                            <Box sx={{ textAlign: "center" }}>
+                            <Box sx={{ textAlign: 'center' }}>
                               <Typography
                                 variant="body2"
                                 color="text.secondary"
@@ -348,12 +360,12 @@ export default function Exercises() {
                                 variant="body2"
                                 color="text.secondary"
                               >
-                                {tries === 1 ? "try" : "tries"}
+                                {tries === 1 ? 'try' : 'tries'}
                               </Typography>
                             </Box>
-                            <Box sx={{ textAlign: "center" }}>
+                            <Box sx={{ textAlign: 'center' }}>
                               <Typography variant="body2">
-                                {lastPercent !== null ? `${lastPercent}%` : "-"}
+                                {lastPercent !== null ? `${lastPercent}%` : '-'}
                               </Typography>
                               <Typography
                                 variant="caption"

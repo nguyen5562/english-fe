@@ -1,4 +1,4 @@
-import { toast as sonnerToast } from "sonner";
+import { toast as sonnerToast } from 'sonner';
 
 export const toast = {
   success: (message: string) => {
@@ -30,14 +30,14 @@ export const showConfirm = (message: string): Promise<boolean> => {
     const toastId = sonnerToast(message, {
       duration: Infinity,
       action: {
-        label: "Xác nhận",
+        label: 'Xác nhận',
         onClick: () => {
           sonnerToast.dismiss(toastId);
           resolve(true);
         },
       },
       cancel: {
-        label: "Hủy",
+        label: 'Hủy',
         onClick: () => {
           sonnerToast.dismiss(toastId);
           resolve(false);

@@ -1,12 +1,12 @@
-import { API_ROUTES } from "../const/apiConfig";
-import type { Exercise } from "../types";
+import { API_ROUTES } from '../const/apiConfig';
+import type { Exercise } from '../types';
 import type {
   CreateExerciseDto,
   QuestionDto,
   SectionDto,
   UpdateExerciseDto,
-} from "../types/dto";
-import { api } from "./api";
+} from '../types/dto';
+import { api } from './api';
 
 // Exercise
 const createExercise = async (dto: CreateExerciseDto): Promise<Exercise> => {
@@ -16,7 +16,7 @@ const createExercise = async (dto: CreateExerciseDto): Promise<Exercise> => {
 
 const updateExercise = async (
   id: string,
-  dto: UpdateExerciseDto
+  dto: UpdateExerciseDto,
 ): Promise<Exercise> => {
   const response = await api.put(`${API_ROUTES.EXERCISE}/${id}`, dto);
   return response.data;
@@ -39,11 +39,11 @@ const getExerciseById = async (id: string): Promise<Exercise> => {
 // Section
 const addSection = async (
   exerciseId: string,
-  section: SectionDto
+  section: SectionDto,
 ): Promise<Exercise> => {
   const response = await api.post(
     `${API_ROUTES.EXERCISE}/${exerciseId}/section`,
-    section
+    section,
   );
   return response.data;
 };
@@ -51,21 +51,21 @@ const addSection = async (
 const updateSection = async (
   exerciseId: string,
   sectionId: string,
-  section: SectionDto
+  section: SectionDto,
 ): Promise<Exercise> => {
   const response = await api.put(
     `${API_ROUTES.EXERCISE}/${exerciseId}/section/${sectionId}`,
-    section
+    section,
   );
   return response.data;
 };
 
 const removeSection = async (
   exerciseId: string,
-  sectionId: string
+  sectionId: string,
 ): Promise<Exercise> => {
   const response = await api.delete(
-    `${API_ROUTES.EXERCISE}/${exerciseId}/section/${sectionId}`
+    `${API_ROUTES.EXERCISE}/${exerciseId}/section/${sectionId}`,
   );
   return response.data;
 };
@@ -74,11 +74,11 @@ const removeSection = async (
 const addQuestion = async (
   exerciseId: string,
   sectionId: string,
-  question: QuestionDto
+  question: QuestionDto,
 ): Promise<Exercise> => {
   const reponse = await api.post(
     `${API_ROUTES.EXERCISE}/${exerciseId}/section/${sectionId}/question`,
-    question
+    question,
   );
   return reponse.data;
 };
@@ -87,11 +87,11 @@ const updateQuestion = async (
   exerciseId: string,
   sectionId: string,
   questionId: string,
-  question: QuestionDto
+  question: QuestionDto,
 ): Promise<Exercise> => {
   const response = await api.put(
     `${API_ROUTES.EXERCISE}/${exerciseId}/section/${sectionId}/question/${questionId}`,
-    question
+    question,
   );
   return response.data;
 };
@@ -99,10 +99,10 @@ const updateQuestion = async (
 const removeQuestion = async (
   exerciseId: string,
   sectionId: string,
-  questionId: string
+  questionId: string,
 ): Promise<Exercise> => {
   const response = await api.delete(
-    `${API_ROUTES.EXERCISE}/${exerciseId}/section/${sectionId}/question/${questionId}`
+    `${API_ROUTES.EXERCISE}/${exerciseId}/section/${sectionId}/question/${questionId}`,
   );
   return response.data;
 };

@@ -23,53 +23,106 @@ import {
   MenuItem,
   InputLabel,
 } from '@mui/material';
-import { ArrowBack as ArrowBackIcon, CheckCircle as CheckCircleIcon } from '@mui/icons-material';
+import {
+  ArrowBack as ArrowBackIcon,
+  CheckCircle as CheckCircleIcon,
+} from '@mui/icons-material';
 import axios from 'axios';
 import { exerciseService } from '../services/exercise.service';
 import { exerciseAttemptService } from '../services/exercise-attempt.service';
 import { useAuthStore } from '../store/auth.store';
-import type { Exercise, Question, QuestionType, ExerciseAttempt } from '../types';
-import { sectionTypeMap, renderQuestionMedia, renderQuestionWordBank, renderSectionMedia, renderSectionWordBank, formatAnswer, calculateScore } from '../utils/questionHelpers';
-import { parseSlugId, buildSlugId } from '../utils/slug';
+import type {
+  Exercise,
+  Question,
+  QuestionType,
+  ExerciseAttempt,
+} from '../types';
+import {
+  sectionTypeMap,
+  renderQuestionMedia,
+  renderQuestionWordBank,
+  renderSectionMedia,
+  renderSectionWordBank,
+  formatAnswer,
+  calculateScore,
+} from '../utils/questionHelpers';
+import { toSlug } from '../utils/slug';
 import { toast } from '../utils/toast';
 import type { SectionAttemptDto } from '../types/dto';
 
 export default function ExerciseDetail() {
   const { slug } = useParams<{ slug: string }>();
-  const id = parseSlugId(slug);
+  const [id, setId] = useState<string | null>(null);
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const user = useAuthStore((s) => s.user);
   const userId = user?._id;
+
+  useEffect(() => {
+    if (!slug) return;
+    setId(null);
+    setLoadingExercise(true);
+    const OBJECT_ID_REGEX = /^[a-f0-9]{24}$/i;
+    if (OBJECT_ID_REGEX.test(slug)) {
+      setId(slug);
+      return;
+    }
+    // Lookup ID from slug
+    exerciseService
+      .getAllExercise()
+      .then((exercises) => {
+        const found = exercises.find((e) => toSlug(e.title) === slug);
+        setId(found?._id ?? null);
+        if (!found) {
+          toast.error('Không tìm thấy bài tập');
+          setLoadingExercise(false);
+        }
+      })
+      .catch(() => {
+        toast.error('Lỗi khi tìm bài tập');
+        setLoadingExercise(false);
+      });
+  }, [slug]);
 
   const [exercise, setExercise] = useState<Exercise | null>(null);
   const [loadingExercise, setLoadingExercise] = useState(true);
   const [attempt, setAttempt] = useState<ExerciseAttempt | null>(null);
 
   const initialSectionIndex = Number(searchParams.get('section') ?? 0);
-  const [currentSectionIndex, setCurrentSectionIndex] = useState(initialSectionIndex);
+  const [currentSectionIndex, setCurrentSectionIndex] =
+    useState(initialSectionIndex);
   const [answers, setAnswers] = useState<Record<string, string | string[]>>({});
   const [showResult, setShowResult] = useState(false);
-  const [score, setScore] = useState<{ score: number; maxScore: number } | null>(null);
-  const [checkedResults, setCheckedResults] = useState<Record<string, { graded: boolean; correct?: boolean; correctAnswer: string | string[] }>>({});
-  const [recordingStatus, setRecordingStatus] = useState<Record<string, 'idle' | 'recording' | 'recorded'>>({});
-  const [recordings, setRecordings] = useState<Record<string, string | null>>({});
+  const [score, setScore] = useState<{
+    score: number;
+    maxScore: number;
+  } | null>(null);
+  const [checkedResults, setCheckedResults] = useState<
+    Record<
+      string,
+      { graded: boolean; correct?: boolean; correctAnswer: string | string[] }
+    >
+  >({});
+  const [recordingStatus, setRecordingStatus] = useState<
+    Record<string, 'idle' | 'recording' | 'recorded'>
+  >({});
+  const [recordings, setRecordings] = useState<Record<string, string | null>>(
+    {},
+  );
   const mediaRecordersRef = useRef<Record<string, MediaRecorder | null>>({});
 
-  const [lastAttempt, setLastAttempt] = useState<{ sectionId: string; tries: number; score: number; answers: { questionId: string; answer: string[] }[] } | null>(null);
+  const [lastAttempt, setLastAttempt] = useState<{
+    sectionId: string;
+    tries: number;
+    score: number;
+    answers: { questionId: string; answer: string[] }[];
+  } | null>(null);
   const [viewingSaved, setViewingSaved] = useState(false);
   const [ignoringSaved, setIgnoringSaved] = useState(false);
   const [retryKey, setRetryKey] = useState<number>(0);
 
   useEffect(() => {
-    if (!id) {
-      const t = window.setTimeout(() => {
-        setExercise(null);
-        setAnswers({});
-        setLoadingExercise(false);
-      }, 0);
-      return () => window.clearTimeout(t);
-    }
+    if (!id) return;
     let cancelled = false;
     const loadId = window.setTimeout(() => setLoadingExercise(true), 0);
     exerciseService
@@ -88,7 +141,10 @@ export default function ExerciseDetail() {
       })
       .catch((e: unknown) => {
         if (!cancelled && axios.isAxiosError(e)) {
-          const msg = (e.response?.data as { message?: string })?.message ?? e.response?.statusText ?? 'Không thể tải bài tập';
+          const msg =
+            (e.response?.data as { message?: string })?.message ??
+            e.response?.statusText ??
+            'Không thể tải bài tập';
           toast.error(String(msg));
         }
       })
@@ -104,18 +160,30 @@ export default function ExerciseDetail() {
   useEffect(() => {
     if (!userId || !id) return;
     let cancelled = false;
-    exerciseAttemptService.getExerciseAttemptByUserId(userId).then((list) => {
-      if (cancelled) return;
-      const exAttempt = list.find((a) => a.exerciseId === id);
-      setAttempt(exAttempt ?? null);
-    }).catch(() => {});
-    return () => { cancelled = true; };
+    exerciseAttemptService
+      .getExerciseAttemptByUserId(userId)
+      .then((list) => {
+        if (cancelled) return;
+        const exAttempt = list.find((a) => a.exerciseId === id);
+        setAttempt(exAttempt ?? null);
+      })
+      .catch(() => {});
+    return () => {
+      cancelled = true;
+    };
   }, [userId, id]);
 
   useEffect(() => {
     if (!exercise) return;
-    const clamped = Math.max(0, Math.min(initialSectionIndex, (exercise.sections?.length ?? 1) - 1));
-    const t = window.setTimeout(() => setCurrentSectionIndex((prev) => (prev === clamped ? prev : clamped)), 0);
+    const clamped = Math.max(
+      0,
+      Math.min(initialSectionIndex, (exercise.sections?.length ?? 1) - 1),
+    );
+    const t = window.setTimeout(
+      () =>
+        setCurrentSectionIndex((prev) => (prev === clamped ? prev : clamped)),
+      0,
+    );
     return () => window.clearTimeout(t);
   }, [exercise, initialSectionIndex]);
 
@@ -130,8 +198,9 @@ export default function ExerciseDetail() {
 
   const isSectionGraded = useCallback(
     (section: Exercise['sections'][number]) =>
-      section.questionType !== 'pronunciation' && section.questionType !== 'video-recording',
-    []
+      section.questionType !== 'pronunciation' &&
+      section.questionType !== 'video-recording',
+    [],
   );
 
   useEffect(() => {
@@ -142,7 +211,9 @@ export default function ExerciseDetail() {
     const section = exercise.sections?.[currentSectionIndex];
     if (!section) return;
 
-    const sectionAttempts = attempt.sectionAttempts?.filter((sa) => sa.sectionId === section._id) ?? [];
+    const sectionAttempts =
+      attempt.sectionAttempts?.filter((sa) => sa.sectionId === section._id) ??
+      [];
     if (sectionAttempts.length === 0) {
       clearLoadedState();
       return;
@@ -169,38 +240,64 @@ export default function ExerciseDetail() {
         (last.answers ?? []).forEach((a) => {
           savedAnswers[a.questionId] = a.answer;
         });
-        const { score: totalScore, maxScore } = calculateScore(section.questions ?? [], savedAnswers);
-        const results: Record<string, { graded: boolean; correct?: boolean; correctAnswer: string | string[] }> = {};
+        const { score: totalScore, maxScore } = calculateScore(
+          section.questions ?? [],
+          savedAnswers,
+        );
+        const results: Record<
+          string,
+          {
+            graded: boolean;
+            correct?: boolean;
+            correctAnswer: string | string[];
+          }
+        > = {};
         (section.questions ?? []).forEach((q) => {
-          const ansObj = (last.answers ?? []).find((x) => x.questionId === q._id);
+          const ansObj = (last.answers ?? []).find(
+            (x) => x.questionId === q._id,
+          );
           const userAnswer = ansObj ? ansObj.answer : [];
           const correctAnswer = q.correctAnswer ?? [];
           const correct =
             userAnswer.length === correctAnswer.length &&
-            JSON.stringify([...userAnswer].sort()) === JSON.stringify([...correctAnswer].sort());
+            JSON.stringify([...userAnswer].sort()) ===
+              JSON.stringify([...correctAnswer].sort());
           results[q._id] = { graded: true, correct, correctAnswer };
         });
         setCheckedResults(results);
         setScore({ score: totalScore, maxScore });
         setViewingSaved(true);
       } else {
-        const results: Record<string, { graded: boolean; correctAnswer: string | string[] }> = {};
+        const results: Record<
+          string,
+          { graded: boolean; correctAnswer: string | string[] }
+        > = {};
         (section.questions ?? []).forEach((q) => {
-          results[q._id] = { graded: false, correctAnswer: q.correctAnswer ?? [] };
+          results[q._id] = {
+            graded: false,
+            correctAnswer: q.correctAnswer ?? [],
+          };
         });
         setCheckedResults(results);
         setScore(null);
         setViewingSaved(false);
       }
     }, 0);
-  }, [currentSectionIndex, exercise, attempt, ignoringSaved, isSectionGraded, userId]);
+  }, [
+    currentSectionIndex,
+    exercise,
+    attempt,
+    ignoringSaved,
+    isSectionGraded,
+    userId,
+  ]);
 
   useEffect(() => {
     const t = window.setTimeout(() => setIgnoringSaved(false), 0);
     return () => window.clearTimeout(t);
   }, [currentSectionIndex]);
 
-  if (loadingExercise || !exercise) {
+  if (loadingExercise) {
     return (
       <Box sx={{ display: 'flex', justifyContent: 'center', p: 4 }}>
         <Typography>Đang tải...</Typography>
@@ -208,16 +305,41 @@ export default function ExerciseDetail() {
     );
   }
 
-  const allQuestions = (exercise.sections ?? []).flatMap((section) => section.questions ?? []);
+  if (!exercise) {
+    return (
+      <Box>
+        <Button
+          startIcon={<ArrowBackIcon />}
+          onClick={() => navigate('/exercises')}
+          sx={{ mb: 2 }}
+        >
+          Quay lại
+        </Button>
+        <Typography color="text.secondary">
+          Không tìm thấy bài tập hoặc đã hết hạn.
+        </Typography>
+      </Box>
+    );
+  }
+
+  const allQuestions = (exercise.sections ?? []).flatMap(
+    (section) => section.questions ?? [],
+  );
   const currentSection = exercise.sections?.[currentSectionIndex];
 
   if (!currentSection) {
     return (
       <Box>
-        <Button startIcon={<ArrowBackIcon />} onClick={() => navigate('/exercises')} sx={{ mb: 2 }}>
+        <Button
+          startIcon={<ArrowBackIcon />}
+          onClick={() => navigate('/exercises')}
+          sx={{ mb: 2 }}
+        >
           Quay lại
         </Button>
-        <Typography color="text.secondary">Bài tập không có phần nào hoặc phần không tồn tại.</Typography>
+        <Typography color="text.secondary">
+          Bài tập không có phần nào hoặc phần không tồn tại.
+        </Typography>
       </Box>
     );
   }
@@ -264,26 +386,39 @@ export default function ExerciseDetail() {
   };
 
   const handleAnswerChange = (questionId: string, value: string | string[]) => {
-    setAnswers(prev => ({ ...prev, [questionId]: value }));
+    setAnswers((prev) => ({ ...prev, [questionId]: value }));
   };
 
   const handleCheckSection = async () => {
     if (!currentSection) return;
     const section = currentSection;
-    const results: Record<string, { graded: boolean; correct?: boolean; correctAnswer: string | string[] }> = {};
-    const sectionIsGraded = section.questionType !== 'pronunciation' && section.questionType !== 'video-recording';
+    const results: Record<
+      string,
+      { graded: boolean; correct?: boolean; correctAnswer: string | string[] }
+    > = {};
+    const sectionIsGraded =
+      section.questionType !== 'pronunciation' &&
+      section.questionType !== 'video-recording';
 
     (section.questions ?? []).forEach((question) => {
       if (!sectionIsGraded) {
-        results[question._id] = { graded: false, correctAnswer: question.correctAnswer ?? [] };
+        results[question._id] = {
+          graded: false,
+          correctAnswer: question.correctAnswer ?? [],
+        };
         return;
       }
       const userAnswer = answers[question._id];
       const correctAnswer = question.correctAnswer ?? [];
-      const userArr = Array.isArray(userAnswer) ? userAnswer : userAnswer != null ? [String(userAnswer)] : [];
+      const userArr = Array.isArray(userAnswer)
+        ? userAnswer
+        : userAnswer != null
+          ? [String(userAnswer)]
+          : [];
       const correct =
         userArr.length === correctAnswer.length &&
-        JSON.stringify([...userArr].sort()) === JSON.stringify([...correctAnswer].sort());
+        JSON.stringify([...userArr].sort()) ===
+          JSON.stringify([...correctAnswer].sort());
       results[question._id] = { graded: true, correct, correctAnswer };
     });
 
@@ -296,7 +431,9 @@ export default function ExerciseDetail() {
     setShowResult(true);
 
     if (userId) {
-      const sectionAnswers: SectionAttemptDto['answers'] = (section.questions ?? []).map((q) => {
+      const sectionAnswers: SectionAttemptDto['answers'] = (
+        section.questions ?? []
+      ).map((q) => {
         const a = answers[q._id];
         const arr = Array.isArray(a) ? a : a != null ? [String(a)] : [];
         return { questionId: q._id, answer: arr };
@@ -305,10 +442,12 @@ export default function ExerciseDetail() {
       try {
         let attemptId = attempt?._id;
         if (!attemptId) {
-          const newAttempt = await exerciseAttemptService.createExerciseAttempt({
-            exerciseId: exercise._id,
-            userId,
-          });
+          const newAttempt = await exerciseAttemptService.createExerciseAttempt(
+            {
+              exerciseId: exercise._id,
+              userId,
+            },
+          );
           attemptId = newAttempt._id;
           setAttempt(newAttempt);
         }
@@ -317,11 +456,15 @@ export default function ExerciseDetail() {
           answers: sectionAnswers,
         });
         setIgnoringSaved(false);
-        const updated = await exerciseAttemptService.getExerciseAttemptById(attemptId);
+        const updated =
+          await exerciseAttemptService.getExerciseAttemptById(attemptId);
         setAttempt(updated);
       } catch (e: unknown) {
         if (axios.isAxiosError(e)) {
-          const msg = (e.response?.data as { message?: string })?.message ?? e.response?.statusText ?? 'Không thể lưu kết quả';
+          const msg =
+            (e.response?.data as { message?: string })?.message ??
+            e.response?.statusText ??
+            'Không thể lưu kết quả';
           toast.error(String(msg));
         } else {
           toast.error('Không thể lưu kết quả');
@@ -334,19 +477,31 @@ export default function ExerciseDetail() {
     (section.questions ?? []).forEach((q) => {
       const r = mediaRecordersRef.current[q._id];
       if (r && r.state === 'recording') {
-        try { r.stop(); } catch { /* ignore */ }
-        try { r.stream.getTracks().forEach((t) => t.stop()); } catch { /* ignore */ }
+        try {
+          r.stop();
+        } catch {
+          /* ignore */
+        }
+        try {
+          r.stream.getTracks().forEach((t) => t.stop());
+        } catch {
+          /* ignore */
+        }
       }
       mediaRecordersRef.current[q._id] = null;
     });
     setRecordings((prev) => {
       const next = { ...prev };
-      (section.questions ?? []).forEach((q) => { next[q._id] = null; });
+      (section.questions ?? []).forEach((q) => {
+        next[q._id] = null;
+      });
       return next;
     });
     setRecordingStatus((prev) => {
       const next = { ...prev };
-      (section.questions ?? []).forEach((q) => { next[q._id] = 'idle'; });
+      (section.questions ?? []).forEach((q) => {
+        next[q._id] = 'idle';
+      });
       return next;
     });
   };
@@ -410,7 +565,12 @@ export default function ExerciseDetail() {
               <FormControlLabel
                 key={index}
                 value={option}
-                control={<Radio key={`${question._id}-${index}-${retryKey}`} disabled={viewingSaved} />}
+                control={
+                  <Radio
+                    key={`${question._id}-${index}-${retryKey}`}
+                    disabled={viewingSaved}
+                  />
+                }
                 label={option}
               />
             ))}
@@ -419,7 +579,9 @@ export default function ExerciseDetail() {
       </Box>
     );
 
-    const questionType: QuestionType | undefined = (question as Question & { type?: QuestionType }).type ?? sectionQuestionType;
+    const questionType: QuestionType | undefined =
+      (question as Question & { type?: QuestionType }).type ??
+      sectionQuestionType;
 
     switch (questionType) {
       case 'multiple-choice':
@@ -442,17 +604,30 @@ export default function ExerciseDetail() {
             {renderQuestionMedia(question)}
             {renderQuestionWordBankWithHandler()}
             {hasBlank ? (
-              <Box sx={{ display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: 1 }}>
+              <Box
+                sx={{
+                  display: 'flex',
+                  flexWrap: 'wrap',
+                  alignItems: 'center',
+                  gap: 1,
+                }}
+              >
                 {parts.map((part, index) => (
-                  <Box key={index} sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
+                  <Box
+                    key={index}
+                    sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}
+                  >
                     <Typography component="span" variant="body1">
                       {part}
                     </Typography>
                     {index < parts.length - 1 && (
                       <FormControl size="small" sx={{ minWidth: 120 }}>
-                        <Select key={`${question._id}-${index}-${retryKey}`}
+                        <Select
+                          key={`${question._id}-${index}-${retryKey}`}
                           value={value || ''}
-                          onChange={(e) => handleAnswerChange(question._id, e.target.value)}
+                          onChange={(e) =>
+                            handleAnswerChange(question._id, e.target.value)
+                          }
                           displayEmpty
                           disabled={viewingSaved}
                         >
@@ -473,9 +648,12 @@ export default function ExerciseDetail() {
             ) : (
               <FormControl fullWidth>
                 <InputLabel>{question.title}</InputLabel>
-                <Select key={`${question._id}-${retryKey}`}
+                <Select
+                  key={`${question._id}-${retryKey}`}
                   value={value || ''}
-                  onChange={(e) => handleAnswerChange(question._id, e.target.value)}
+                  onChange={(e) =>
+                    handleAnswerChange(question._id, e.target.value)
+                  }
                   label={question.title}
                   disabled={viewingSaved}
                 >
@@ -604,27 +782,26 @@ export default function ExerciseDetail() {
           </Box>
         );
 
-      case 'word-bank':
-        {
-          return (
-            <Box>
-              {renderQuestionMedia(question)}
-              {renderQuestionWordBankWithHandler()}
-              <Typography variant="body1" gutterBottom>
-                {question.title}
-              </Typography>
-              <TextField
-                key={`${question._id}-${retryKey}`}
-                fullWidth
-                variant="outlined"
-                value={value}
-                onChange={(e) => handleAnswerChange(question._id, e.target.value)}
-                placeholder="Nhập câu trả lời của bạn"
-                disabled={viewingSaved}
-              />
-            </Box>
-          );
-        }
+      case 'word-bank': {
+        return (
+          <Box>
+            {renderQuestionMedia(question)}
+            {renderQuestionWordBankWithHandler()}
+            <Typography variant="body1" gutterBottom>
+              {question.title}
+            </Typography>
+            <TextField
+              key={`${question._id}-${retryKey}`}
+              fullWidth
+              variant="outlined"
+              value={value}
+              onChange={(e) => handleAnswerChange(question._id, e.target.value)}
+              placeholder="Nhập câu trả lời của bạn"
+              disabled={viewingSaved}
+            />
+          </Box>
+        );
+      }
 
       case 'fill-blank': {
         // Nghe và điền từ vào chỗ trống - mỗi câu có nhiều chỗ trống
@@ -641,9 +818,20 @@ export default function ExerciseDetail() {
           <Box>
             {renderQuestionMedia(question)}
             {renderQuestionWordBankWithHandler()}
-            <Box sx={{ display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: 1, mb: 2 }}>
+            <Box
+              sx={{
+                display: 'flex',
+                flexWrap: 'wrap',
+                alignItems: 'center',
+                gap: 1,
+                mb: 2,
+              }}
+            >
               {blanks.map((part, index) => (
-                <Box key={index} sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
+                <Box
+                  key={index}
+                  sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}
+                >
                   <Typography component="span">{part}</Typography>
                   {index < blanks.length - 1 && (
                     <TextField
@@ -653,7 +841,10 @@ export default function ExerciseDetail() {
                       onChange={(e) => {
                         const newArray = [...answerArray];
                         newArray[index] = e.target.value;
-                        setAnswers((prev) => ({ ...prev, [question._id]: newArray }));
+                        setAnswers((prev) => ({
+                          ...prev,
+                          [question._id]: newArray,
+                        }));
                       }}
                       sx={{ width: 100 }}
                       placeholder="..."
@@ -790,7 +981,11 @@ export default function ExerciseDetail() {
 
   return (
     <Box>
-      <Button startIcon={<ArrowBackIcon />} onClick={() => navigate('/exercises')} sx={{ mb: 2 }}>
+      <Button
+        startIcon={<ArrowBackIcon />}
+        onClick={() => navigate('/exercises')}
+        sx={{ mb: 2 }}
+      >
         Quay lại
       </Button>
 
@@ -801,7 +996,8 @@ export default function ExerciseDetail() {
               {exercise.title}
             </Typography>
             <Typography variant="body2" color="text.secondary">
-              Phần {currentSectionIndex + 1} / {exercise.sections.length} · Tổng số câu hỏi: {allQuestions.length}
+              Phần {currentSectionIndex + 1} / {exercise.sections.length} · Tổng
+              số câu hỏi: {allQuestions.length}
             </Typography>
           </Box>
 
@@ -812,11 +1008,18 @@ export default function ExerciseDetail() {
                 Phần {currentSectionIndex + 1}: {currentSection.title}
               </Typography>
               <Chip
-                label={sectionTypeMap[currentSection.sectionType]?.label ?? currentSection.sectionType}
+                label={
+                  sectionTypeMap[currentSection.sectionType]?.label ??
+                  currentSection.sectionType
+                }
                 size="small"
                 // eslint-disable-next-line @typescript-eslint/no-explicit-any
                 color={sectionTypeMap[currentSection.sectionType]?.color as any}
-                variant={sectionTypeMap[currentSection.sectionType]?.color ? 'filled' : 'outlined'}
+                variant={
+                  sectionTypeMap[currentSection.sectionType]?.color
+                    ? 'filled'
+                    : 'outlined'
+                }
               />
             </Box>
 
@@ -830,7 +1033,8 @@ export default function ExerciseDetail() {
             {renderSectionWordBank(currentSection)}
 
             {/* Hiển thị đặc biệt cho paragraph-fill: passage với input fields inline */}
-            {currentSection.questionType === 'paragraph-fill' && currentSection.passage ? (
+            {currentSection.questionType === 'paragraph-fill' &&
+            currentSection.passage ? (
               <Box
                 sx={{
                   p: 2,
@@ -845,25 +1049,47 @@ export default function ExerciseDetail() {
                   // Parse passage để tìm các chỗ trống và thay thế bằng input fields
                   const parts = currentSection.passage.split('____');
                   return (
-                    <Box sx={{ display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: 0.5 }}>
+                    <Box
+                      sx={{
+                        display: 'flex',
+                        flexWrap: 'wrap',
+                        alignItems: 'center',
+                        gap: 0.5,
+                      }}
+                    >
                       {parts.map((part, index) => (
-                        <Box key={index} sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
+                        <Box
+                          key={index}
+                          sx={{
+                            display: 'flex',
+                            alignItems: 'center',
+                            gap: 0.5,
+                          }}
+                        >
                           <Typography component="span" variant="body1">
                             {part}
                           </Typography>
-                          {index < parts.length - 1 && currentSection.questions[index] && (
-                            <TextField
-                              key={`${currentSection.questions[index]._id}-${retryKey}`}
-                              size="small"
-                              value={(answers[currentSection.questions[index]._id] as string) || ''}
-                              onChange={(e) =>
-                                handleAnswerChange(currentSection.questions[index]._id, e.target.value)
-                              }
-                              sx={{ width: 120, '& input': { py: 0.5 } }}
-                              placeholder="..."
-                              disabled={viewingSaved}
-                            />
-                          )}
+                          {index < parts.length - 1 &&
+                            currentSection.questions[index] && (
+                              <TextField
+                                key={`${currentSection.questions[index]._id}-${retryKey}`}
+                                size="small"
+                                value={
+                                  (answers[
+                                    currentSection.questions[index]._id
+                                  ] as string) || ''
+                                }
+                                onChange={(e) =>
+                                  handleAnswerChange(
+                                    currentSection.questions[index]._id,
+                                    e.target.value,
+                                  )
+                                }
+                                sx={{ width: 120, '& input': { py: 0.5 } }}
+                                placeholder="..."
+                                disabled={viewingSaved}
+                              />
+                            )}
                         </Box>
                       ))}
                     </Box>
@@ -874,33 +1100,60 @@ export default function ExerciseDetail() {
               <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
                 {currentSection.questions.map((question, index) => {
                   const result = checkedResults[question._id];
-                  const bg = result ? (result.correct ? 'rgba(56, 142, 60, 0.06)' : 'rgba(211, 47, 47, 0.04)') : 'transparent';
-                  const borderColorToken = result ? (result.correct ? 'success.main' : 'error.main') : 'transparent';
-
+                  const bg = result
+                    ? result.correct
+                      ? 'rgba(56, 142, 60, 0.06)'
+                      : 'rgba(211, 47, 47, 0.04)'
+                    : 'transparent';
+                  const borderColorToken = result
+                    ? result.correct
+                      ? 'success.main'
+                      : 'error.main'
+                    : 'transparent';
 
                   return (
-                    <Box key={`${question._id}-${retryKey}`} sx={{ p: 1, borderLeft: '3px solid', borderColor: borderColorToken, background: bg, borderRadius: 1, mb: 1 }}>
+                    <Box
+                      key={`${question._id}-${retryKey}`}
+                      sx={{
+                        p: 1,
+                        borderLeft: '3px solid',
+                        borderColor: borderColorToken,
+                        background: bg,
+                        borderRadius: 1,
+                        mb: 1,
+                      }}
+                    >
                       <Typography variant="subtitle2" sx={{ mb: 0.5 }}>
                         Câu {index + 1}
                       </Typography>
 
-                      {renderQuestion(
-                        question,
-                        currentSection.questionType,
-                      )}
+                      {renderQuestion(question, currentSection.questionType)}
 
                       {result && (
                         <Box sx={{ mt: 1 }}>
                           {result.graded ? (
                             result.correct ? (
-                              <Typography variant="body2" sx={{ color: 'success.main' }}>Đúng</Typography>
+                              <Typography
+                                variant="body2"
+                                sx={{ color: 'success.main' }}
+                              >
+                                Đúng
+                              </Typography>
                             ) : (
-                              <Typography variant="body2" sx={{ color: 'error.main' }}>
-                                Sai — Đáp án đúng: <strong>{formatAnswer(result.correctAnswer)}</strong>
+                              <Typography
+                                variant="body2"
+                                sx={{ color: 'error.main' }}
+                              >
+                                Sai — Đáp án đúng:{' '}
+                                <strong>
+                                  {formatAnswer(result.correctAnswer)}
+                                </strong>
                               </Typography>
                             )
                           ) : (
-                            <Typography variant="body2" color="text.secondary">Đã lưu (không chấm tự động)</Typography>
+                            <Typography variant="body2" color="text.secondary">
+                              Đã lưu (không chấm tự động)
+                            </Typography>
                           )}
                         </Box>
                       )}
@@ -919,7 +1172,9 @@ export default function ExerciseDetail() {
               disabled={currentSectionIndex === 0}
               onClick={() => {
                 const nextIndex = Math.max(currentSectionIndex - 1, 0);
-                navigate(`/exercises/${buildSlugId(exercise.title ?? "", exercise._id)}?section=${nextIndex}`);
+                navigate(
+                  `/exercises/${toSlug(exercise.title ?? '')}?section=${nextIndex}`,
+                );
                 setCurrentSectionIndex(nextIndex);
                 setCheckedResults({});
                 setShowResult(false);
@@ -928,27 +1183,44 @@ export default function ExerciseDetail() {
               Phần trước
             </Button>
             <Box sx={{ display: 'flex', gap: 2 }}>
-              {lastAttempt && !ignoringSaved && currentSection.questionType !== 'pronunciation' && currentSection.questionType !== 'video-recording' && viewingSaved && (
-                <Button variant="outlined" color="inherit" onClick={handleRetrySection}>
-                  Thử lại
-                </Button>
-              )}
-              <Button variant="contained" color="secondary" onClick={handleCheckSection}>
+              {lastAttempt &&
+                !ignoringSaved &&
+                currentSection.questionType !== 'pronunciation' &&
+                currentSection.questionType !== 'video-recording' &&
+                viewingSaved && (
+                  <Button
+                    variant="outlined"
+                    color="inherit"
+                    onClick={handleRetrySection}
+                  >
+                    Thử lại
+                  </Button>
+                )}
+              <Button
+                variant="contained"
+                color="secondary"
+                onClick={handleCheckSection}
+              >
                 Kiểm tra
               </Button>
-                <Button
-                  variant="contained"
-                  disabled={currentSectionIndex >= exercise.sections.length - 1}
-                  onClick={() => {
-                    const nextIndex = Math.min(currentSectionIndex + 1, exercise.sections.length - 1);
-                    navigate(`/exercises/${buildSlugId(exercise.title ?? "", exercise._id)}?section=${nextIndex}`);
-                    setCurrentSectionIndex(nextIndex);
-                    setCheckedResults({});
-                    setShowResult(false);
-                  }}
-                >
-                  Phần tiếp theo
-                </Button>
+              <Button
+                variant="contained"
+                disabled={currentSectionIndex >= exercise.sections.length - 1}
+                onClick={() => {
+                  const nextIndex = Math.min(
+                    currentSectionIndex + 1,
+                    exercise.sections.length - 1,
+                  );
+                  navigate(
+                    `/exercises/${toSlug(exercise.title ?? '')}?section=${nextIndex}`,
+                  );
+                  setCurrentSectionIndex(nextIndex);
+                  setCheckedResults({});
+                  setShowResult(false);
+                }}
+              >
+                Phần tiếp theo
+              </Button>
             </Box>
           </Box>
         </CardContent>
@@ -977,10 +1249,12 @@ export default function ExerciseDetail() {
           ) : (
             <Box>
               <Typography variant="body1" align="center" color="text.secondary">
-                Phần này không có câu hỏi được chấm tự động — kết quả đã được lưu (lần làm gần nhất).
+                Phần này không có câu hỏi được chấm tự động — kết quả đã được
+                lưu (lần làm gần nhất).
               </Typography>
               <Alert severity="info" sx={{ mt: 2 }}>
-                Kết quả (ghi âm, video, ...) sẽ được lưu và có thể được đánh giá thủ công sau.
+                Kết quả (ghi âm, video, ...) sẽ được lưu và có thể được đánh giá
+                thủ công sau.
               </Alert>
             </Box>
           )}

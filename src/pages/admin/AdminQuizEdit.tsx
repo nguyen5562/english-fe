@@ -1,5 +1,5 @@
-import { useState, useEffect } from "react";
-import { useParams, useNavigate } from "react-router-dom";
+import { useState, useEffect } from 'react';
+import { useParams, useNavigate } from 'react-router-dom';
 import {
   Box,
   Typography,
@@ -12,25 +12,25 @@ import {
   IconButton,
   Chip,
   CircularProgress,
-} from "@mui/material";
+} from '@mui/material';
 import {
   ArrowBack as ArrowBackIcon,
   Add as AddIcon,
   Edit as EditIcon,
   Delete as DeleteIcon,
   Quiz as QuizIcon,
-} from "@mui/icons-material";
-import axios from "axios";
-import { quizService } from "../../services/quiz.service";
-import { courseService } from "../../services/course.service";
-import { useConfirm } from "../../components/ConfirmDialog";
-import { toast } from "../../utils/toast";
-import { parseSlugId, buildSlugId } from "../../utils/slug";
-import type { Quiz, Course } from "../../types";
+} from '@mui/icons-material';
+import axios from 'axios';
+import { quizService } from '../../services/quiz.service';
+import { courseService } from '../../services/course.service';
+import { useConfirm } from '../../components/ConfirmDialog';
+import { toast } from '../../utils/toast';
+import { toSlug } from '../../utils/slug';
+import type { Quiz, Course } from '../../types';
 
 export default function AdminQuizEdit() {
   const { slug } = useParams<{ slug: string }>();
-  const id = parseSlugId(slug);
+  const [id, setId] = useState<string | null>(null);
   const navigate = useNavigate();
   const { confirm, ConfirmDialog } = useConfirm();
   const [quiz, setQuiz] = useState<Quiz | null>(null);
@@ -39,10 +39,33 @@ export default function AdminQuizEdit() {
   const [deleting, setDeleting] = useState(false);
 
   useEffect(() => {
-    if (!id) {
-      setLoading(false);
+    if (!slug) return;
+    setId(null);
+    setLoading(true);
+    const OBJECT_ID_REGEX = /^[a-f0-9]{24}$/i;
+    if (OBJECT_ID_REGEX.test(slug)) {
+      setId(slug);
       return;
     }
+    // Lookup ID from slug
+    quizService
+      .getAllQuiz()
+      .then((quizzes) => {
+        const found = quizzes.find((q) => toSlug(q.title) === slug);
+        setId(found?._id ?? null);
+        if (!found) {
+          toast.error('Không tìm thấy bài kiểm tra');
+          setLoading(false);
+        }
+      })
+      .catch(() => {
+        toast.error('Lỗi khi tìm bài kiểm tra');
+        setLoading(false);
+      });
+  }, [slug]);
+
+  useEffect(() => {
+    if (!id) return;
     let cancelled = false;
     setLoading(true);
     Promise.all([quizService.getQuizById(id), courseService.getAllCourse()])
@@ -57,7 +80,7 @@ export default function AdminQuizEdit() {
           const msg =
             (e.response?.data as { message?: string })?.message ??
             e.response?.statusText ??
-            "Không thể tải quiz";
+            'Không thể tải quiz';
           toast.error(String(msg));
         }
       })
@@ -72,26 +95,26 @@ export default function AdminQuizEdit() {
   const handleDeleteSection = async (sectionId: string) => {
     if (!id) return;
     const ok = await confirm({
-      title: "Xác nhận xóa phần",
-      message: "Bạn có chắc muốn xóa phần này?",
-      confirmText: "Xóa",
-      confirmColor: "error",
+      title: 'Xác nhận xóa phần',
+      message: 'Bạn có chắc muốn xóa phần này?',
+      confirmText: 'Xóa',
+      confirmColor: 'error',
     });
     if (!ok) return;
     try {
       setDeleting(true);
       const updated = await quizService.removeSection(id, sectionId);
       setQuiz(updated);
-      toast.success("Đã xóa phần");
+      toast.success('Đã xóa phần');
     } catch (e: unknown) {
       if (axios.isAxiosError(e)) {
         const msg =
           (e.response?.data as { message?: string })?.message ??
           e.response?.statusText ??
-          "Không thể xóa phần";
+          'Không thể xóa phần';
         toast.error(String(msg));
       } else {
-        toast.error("Không thể xóa phần");
+        toast.error('Không thể xóa phần');
       }
     } finally {
       setDeleting(false);
@@ -100,7 +123,7 @@ export default function AdminQuizEdit() {
 
   if (loading || !id) {
     return (
-      <Box sx={{ display: "flex", justifyContent: "center", p: 4 }}>
+      <Box sx={{ display: 'flex', justifyContent: 'center', p: 4 }}>
         <CircularProgress />
       </Box>
     );
@@ -111,7 +134,7 @@ export default function AdminQuizEdit() {
       <Box>
         <Button
           startIcon={<ArrowBackIcon />}
-          onClick={() => navigate("/admin/quizzes")}
+          onClick={() => navigate('/admin/quizzes')}
           sx={{ mb: 2 }}
         >
           Quay lại
@@ -122,13 +145,13 @@ export default function AdminQuizEdit() {
   }
 
   const courseName =
-    courses.find((c) => c._id === quiz.courseId)?.name ?? "N/A";
+    courses.find((c) => c._id === quiz.courseId)?.name ?? 'N/A';
 
   return (
     <Box>
       <Button
         startIcon={<ArrowBackIcon />}
-        onClick={() => navigate("/admin/quizzes")}
+        onClick={() => navigate('/admin/quizzes')}
         sx={{ mb: 2 }}
       >
         Quay lại
@@ -136,12 +159,12 @@ export default function AdminQuizEdit() {
 
       <Card sx={{ mb: 3 }}>
         <CardContent>
-          <Box sx={{ display: "flex", alignItems: "center", mb: 1 }}>
-            <QuizIcon sx={{ fontSize: 40, color: "secondary.main", mr: 2 }} />
+          <Box sx={{ display: 'flex', alignItems: 'center', mb: 1 }}>
+            <QuizIcon sx={{ fontSize: 40, color: 'secondary.main', mr: 2 }} />
             <Box>
               <Typography variant="h5">{quiz.title}</Typography>
               <Typography variant="body2" color="text.secondary">
-                {courseName} · {quiz.timeLimit} phút ·{" "}
+                {courseName} · {quiz.timeLimit} phút ·{' '}
                 {quiz.sections?.length ?? 0} phần
               </Typography>
             </Box>
@@ -160,7 +183,9 @@ export default function AdminQuizEdit() {
       <Button
         variant="contained"
         startIcon={<AddIcon />}
-        onClick={() => navigate(`/admin/quizzes/${buildSlugId(quiz.title ?? "", id)}/sections/new`)}
+        onClick={() =>
+          navigate(`/admin/quizzes/${toSlug(quiz.title ?? '')}/sections/new`)
+        }
         sx={{ mb: 2 }}
       >
         Thêm phần
@@ -174,13 +199,13 @@ export default function AdminQuizEdit() {
         <List>
           {(quiz.sections ?? []).map((section) => (
             <ListItem key={section._id} sx={{ mb: 1, p: 0 }}>
-              <Card sx={{ width: "100%" }}>
+              <Card sx={{ width: '100%' }}>
                 <CardContent
                   sx={{
-                    display: "flex",
-                    justifyContent: "space-between",
-                    alignItems: "center",
-                    "&:last-child": { pb: 2 },
+                    display: 'flex',
+                    justifyContent: 'space-between',
+                    alignItems: 'center',
+                    '&:last-child': { pb: 2 },
                   }}
                 >
                   <ListItemText
@@ -188,7 +213,7 @@ export default function AdminQuizEdit() {
                     secondary={
                       <Box
                         component="span"
-                        sx={{ display: "flex", gap: 1, mt: 0.5 }}
+                        sx={{ display: 'flex', gap: 1, mt: 0.5 }}
                       >
                         <Chip
                           label={section.sectionType}
@@ -210,7 +235,7 @@ export default function AdminQuizEdit() {
                     <IconButton
                       onClick={() =>
                         navigate(
-                          `/admin/quizzes/${buildSlugId(quiz.title ?? "", id)}/sections/${section._id}`
+                          `/admin/quizzes/${toSlug(quiz.title ?? '')}/sections/${toSlug(section.title ?? '')}`,
                         )
                       }
                       sx={{ mr: 0.5 }}

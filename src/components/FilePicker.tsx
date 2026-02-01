@@ -1,5 +1,5 @@
-import { useEffect, useRef } from "react";
-import { Box, Typography, TextField, Button } from "@mui/material";
+import { useEffect, useRef } from 'react';
+import { Box, Typography, TextField, Button } from '@mui/material';
 
 type FilePickerProps = {
   value: string;
@@ -23,12 +23,12 @@ export function FilePicker({
   useEffect(() => {
     const onMsg = (e: MessageEvent) => {
       if (e.origin !== window.location.origin) return;
-      if (e.data?.type === "FM_PICK" && typeof e.data.url === "string") {
+      if (e.data?.type === 'FM_PICK' && typeof e.data.url === 'string') {
         onChange(e.data.url);
       }
     };
-    window.addEventListener("message", onMsg);
-    return () => window.removeEventListener("message", onMsg);
+    window.addEventListener('message', onMsg);
+    return () => window.removeEventListener('message', onMsg);
   }, [onChange]);
 
   const openPopup = () => {
@@ -37,9 +37,9 @@ export function FilePicker({
       return;
     }
     popupRef.current = window.open(
-      "/file-manager-popup",
-      "FileManager",
-      "width=1200,height=800"
+      '/file-manager-popup',
+      'FileManager',
+      'width=1200,height=800',
     );
   };
 
@@ -50,13 +50,13 @@ export function FilePicker({
         sx={{
           mb: 1,
           fontWeight: 500,
-          color: "text.primary",
+          color: 'text.primary',
         }}
       >
         {label}
-        {required && <span style={{ color: "red" }}> *</span>}
+        {required && <span style={{ color: 'red' }}> *</span>}
       </Typography>
-      <Box sx={{ display: "flex", gap: 1, alignItems: "flex-start" }}>
+      <Box sx={{ display: 'flex', gap: 1, alignItems: 'flex-start' }}>
         <TextField
           fullWidth
           placeholder="Nhập URL hoặc chọn file"
@@ -66,7 +66,7 @@ export function FilePicker({
           disabled={disabled}
           size="small"
           sx={{
-            "& .MuiOutlinedInput-root": {
+            '& .MuiOutlinedInput-root': {
               borderRadius: 2,
             },
           }}
@@ -76,18 +76,18 @@ export function FilePicker({
           onClick={openPopup}
           disabled={disabled}
           sx={{
-            height: "40px",
-            minWidth: "100px",
+            height: '40px',
+            minWidth: '100px',
             borderRadius: 2,
-            textTransform: "none",
+            textTransform: 'none',
             fontWeight: 500,
-            borderColor: "primary.main",
-            color: "primary.main",
-            whiteSpace: "nowrap",
-            "&:hover": {
-              borderColor: "primary.dark",
-              backgroundColor: "primary.light",
-              color: "primary.dark",
+            borderColor: 'primary.main',
+            color: 'primary.main',
+            whiteSpace: 'nowrap',
+            '&:hover': {
+              borderColor: 'primary.dark',
+              backgroundColor: 'primary.light',
+              color: 'primary.dark',
             },
           }}
         >

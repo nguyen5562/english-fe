@@ -1,5 +1,5 @@
-import { useState } from "react";
-import { useNavigate, Link } from "react-router-dom";
+import { useState } from 'react';
+import { useNavigate, Link } from 'react-router-dom';
 import {
   Container,
   Paper,
@@ -15,14 +15,14 @@ import {
   Visibility,
   VisibilityOff,
 } from '@mui/icons-material';
-import axios from "axios";
-import { authService } from "../services/auth.service";
-import { useAuthStore } from "../store/auth.store";
-import { toast } from "../utils/toast";
+import axios from 'axios';
+import { authService } from '../services/auth.service';
+import { useAuthStore } from '../store/auth.store';
+import { toast } from '../utils/toast';
 
 export default function Login() {
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
@@ -30,7 +30,7 @@ export default function Login() {
 
   const handleLogin = async () => {
     if (!email || !password) {
-      toast.error("Vui lòng điền đầy đủ thông tin");
+      toast.error('Vui lòng điền đầy đủ thông tin');
       return;
     }
 
@@ -38,17 +38,17 @@ export default function Login() {
       setLoading(true);
       const { user, access_token } = await authService.login(email, password);
       setAuth({ user, accessToken: access_token });
-      toast.success("Đăng nhập thành công!");
+      toast.success('Đăng nhập thành công!');
       navigate('/');
     } catch (e) {
       if (axios.isAxiosError(e)) {
         const msg =
           (e.response?.data as { message?: string })?.message ??
           e.response?.statusText ??
-          "Đăng nhập thất bại";
+          'Đăng nhập thất bại';
         toast.error(String(msg));
       } else {
-        toast.error("Đăng nhập thất bại");
+        toast.error('Đăng nhập thất bại');
       }
     } finally {
       setLoading(false);
@@ -72,13 +72,19 @@ export default function Login() {
         }}
       >
         <Paper elevation={3} sx={{ p: 4, width: '100%' }}>
-          <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center', mb: 3 }}>
+          <Box
+            sx={{
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              mb: 3,
+            }}
+          >
             <SchoolIcon sx={{ fontSize: 48, color: 'primary.main', mr: 2 }} />
             <Typography variant="h4" component="h1">
               Đăng nhập
             </Typography>
           </Box>
-
 
           <Box component="form" sx={{ mt: 1 }}>
             <TextField
@@ -125,12 +131,15 @@ export default function Login() {
               onClick={handleLogin}
               disabled={loading}
             >
-              {loading ? "Đang đăng nhập..." : "Đăng nhập"}
+              {loading ? 'Đang đăng nhập...' : 'Đăng nhập'}
             </Button>
             <Box sx={{ textAlign: 'center', mt: 2 }}>
               <Typography variant="body2" color="text.secondary">
                 Chưa có tài khoản?{' '}
-                <Link to="/register" style={{ color: 'inherit', textDecoration: 'underline' }}>
+                <Link
+                  to="/register"
+                  style={{ color: 'inherit', textDecoration: 'underline' }}
+                >
                   Đăng ký ngay
                 </Link>
               </Typography>
@@ -141,4 +150,3 @@ export default function Login() {
     </Container>
   );
 }
-

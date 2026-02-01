@@ -85,11 +85,14 @@ export default function Materials() {
       if (found) {
         setSelectedCourse(found);
       } else {
-        courseService.getCourseById(courseIdFromUrl).then((course) => {
-          setSelectedCourse(course);
-        }).catch(() => {
-          setSelectedCourse(courses[0]);
-        });
+        courseService
+          .getCourseById(courseIdFromUrl)
+          .then((course) => {
+            setSelectedCourse(course);
+          })
+          .catch(() => {
+            setSelectedCourse(courses[0]);
+          });
       }
     } else {
       setSelectedCourse((prev) => prev ?? courses[0]);
@@ -103,27 +106,33 @@ export default function Materials() {
     }
     let cancelled = false;
     setLoadingLessons(true);
-    lessonService.getLessonByCourseId(selectedCourse._id).then((data) => {
-      if (!cancelled) {
-        setLessons(data);
-      }
-    }).catch((e: unknown) => {
-      if (!cancelled) {
-        if (axios.isAxiosError(e)) {
-          const msg =
-            (e.response?.data as { message?: string })?.message ??
-            e.response?.statusText ??
-            'Không thể tải bài học';
-          toast.error(String(msg));
-        } else {
-          toast.error('Không thể tải bài học');
+    lessonService
+      .getLessonByCourseId(selectedCourse._id)
+      .then((data) => {
+        if (!cancelled) {
+          setLessons(data);
         }
-        setLessons([]);
-      }
-    }).finally(() => {
-      if (!cancelled) setLoadingLessons(false);
-    });
-    return () => { cancelled = true; };
+      })
+      .catch((e: unknown) => {
+        if (!cancelled) {
+          if (axios.isAxiosError(e)) {
+            const msg =
+              (e.response?.data as { message?: string })?.message ??
+              e.response?.statusText ??
+              'Không thể tải bài học';
+            toast.error(String(msg));
+          } else {
+            toast.error('Không thể tải bài học');
+          }
+          setLessons([]);
+        }
+      })
+      .finally(() => {
+        if (!cancelled) setLoadingLessons(false);
+      });
+    return () => {
+      cancelled = true;
+    };
   }, [selectedCourse?._id]);
 
   const handleTabChange = (_event: React.SyntheticEvent, newValue: number) => {
@@ -138,8 +147,16 @@ export default function Materials() {
       <AccordionDetails>
         <Tabs value={tabValue} onChange={handleTabChange}>
           <Tab label="Slides" icon={<SlideshowIcon />} iconPosition="start" />
-          <Tab label="Videos" icon={<VideoLibraryIcon />} iconPosition="start" />
-          <Tab label="Tài liệu tham khảo" icon={<DescriptionIcon />} iconPosition="start" />
+          <Tab
+            label="Videos"
+            icon={<VideoLibraryIcon />}
+            iconPosition="start"
+          />
+          <Tab
+            label="Tài liệu tham khảo"
+            icon={<DescriptionIcon />}
+            iconPosition="start"
+          />
         </Tabs>
 
         <TabPanel value={tabValue} index={0}>
@@ -166,7 +183,9 @@ export default function Materials() {
               ))}
             </List>
           ) : (
-            <Typography color="text.secondary">Chưa có slides cho bài học này</Typography>
+            <Typography color="text.secondary">
+              Chưa có slides cho bài học này
+            </Typography>
           )}
         </TabPanel>
 
@@ -195,7 +214,9 @@ export default function Materials() {
               ))}
             </List>
           ) : (
-            <Typography color="text.secondary">Chưa có video cho bài học này</Typography>
+            <Typography color="text.secondary">
+              Chưa có video cho bài học này
+            </Typography>
           )}
         </TabPanel>
 
@@ -207,14 +228,18 @@ export default function Materials() {
                 return (
                   <Card key={ref._id} sx={{ mb: 2 }}>
                     <CardContent>
-                      <Box sx={{ display: 'flex', alignItems: 'center', mb: 1 }}>
+                      <Box
+                        sx={{ display: 'flex', alignItems: 'center', mb: 1 }}
+                      >
                         {isPdf ? (
                           <PdfIcon sx={{ mr: 1, color: 'error.main' }} />
                         ) : (
                           <LinkIcon sx={{ mr: 1, color: 'primary.main' }} />
                         )}
                         <Typography variant="h6">{ref.title}</Typography>
-                        {isPdf && <Chip label="PDF" size="small" sx={{ ml: 2 }} />}
+                        {isPdf && (
+                          <Chip label="PDF" size="small" sx={{ ml: 2 }} />
+                        )}
                       </Box>
                       <Button
                         variant="outlined"
@@ -231,7 +256,9 @@ export default function Materials() {
               })}
             </List>
           ) : (
-            <Typography color="text.secondary">Chưa có tài liệu tham khảo cho bài học này</Typography>
+            <Typography color="text.secondary">
+              Chưa có tài liệu tham khảo cho bài học này
+            </Typography>
           )}
         </TabPanel>
       </AccordionDetails>
@@ -264,7 +291,14 @@ export default function Materials() {
 
   return (
     <Box>
-      <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3 }}>
+      <Box
+        sx={{
+          display: 'flex',
+          justifyContent: 'space-between',
+          alignItems: 'center',
+          mb: 3,
+        }}
+      >
         <Box>
           <Typography variant="h4" gutterBottom>
             {selectedCourse.name}
@@ -280,7 +314,9 @@ export default function Materials() {
                 key={course._id}
                 label={course.name}
                 onClick={() => setSelectedCourse(course)}
-                color={selectedCourse._id === course._id ? 'primary' : 'default'}
+                color={
+                  selectedCourse._id === course._id ? 'primary' : 'default'
+                }
                 sx={{ mr: 1 }}
               />
             ))}
@@ -296,11 +332,12 @@ export default function Materials() {
           <CircularProgress />
         </Box>
       ) : lessons.length === 0 ? (
-        <Typography color="text.secondary">Chưa có bài học nào trong khóa này.</Typography>
+        <Typography color="text.secondary">
+          Chưa có bài học nào trong khóa này.
+        </Typography>
       ) : (
         lessons.map((lesson) => renderLessonContent(lesson))
       )}
     </Box>
   );
 }
-

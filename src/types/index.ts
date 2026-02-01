@@ -45,28 +45,28 @@ export type Question = {
 };
 
 export type QuestionType =
-  | "multiple-choice"
-  | "fill-sentence"
-  | "listening"
-  | "word-order"
-  | "word-bank"
-  | "picture-choice"
-  | "reading-mcq"
-  | "pronunciation"
-  | "writing"
-  | "paragraph-fill"
-  | "fill-blank"
-  | "dropdown-choice"
-  | "video-recording";
+  | 'multiple-choice'
+  | 'fill-sentence'
+  | 'listening'
+  | 'word-order'
+  | 'word-bank'
+  | 'picture-choice'
+  | 'reading-mcq'
+  | 'pronunciation'
+  | 'writing'
+  | 'paragraph-fill'
+  | 'fill-blank'
+  | 'dropdown-choice'
+  | 'video-recording';
 
 export type SectionType =
-  | "grammar"
-  | "vocabulary"
-  | "listening"
-  | "reading"
-  | "speaking"
-  | "writing"
-  | "pronunciation"
+  | 'grammar'
+  | 'vocabulary'
+  | 'listening'
+  | 'reading'
+  | 'speaking'
+  | 'writing'
+  | 'pronunciation';
 
 export type Section = {
   _id: string;

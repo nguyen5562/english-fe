@@ -1,5 +1,5 @@
-import { useEffect, useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useEffect, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import {
   Box,
   Typography,
@@ -9,7 +9,7 @@ import {
   CardActions,
   Button,
   CircularProgress,
-} from "@mui/material";
+} from '@mui/material';
 import {
   School as SchoolIcon,
   Assignment as AssignmentIcon,
@@ -17,14 +17,14 @@ import {
   People as PeopleIcon,
   BarChart as BarChartIcon,
   Settings as SettingsIcon,
-} from "@mui/icons-material";
-import axios from "axios";
-import { useAuthStore } from "../../store/auth.store";
-import { courseService } from "../../services/course.service";
-import { exerciseService } from "../../services/exercise.service";
-import { quizService } from "../../services/quiz.service";
-import { userService } from "../../services/user.service";
-import { toast } from "../../utils/toast";
+} from '@mui/icons-material';
+import axios from 'axios';
+import { useAuthStore } from '../../store/auth.store';
+import { courseService } from '../../services/course.service';
+import { exerciseService } from '../../services/exercise.service';
+import { quizService } from '../../services/quiz.service';
+import { userService } from '../../services/user.service';
+import { toast } from '../../utils/toast';
 
 type AdminStats = {
   courses: number;
@@ -66,10 +66,10 @@ export default function AdminDashboard() {
           const msg =
             (e.response?.data as { message?: string })?.message ??
             e.response?.statusText ??
-            "Không thể tải thống kê";
+            'Không thể tải thống kê';
           toast.error(String(msg));
         } else {
-          toast.error("Không thể tải thống kê");
+          toast.error('Không thể tải thống kê');
         }
       } finally {
         setLoading(false);
@@ -81,39 +81,39 @@ export default function AdminDashboard() {
 
   const cards = [
     {
-      title: "Học phần",
+      title: 'Học phần',
       count: stats.courses,
       icon: <SchoolIcon sx={{ fontSize: 40 }} />,
-      color: "primary.main",
-      path: "/admin/content",
+      color: 'primary.main',
+      path: '/admin/content',
     },
     {
-      title: "Bài tập",
+      title: 'Bài tập',
       count: stats.exercises,
       icon: <AssignmentIcon sx={{ fontSize: 40 }} />,
-      color: "info.main",
-      path: "/admin/exercises",
+      color: 'info.main',
+      path: '/admin/exercises',
     },
     {
-      title: "Quiz",
+      title: 'Quiz',
       count: stats.quizzes,
       icon: <QuizIcon sx={{ fontSize: 40 }} />,
-      color: "warning.main",
-      path: "/admin/quizzes",
+      color: 'warning.main',
+      path: '/admin/quizzes',
     },
     {
-      title: "Người dùng",
+      title: 'Người dùng',
       count: stats.users,
       icon: <PeopleIcon sx={{ fontSize: 40 }} />,
-      color: "success.main",
-      path: "/admin/students",
+      color: 'success.main',
+      path: '/admin/students',
     },
   ];
 
   return (
     <Box>
       <Typography variant="h4" gutterBottom>
-        Chào mừng, {user?.username ?? "Admin"}!
+        Chào mừng, {user?.username ?? 'Admin'}!
       </Typography>
       <Typography variant="body1" color="text.secondary" paragraph>
         Trang quản trị hệ thống học tiếng Anh
@@ -123,14 +123,14 @@ export default function AdminDashboard() {
         {cards.map((stat) => (
           // @ts-expect-error - MUI v7 Grid still works with item prop
           <Grid item xs={12} sm={6} md={3} key={stat.title}>
-            <Card sx={{ height: "100%", bgcolor: stat.color, color: "white" }}>
+            <Card sx={{ height: '100%', bgcolor: stat.color, color: 'white' }}>
               <CardContent>
-                <Box sx={{ display: "flex", alignItems: "center", mb: 2 }}>
+                <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
                   {stat.icon}
                   <Box sx={{ ml: 2, flexGrow: 1 }}>
-                    <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
+                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
                       {loading ? (
-                        <CircularProgress size={32} sx={{ color: "white" }} />
+                        <CircularProgress size={32} sx={{ color: 'white' }} />
                       ) : (
                         <Typography variant="h4">{stat.count}</Typography>
                       )}
@@ -159,7 +159,9 @@ export default function AdminDashboard() {
           <Card>
             <CardContent>
               <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
-                <BarChartIcon sx={{ fontSize: 40, color: 'secondary.main', mr: 2 }} />
+                <BarChartIcon
+                  sx={{ fontSize: 40, color: 'secondary.main', mr: 2 }}
+                />
                 <Box>
                   <Typography variant="h6">Thống kê & Báo cáo</Typography>
                   <Typography variant="body2" color="text.secondary">
@@ -183,7 +185,9 @@ export default function AdminDashboard() {
           <Card>
             <CardContent>
               <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
-                <SettingsIcon sx={{ fontSize: 40, color: 'primary.main', mr: 2 }} />
+                <SettingsIcon
+                  sx={{ fontSize: 40, color: 'primary.main', mr: 2 }}
+                />
                 <Box>
                   <Typography variant="h6">Cài đặt hệ thống</Typography>
                   <Typography variant="body2" color="text.secondary">
@@ -191,11 +195,7 @@ export default function AdminDashboard() {
                   </Typography>
                 </Box>
               </Box>
-              <Button
-                variant="outlined"
-                fullWidth
-                disabled
-              >
+              <Button variant="outlined" fullWidth disabled>
                 Sắp có
               </Button>
             </CardContent>
@@ -205,4 +205,3 @@ export default function AdminDashboard() {
     </Box>
   );
 }
-

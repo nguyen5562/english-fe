@@ -1,12 +1,12 @@
-import { API_ROUTES } from "../const/apiConfig";
-import type { Quiz } from "../types";
+import { API_ROUTES } from '../const/apiConfig';
+import type { Quiz } from '../types';
 import type {
   CreateQuizDto,
   QuestionDto,
   SectionDto,
   UpdateQuizDto,
-} from "../types/dto";
-import { api } from "./api";
+} from '../types/dto';
+import { api } from './api';
 
 // Quiz
 const createQuiz = async (dto: CreateQuizDto): Promise<Quiz> => {
@@ -14,10 +14,7 @@ const createQuiz = async (dto: CreateQuizDto): Promise<Quiz> => {
   return response.data;
 };
 
-const updateQuiz = async (
-  id: string,
-  dto: UpdateQuizDto
-): Promise<Quiz> => {
+const updateQuiz = async (id: string, dto: UpdateQuizDto): Promise<Quiz> => {
   const response = await api.put(`${API_ROUTES.QUIZ}/${id}`, dto);
   return response.data;
 };
@@ -39,11 +36,11 @@ const getQuizById = async (id: string): Promise<Quiz> => {
 // Section
 const addSection = async (
   quizId: string,
-  section: SectionDto
+  section: SectionDto,
 ): Promise<Quiz> => {
   const response = await api.post(
     `${API_ROUTES.QUIZ}/${quizId}/section`,
-    section
+    section,
   );
   return response.data;
 };
@@ -51,21 +48,21 @@ const addSection = async (
 const updateSection = async (
   quizId: string,
   sectionId: string,
-  section: SectionDto
+  section: SectionDto,
 ): Promise<Quiz> => {
   const response = await api.put(
     `${API_ROUTES.QUIZ}/${quizId}/section/${sectionId}`,
-    section
+    section,
   );
   return response.data;
 };
 
 const removeSection = async (
   quizId: string,
-  sectionId: string
+  sectionId: string,
 ): Promise<Quiz> => {
   const response = await api.delete(
-    `${API_ROUTES.QUIZ}/${quizId}/section/${sectionId}`
+    `${API_ROUTES.QUIZ}/${quizId}/section/${sectionId}`,
   );
   return response.data;
 };
@@ -74,11 +71,11 @@ const removeSection = async (
 const addQuestion = async (
   quizId: string,
   sectionId: string,
-  question: QuestionDto
+  question: QuestionDto,
 ): Promise<Quiz> => {
   const reponse = await api.post(
     `${API_ROUTES.QUIZ}/${quizId}/section/${sectionId}/question`,
-    question
+    question,
   );
   return reponse.data;
 };
@@ -87,11 +84,11 @@ const updateQuestion = async (
   quizId: string,
   sectionId: string,
   questionId: string,
-  question: QuestionDto
+  question: QuestionDto,
 ): Promise<Quiz> => {
   const response = await api.put(
     `${API_ROUTES.QUIZ}/${quizId}/section/${sectionId}/question/${questionId}`,
-    question
+    question,
   );
   return response.data;
 };
@@ -99,10 +96,10 @@ const updateQuestion = async (
 const removeQuestion = async (
   quizId: string,
   sectionId: string,
-  questionId: string
+  questionId: string,
 ): Promise<Quiz> => {
   const response = await api.delete(
-    `${API_ROUTES.QUIZ}/${quizId}/section/${sectionId}/question/${questionId}`
+    `${API_ROUTES.QUIZ}/${quizId}/section/${sectionId}/question/${questionId}`,
   );
   return response.data;
 };

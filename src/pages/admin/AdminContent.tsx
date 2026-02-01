@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef } from 'react';
 import {
   Box,
   Typography,
@@ -22,7 +22,7 @@ import {
   Alert,
   Divider,
   CircularProgress,
-} from "@mui/material";
+} from '@mui/material';
 import {
   Add as AddIcon,
   Edit as EditIcon,
@@ -33,15 +33,15 @@ import {
   Slideshow as SlideshowIcon,
   VideoLibrary as VideoLibraryIcon,
   Description as DescriptionIcon,
-} from "@mui/icons-material";
-import axios from "axios";
-import { useAuthStore } from "../../store/auth.store";
-import { courseService } from "../../services/course.service";
-import { lessonService } from "../../services/lesson.service";
-import { useConfirm } from "../../components/ConfirmDialog";
-import { toast } from "../../utils/toast";
-import type { Course, Lesson } from "../../types";
-import type { LessonObjType } from "../../types/dto";
+} from '@mui/icons-material';
+import axios from 'axios';
+import { useAuthStore } from '../../store/auth.store';
+import { courseService } from '../../services/course.service';
+import { lessonService } from '../../services/lesson.service';
+import { useConfirm } from '../../components/ConfirmDialog';
+import { toast } from '../../utils/toast';
+import type { Course, Lesson } from '../../types';
+import type { LessonObjType } from '../../types/dto';
 
 // FilePicker Component
 function FilePicker({
@@ -63,12 +63,12 @@ function FilePicker({
     const onMsg = (e: MessageEvent) => {
       // chặn domain lạ
       if (e.origin !== window.location.origin) return;
-      if (e.data?.type === "FM_PICK" && typeof e.data.url === "string") {
+      if (e.data?.type === 'FM_PICK' && typeof e.data.url === 'string') {
         onChange(e.data.url);
       }
     };
-    window.addEventListener("message", onMsg);
-    return () => window.removeEventListener("message", onMsg);
+    window.addEventListener('message', onMsg);
+    return () => window.removeEventListener('message', onMsg);
   }, [onChange]);
 
   const openPopup = () => {
@@ -79,9 +79,9 @@ function FilePicker({
     }
 
     popupRef.current = window.open(
-      "/file-manager-popup",
-      "FileManager",
-      "width=1200,height=800"
+      '/file-manager-popup',
+      'FileManager',
+      'width=1200,height=800',
     );
   };
 
@@ -92,12 +92,12 @@ function FilePicker({
         sx={{
           mb: 1,
           fontWeight: 500,
-          color: "text.primary",
+          color: 'text.primary',
         }}
       >
-        {label} <span style={{ color: "red" }}>*</span>
+        {label} <span style={{ color: 'red' }}>*</span>
       </Typography>
-      <Box sx={{ display: "flex", gap: 1, alignItems: "flex-start" }}>
+      <Box sx={{ display: 'flex', gap: 1, alignItems: 'flex-start' }}>
         <TextField
           fullWidth
           placeholder="Nhập URL hoặc chọn file"
@@ -106,7 +106,7 @@ function FilePicker({
           helperText={helperText}
           disabled={disabled}
           sx={{
-            "& .MuiOutlinedInput-root": {
+            '& .MuiOutlinedInput-root': {
               borderRadius: 2,
             },
           }}
@@ -116,18 +116,18 @@ function FilePicker({
           onClick={openPopup}
           disabled={disabled}
           sx={{
-            height: "56px", // Match TextField height
-            minWidth: "120px",
+            height: '56px', // Match TextField height
+            minWidth: '120px',
             borderRadius: 2,
-            textTransform: "none",
+            textTransform: 'none',
             fontWeight: 500,
-            borderColor: "primary.main",
-            color: "primary.main",
-            whiteSpace: "nowrap",
-            "&:hover": {
-              borderColor: "primary.dark",
-              backgroundColor: "primary.light",
-              color: "primary.dark",
+            borderColor: 'primary.main',
+            color: 'primary.main',
+            whiteSpace: 'nowrap',
+            '&:hover': {
+              borderColor: 'primary.dark',
+              backgroundColor: 'primary.light',
+              color: 'primary.dark',
             },
           }}
         >
@@ -143,7 +143,9 @@ export default function AdminContent() {
   const { confirm, ConfirmDialog } = useConfirm();
   const [courses, setCourses] = useState<Course[]>([]);
   const [lessonsMap, setLessonsMap] = useState<Record<string, Lesson[]>>({});
-  const [loadingLessons, setLoadingLessons] = useState<Record<string, boolean>>({});
+  const [loadingLessons, setLoadingLessons] = useState<Record<string, boolean>>(
+    {},
+  );
   const [selectedCourse, setSelectedCourse] = useState<Course | null>(null);
   const [selectedLesson, setSelectedLesson] = useState<Lesson | null>(null);
   const [openCourseDialog, setOpenCourseDialog] = useState(false);
@@ -153,22 +155,22 @@ export default function AdminContent() {
   const [openReferenceDialog, setOpenReferenceDialog] = useState(false);
 
   const [courseForm, setCourseForm] = useState({
-    name: "",
-    code: "",
-    description: "",
+    name: '',
+    code: '',
+    description: '',
   });
-  const [lessonForm, setLessonForm] = useState({ title: "" });
-  const [slideForm, setSlideForm] = useState({ title: "", url: "" });
-  const [videoForm, setVideoForm] = useState({ title: "", url: "" });
+  const [lessonForm, setLessonForm] = useState({ title: '' });
+  const [slideForm, setSlideForm] = useState({ title: '', url: '' });
+  const [videoForm, setVideoForm] = useState({ title: '', url: '' });
   const [referenceForm, setReferenceForm] = useState({
-    title: "",
-    url: "",
+    title: '',
+    url: '',
   });
 
   const [loading, setLoading] = useState(false);
   const [saving, setSaving] = useState(false);
 
-  const isTeacher = user?.role === "teacher";
+  const isTeacher = user?.role === 'teacher';
 
   useEffect(() => {
     if (isTeacher) {
@@ -186,10 +188,10 @@ export default function AdminContent() {
         const msg =
           (e.response?.data as { message?: string })?.message ??
           e.response?.statusText ??
-          "Không thể tải danh sách học phần";
+          'Không thể tải danh sách học phần';
         toast.error(String(msg));
       } else {
-        toast.error("Không thể tải danh sách học phần");
+        toast.error('Không thể tải danh sách học phần');
       }
     } finally {
       setLoading(false);
@@ -211,10 +213,10 @@ export default function AdminContent() {
         const msg =
           (e.response?.data as { message?: string })?.message ??
           e.response?.statusText ??
-          "Không thể tải danh sách bài học";
+          'Không thể tải danh sách bài học';
         toast.error(String(msg));
       } else {
-        toast.error("Không thể tải danh sách bài học");
+        toast.error('Không thể tải danh sách bài học');
       }
     } finally {
       setLoadingLessons((prev) => ({ ...prev, [courseId]: false }));
@@ -239,7 +241,7 @@ export default function AdminContent() {
 
   // Course handlers
   const handleAddCourse = () => {
-    setCourseForm({ name: "", code: "", description: "" });
+    setCourseForm({ name: '', code: '', description: '' });
     setSelectedCourse(null);
     setOpenCourseDialog(true);
   };
@@ -256,7 +258,7 @@ export default function AdminContent() {
 
   const handleSaveCourse = async () => {
     if (!courseForm.name || !courseForm.code) {
-      toast.error("Vui lòng điền đầy đủ thông tin");
+      toast.error('Vui lòng điền đầy đủ thông tin');
       return;
     }
 
@@ -270,16 +272,20 @@ export default function AdminContent() {
       await fetchCourses();
       setOpenCourseDialog(false);
       setSelectedCourse(null);
-      toast.success(selectedCourse ? "Đã cập nhật học phần thành công" : "Đã thêm học phần thành công");
+      toast.success(
+        selectedCourse
+          ? 'Đã cập nhật học phần thành công'
+          : 'Đã thêm học phần thành công',
+      );
     } catch (e: unknown) {
       if (axios.isAxiosError(e)) {
         const msg =
           (e.response?.data as { message?: string })?.message ??
           e.response?.statusText ??
-          "Không thể lưu học phần";
+          'Không thể lưu học phần';
         toast.error(String(msg));
       } else {
-        toast.error("Không thể lưu học phần");
+        toast.error('Không thể lưu học phần');
       }
     } finally {
       setSaving(false);
@@ -288,11 +294,11 @@ export default function AdminContent() {
 
   const handleDeleteCourse = async (id: string) => {
     const confirmed = await confirm({
-      title: "Xác nhận xóa học phần",
+      title: 'Xác nhận xóa học phần',
       message:
-        "Bạn có chắc chắn muốn xóa học phần này? Tất cả bài học và tài liệu sẽ bị xóa.",
-      confirmText: "Xóa",
-      confirmColor: "error",
+        'Bạn có chắc chắn muốn xóa học phần này? Tất cả bài học và tài liệu sẽ bị xóa.',
+      confirmText: 'Xóa',
+      confirmColor: 'error',
     });
     if (!confirmed) {
       return;
@@ -307,16 +313,16 @@ export default function AdminContent() {
         delete newMap[id];
         return newMap;
       });
-      toast.success("Đã xóa học phần thành công");
+      toast.success('Đã xóa học phần thành công');
     } catch (e: unknown) {
       if (axios.isAxiosError(e)) {
         const msg =
           (e.response?.data as { message?: string })?.message ??
           e.response?.statusText ??
-          "Không thể xóa học phần";
+          'Không thể xóa học phần';
         toast.error(String(msg));
       } else {
-        toast.error("Không thể xóa học phần");
+        toast.error('Không thể xóa học phần');
       }
     }
   };
@@ -324,7 +330,7 @@ export default function AdminContent() {
   // Lesson handlers
   const handleAddLesson = (course: Course) => {
     setSelectedCourse(course);
-    setLessonForm({ title: "" });
+    setLessonForm({ title: '' });
     setSelectedLesson(null);
     setOpenLessonDialog(true);
   };
@@ -338,7 +344,7 @@ export default function AdminContent() {
 
   const handleSaveLesson = async () => {
     if (!selectedCourse || !lessonForm.title) {
-      toast.error("Vui lòng điền đầy đủ thông tin");
+      toast.error('Vui lòng điền đầy đủ thông tin');
       return;
     }
 
@@ -358,16 +364,20 @@ export default function AdminContent() {
       await fetchLessonsForCourse(selectedCourse._id);
       setOpenLessonDialog(false);
       setSelectedLesson(null);
-      toast.success(selectedLesson ? "Đã cập nhật bài học thành công" : "Đã thêm bài học thành công");
+      toast.success(
+        selectedLesson
+          ? 'Đã cập nhật bài học thành công'
+          : 'Đã thêm bài học thành công',
+      );
     } catch (e: unknown) {
       if (axios.isAxiosError(e)) {
         const msg =
           (e.response?.data as { message?: string })?.message ??
           e.response?.statusText ??
-          "Không thể lưu bài học";
+          'Không thể lưu bài học';
         toast.error(String(msg));
       } else {
-        toast.error("Không thể lưu bài học");
+        toast.error('Không thể lưu bài học');
       }
     } finally {
       setSaving(false);
@@ -376,11 +386,11 @@ export default function AdminContent() {
 
   const handleDeleteLesson = async (courseId: string, lessonId: string) => {
     const confirmed = await confirm({
-      title: "Xác nhận xóa bài học",
+      title: 'Xác nhận xóa bài học',
       message:
-        "Bạn có chắc chắn muốn xóa bài học này? Tất cả slides, videos và tài liệu sẽ bị xóa.",
-      confirmText: "Xóa",
-      confirmColor: "error",
+        'Bạn có chắc chắn muốn xóa bài học này? Tất cả slides, videos và tài liệu sẽ bị xóa.',
+      confirmText: 'Xóa',
+      confirmColor: 'error',
     });
     if (!confirmed) {
       return;
@@ -390,16 +400,16 @@ export default function AdminContent() {
       await lessonService.deleteLesson(lessonId);
       // Refresh lessons của course này
       await fetchLessonsForCourse(courseId);
-      toast.success("Đã xóa bài học thành công");
+      toast.success('Đã xóa bài học thành công');
     } catch (e: unknown) {
       if (axios.isAxiosError(e)) {
         const msg =
           (e.response?.data as { message?: string })?.message ??
           e.response?.statusText ??
-          "Không thể xóa bài học";
+          'Không thể xóa bài học';
         toast.error(String(msg));
       } else {
-        toast.error("Không thể xóa bài học");
+        toast.error('Không thể xóa bài học');
       }
     }
   };
@@ -408,13 +418,18 @@ export default function AdminContent() {
   const handleAddSlide = (course: Course, lesson: Lesson) => {
     setSelectedCourse(course);
     setSelectedLesson(lesson);
-    setSlideForm({ title: "", url: "" });
+    setSlideForm({ title: '', url: '' });
     setOpenSlideDialog(true);
   };
 
   const handleSaveSlide = async () => {
-    if (!selectedCourse || !selectedLesson || !slideForm.title || !slideForm.url) {
-      toast.error("Vui lòng điền đầy đủ thông tin");
+    if (
+      !selectedCourse ||
+      !selectedLesson ||
+      !slideForm.title ||
+      !slideForm.url
+    ) {
+      toast.error('Vui lòng điền đầy đủ thông tin');
       return;
     }
 
@@ -428,28 +443,32 @@ export default function AdminContent() {
       // Refresh lessons của course này
       await fetchLessonsForCourse(selectedCourse._id);
       setOpenSlideDialog(false);
-      toast.success("Đã thêm slide thành công");
+      toast.success('Đã thêm slide thành công');
     } catch (e: unknown) {
       if (axios.isAxiosError(e)) {
         const msg =
           (e.response?.data as { message?: string })?.message ??
           e.response?.statusText ??
-          "Không thể thêm slide";
+          'Không thể thêm slide';
         toast.error(String(msg));
       } else {
-        toast.error("Không thể thêm slide");
+        toast.error('Không thể thêm slide');
       }
     } finally {
       setSaving(false);
     }
   };
 
-  const handleDeleteSlide = async (courseId: string, lessonId: string, slideId: string) => {
+  const handleDeleteSlide = async (
+    courseId: string,
+    lessonId: string,
+    slideId: string,
+  ) => {
     const confirmed = await confirm({
-      title: "Xác nhận xóa slide",
-      message: "Bạn có chắc chắn muốn xóa slide này?",
-      confirmText: "Xóa",
-      confirmColor: "error",
+      title: 'Xác nhận xóa slide',
+      message: 'Bạn có chắc chắn muốn xóa slide này?',
+      confirmText: 'Xóa',
+      confirmColor: 'error',
     });
     if (!confirmed) {
       return;
@@ -459,16 +478,16 @@ export default function AdminContent() {
       await lessonService.removeSlide(lessonId, slideId);
       // Refresh lessons của course này
       await fetchLessonsForCourse(courseId);
-      toast.success("Đã xóa slide thành công");
+      toast.success('Đã xóa slide thành công');
     } catch (e: unknown) {
       if (axios.isAxiosError(e)) {
         const msg =
           (e.response?.data as { message?: string })?.message ??
           e.response?.statusText ??
-          "Không thể xóa slide";
+          'Không thể xóa slide';
         toast.error(String(msg));
       } else {
-        toast.error("Không thể xóa slide");
+        toast.error('Không thể xóa slide');
       }
     }
   };
@@ -477,13 +496,18 @@ export default function AdminContent() {
   const handleAddVideo = (course: Course, lesson: Lesson) => {
     setSelectedCourse(course);
     setSelectedLesson(lesson);
-    setVideoForm({ title: "", url: "" });
+    setVideoForm({ title: '', url: '' });
     setOpenVideoDialog(true);
   };
 
   const handleSaveVideo = async () => {
-    if (!selectedCourse || !selectedLesson || !videoForm.title || !videoForm.url) {
-      toast.error("Vui lòng điền đầy đủ thông tin");
+    if (
+      !selectedCourse ||
+      !selectedLesson ||
+      !videoForm.title ||
+      !videoForm.url
+    ) {
+      toast.error('Vui lòng điền đầy đủ thông tin');
       return;
     }
 
@@ -497,28 +521,32 @@ export default function AdminContent() {
       // Refresh lessons của course này
       await fetchLessonsForCourse(selectedCourse._id);
       setOpenVideoDialog(false);
-      toast.success("Đã thêm video thành công");
+      toast.success('Đã thêm video thành công');
     } catch (e: unknown) {
       if (axios.isAxiosError(e)) {
         const msg =
           (e.response?.data as { message?: string })?.message ??
           e.response?.statusText ??
-          "Không thể thêm video";
+          'Không thể thêm video';
         toast.error(String(msg));
       } else {
-        toast.error("Không thể thêm video");
+        toast.error('Không thể thêm video');
       }
     } finally {
       setSaving(false);
     }
   };
 
-  const handleDeleteVideo = async (courseId: string, lessonId: string, videoId: string) => {
+  const handleDeleteVideo = async (
+    courseId: string,
+    lessonId: string,
+    videoId: string,
+  ) => {
     const confirmed = await confirm({
-      title: "Xác nhận xóa video",
-      message: "Bạn có chắc chắn muốn xóa video này?",
-      confirmText: "Xóa",
-      confirmColor: "error",
+      title: 'Xác nhận xóa video',
+      message: 'Bạn có chắc chắn muốn xóa video này?',
+      confirmText: 'Xóa',
+      confirmColor: 'error',
     });
     if (!confirmed) {
       return;
@@ -528,16 +556,16 @@ export default function AdminContent() {
       await lessonService.removeVideo(lessonId, videoId);
       // Refresh lessons của course này
       await fetchLessonsForCourse(courseId);
-      toast.success("Đã xóa video thành công");
+      toast.success('Đã xóa video thành công');
     } catch (e: unknown) {
       if (axios.isAxiosError(e)) {
         const msg =
           (e.response?.data as { message?: string })?.message ??
           e.response?.statusText ??
-          "Không thể xóa video";
+          'Không thể xóa video';
         toast.error(String(msg));
       } else {
-        toast.error("Không thể xóa video");
+        toast.error('Không thể xóa video');
       }
     }
   };
@@ -546,7 +574,7 @@ export default function AdminContent() {
   const handleAddReference = (course: Course, lesson: Lesson) => {
     setSelectedCourse(course);
     setSelectedLesson(lesson);
-    setReferenceForm({ title: "", url: "" });
+    setReferenceForm({ title: '', url: '' });
     setOpenReferenceDialog(true);
   };
 
@@ -557,7 +585,7 @@ export default function AdminContent() {
       !referenceForm.title ||
       !referenceForm.url
     ) {
-      toast.error("Vui lòng điền đầy đủ thông tin");
+      toast.error('Vui lòng điền đầy đủ thông tin');
       return;
     }
 
@@ -571,28 +599,32 @@ export default function AdminContent() {
       // Refresh lessons của course này
       await fetchLessonsForCourse(selectedCourse._id);
       setOpenReferenceDialog(false);
-      toast.success("Đã thêm tài liệu thành công");
+      toast.success('Đã thêm tài liệu thành công');
     } catch (e: unknown) {
       if (axios.isAxiosError(e)) {
         const msg =
           (e.response?.data as { message?: string })?.message ??
           e.response?.statusText ??
-          "Không thể thêm tài liệu";
+          'Không thể thêm tài liệu';
         toast.error(String(msg));
       } else {
-        toast.error("Không thể thêm tài liệu");
+        toast.error('Không thể thêm tài liệu');
       }
     } finally {
       setSaving(false);
     }
   };
 
-  const handleDeleteReference = async (courseId: string, lessonId: string, referenceId: string) => {
+  const handleDeleteReference = async (
+    courseId: string,
+    lessonId: string,
+    referenceId: string,
+  ) => {
     const confirmed = await confirm({
-      title: "Xác nhận xóa tài liệu",
-      message: "Bạn có chắc chắn muốn xóa tài liệu này?",
-      confirmText: "Xóa",
-      confirmColor: "error",
+      title: 'Xác nhận xóa tài liệu',
+      message: 'Bạn có chắc chắn muốn xóa tài liệu này?',
+      confirmText: 'Xóa',
+      confirmColor: 'error',
     });
     if (!confirmed) {
       return;
@@ -602,16 +634,16 @@ export default function AdminContent() {
       await lessonService.removeReference(lessonId, referenceId);
       // Refresh lessons của course này
       await fetchLessonsForCourse(courseId);
-      toast.success("Đã xóa tài liệu thành công");
+      toast.success('Đã xóa tài liệu thành công');
     } catch (e: unknown) {
       if (axios.isAxiosError(e)) {
         const msg =
           (e.response?.data as { message?: string })?.message ??
           e.response?.statusText ??
-          "Không thể xóa tài liệu";
+          'Không thể xóa tài liệu';
         toast.error(String(msg));
       } else {
-        toast.error("Không thể xóa tài liệu");
+        toast.error('Không thể xóa tài liệu');
       }
     }
   };
@@ -620,9 +652,9 @@ export default function AdminContent() {
     <Box>
       <Box
         sx={{
-          display: "flex",
-          justifyContent: "space-between",
-          alignItems: "center",
+          display: 'flex',
+          justifyContent: 'space-between',
+          alignItems: 'center',
           mb: 3,
         }}
       >
@@ -638,7 +670,7 @@ export default function AdminContent() {
       </Box>
 
       {loading ? (
-        <Box sx={{ display: "flex", justifyContent: "center", p: 4 }}>
+        <Box sx={{ display: 'flex', justifyContent: 'center', p: 4 }}>
           <CircularProgress />
         </Box>
       ) : courses.length === 0 ? (
@@ -665,16 +697,20 @@ export default function AdminContent() {
               >
                 <AccordionSummary expandIcon={<ExpandMoreIcon />}>
                   <Box
-                    sx={{ display: "flex", alignItems: "center", width: "100%" }}
+                    sx={{
+                      display: 'flex',
+                      alignItems: 'center',
+                      width: '100%',
+                    }}
                   >
-                    <SchoolIcon sx={{ mr: 2, color: "primary.main" }} />
+                    <SchoolIcon sx={{ mr: 2, color: 'primary.main' }} />
                     <Box sx={{ flexGrow: 1 }}>
                       <Typography variant="h6">{course.name}</Typography>
                       <Typography variant="body2" color="text.secondary">
                         {course.code} - {course.description}
                       </Typography>
                     </Box>
-                    <Box sx={{ display: "flex", gap: 1, mr: 2 }}>
+                    <Box sx={{ display: 'flex', gap: 1, mr: 2 }}>
                       <IconButton
                         size="small"
                         onClick={(e) => {
@@ -710,7 +746,9 @@ export default function AdminContent() {
                   </Box>
 
                   {isLoadingLessons ? (
-                    <Box sx={{ display: "flex", justifyContent: "center", p: 2 }}>
+                    <Box
+                      sx={{ display: 'flex', justifyContent: 'center', p: 2 }}
+                    >
                       <CircularProgress size={24} />
                     </Box>
                   ) : lessons.length === 0 ? (
@@ -720,231 +758,239 @@ export default function AdminContent() {
                   ) : (
                     <Box>
                       {lessons.map((lesson) => (
-                      <Card key={lesson._id} sx={{ mb: 2 }}>
-                        <CardContent>
-                          <Box
-                            sx={{
-                              display: "flex",
-                              justifyContent: "space-between",
-                              alignItems: "center",
-                              mb: 2,
-                            }}
-                          >
-                            <Box sx={{ display: "flex", alignItems: "center" }}>
-                              <MenuBookIcon
-                                sx={{ mr: 1, color: "primary.main" }}
-                              />
+                        <Card key={lesson._id} sx={{ mb: 2 }}>
+                          <CardContent>
+                            <Box
+                              sx={{
+                                display: 'flex',
+                                justifyContent: 'space-between',
+                                alignItems: 'center',
+                                mb: 2,
+                              }}
+                            >
+                              <Box
+                                sx={{ display: 'flex', alignItems: 'center' }}
+                              >
+                                <MenuBookIcon
+                                  sx={{ mr: 1, color: 'primary.main' }}
+                                />
+                                <Box>
+                                  <Typography variant="h6">
+                                    {lesson.title}
+                                  </Typography>
+                                </Box>
+                              </Box>
                               <Box>
-                                <Typography variant="h6">{lesson.title}</Typography>
+                                <IconButton
+                                  size="small"
+                                  onClick={() =>
+                                    handleEditLesson(course, lesson)
+                                  }
+                                >
+                                  <EditIcon fontSize="small" />
+                                </IconButton>
+                                <IconButton
+                                  size="small"
+                                  color="error"
+                                  onClick={() =>
+                                    handleDeleteLesson(course._id, lesson._id)
+                                  }
+                                >
+                                  <DeleteIcon fontSize="small" />
+                                </IconButton>
                               </Box>
                             </Box>
+
+                            <Divider sx={{ my: 2 }} />
+
+                            {/* Slides */}
+                            <Box sx={{ mb: 2 }}>
+                              <Box
+                                sx={{
+                                  display: 'flex',
+                                  justifyContent: 'space-between',
+                                  alignItems: 'center',
+                                  mb: 1,
+                                }}
+                              >
+                                <Typography variant="subtitle1">
+                                  <SlideshowIcon
+                                    sx={{ verticalAlign: 'middle', mr: 1 }}
+                                  />
+                                  Slides ({lesson.slides?.length || 0})
+                                </Typography>
+                                <Button
+                                  size="small"
+                                  startIcon={<AddIcon />}
+                                  onClick={() => handleAddSlide(course, lesson)}
+                                >
+                                  Thêm Slide
+                                </Button>
+                              </Box>
+                              {lesson.slides && lesson.slides.length > 0 ? (
+                                <List dense>
+                                  {lesson.slides.map((slide) => (
+                                    <ListItem key={slide._id}>
+                                      <ListItemText
+                                        primary={slide.title}
+                                        secondary={`URL: ${slide.url}`}
+                                      />
+                                      <ListItemSecondaryAction>
+                                        <IconButton
+                                          size="small"
+                                          color="error"
+                                          onClick={() =>
+                                            handleDeleteSlide(
+                                              course._id,
+                                              lesson._id,
+                                              slide._id,
+                                            )
+                                          }
+                                        >
+                                          <DeleteIcon fontSize="small" />
+                                        </IconButton>
+                                      </ListItemSecondaryAction>
+                                    </ListItem>
+                                  ))}
+                                </List>
+                              ) : (
+                                <Typography
+                                  variant="body2"
+                                  color="text.secondary"
+                                  sx={{ ml: 4 }}
+                                >
+                                  Chưa có slide nào
+                                </Typography>
+                              )}
+                            </Box>
+
+                            {/* Videos */}
+                            <Box sx={{ mb: 2 }}>
+                              <Box
+                                sx={{
+                                  display: 'flex',
+                                  justifyContent: 'space-between',
+                                  alignItems: 'center',
+                                  mb: 1,
+                                }}
+                              >
+                                <Typography variant="subtitle1">
+                                  <VideoLibraryIcon
+                                    sx={{ verticalAlign: 'middle', mr: 1 }}
+                                  />
+                                  Videos ({lesson.videos?.length || 0})
+                                </Typography>
+                                <Button
+                                  size="small"
+                                  startIcon={<AddIcon />}
+                                  onClick={() => handleAddVideo(course, lesson)}
+                                >
+                                  Thêm Video
+                                </Button>
+                              </Box>
+                              {lesson.videos && lesson.videos.length > 0 ? (
+                                <List dense>
+                                  {lesson.videos.map((video) => (
+                                    <ListItem key={video._id}>
+                                      <ListItemText
+                                        primary={video.title}
+                                        secondary={`URL: ${video.url}`}
+                                      />
+                                      <ListItemSecondaryAction>
+                                        <IconButton
+                                          size="small"
+                                          color="error"
+                                          onClick={() =>
+                                            handleDeleteVideo(
+                                              course._id,
+                                              lesson._id,
+                                              video._id,
+                                            )
+                                          }
+                                        >
+                                          <DeleteIcon fontSize="small" />
+                                        </IconButton>
+                                      </ListItemSecondaryAction>
+                                    </ListItem>
+                                  ))}
+                                </List>
+                              ) : (
+                                <Typography
+                                  variant="body2"
+                                  color="text.secondary"
+                                  sx={{ ml: 4 }}
+                                >
+                                  Chưa có video nào
+                                </Typography>
+                              )}
+                            </Box>
+
+                            {/* References */}
                             <Box>
-                              <IconButton
-                                size="small"
-                                onClick={() => handleEditLesson(course, lesson)}
+                              <Box
+                                sx={{
+                                  display: 'flex',
+                                  justifyContent: 'space-between',
+                                  alignItems: 'center',
+                                  mb: 1,
+                                }}
                               >
-                                <EditIcon fontSize="small" />
-                              </IconButton>
-                              <IconButton
-                                size="small"
-                                color="error"
-                                onClick={() =>
-                                  handleDeleteLesson(course._id, lesson._id)
-                                }
-                              >
-                                <DeleteIcon fontSize="small" />
-                              </IconButton>
+                                <Typography variant="subtitle1">
+                                  <DescriptionIcon
+                                    sx={{ verticalAlign: 'middle', mr: 1 }}
+                                  />
+                                  Tài liệu tham khảo (
+                                  {lesson.references?.length || 0})
+                                </Typography>
+                                <Button
+                                  size="small"
+                                  startIcon={<AddIcon />}
+                                  onClick={() =>
+                                    handleAddReference(course, lesson)
+                                  }
+                                >
+                                  Thêm Tài liệu
+                                </Button>
+                              </Box>
+                              {lesson.references &&
+                              lesson.references.length > 0 ? (
+                                <List dense>
+                                  {lesson.references.map((ref) => (
+                                    <ListItem key={ref._id}>
+                                      <ListItemText
+                                        primary={ref.title}
+                                        secondary={`URL: ${ref.url}`}
+                                      />
+                                      <ListItemSecondaryAction>
+                                        <IconButton
+                                          size="small"
+                                          color="error"
+                                          onClick={() =>
+                                            handleDeleteReference(
+                                              course._id,
+                                              lesson._id,
+                                              ref._id,
+                                            )
+                                          }
+                                        >
+                                          <DeleteIcon fontSize="small" />
+                                        </IconButton>
+                                      </ListItemSecondaryAction>
+                                    </ListItem>
+                                  ))}
+                                </List>
+                              ) : (
+                                <Typography
+                                  variant="body2"
+                                  color="text.secondary"
+                                  sx={{ ml: 4 }}
+                                >
+                                  Chưa có tài liệu nào
+                                </Typography>
+                              )}
                             </Box>
-                          </Box>
-
-                          <Divider sx={{ my: 2 }} />
-
-                          {/* Slides */}
-                          <Box sx={{ mb: 2 }}>
-                            <Box
-                              sx={{
-                                display: "flex",
-                                justifyContent: "space-between",
-                                alignItems: "center",
-                                mb: 1,
-                              }}
-                            >
-                              <Typography variant="subtitle1">
-                                <SlideshowIcon
-                                  sx={{ verticalAlign: "middle", mr: 1 }}
-                                />
-                                Slides ({lesson.slides?.length || 0})
-                              </Typography>
-                              <Button
-                                size="small"
-                                startIcon={<AddIcon />}
-                                onClick={() => handleAddSlide(course, lesson)}
-                              >
-                                Thêm Slide
-                              </Button>
-                            </Box>
-                            {lesson.slides && lesson.slides.length > 0 ? (
-                              <List dense>
-                                {lesson.slides.map((slide) => (
-                                  <ListItem key={slide._id}>
-                                    <ListItemText
-                                      primary={slide.title}
-                                      secondary={`URL: ${slide.url}`}
-                                    />
-                                    <ListItemSecondaryAction>
-                                      <IconButton
-                                        size="small"
-                                        color="error"
-                                        onClick={() =>
-                                          handleDeleteSlide(
-                                            course._id,
-                                            lesson._id,
-                                            slide._id
-                                          )
-                                        }
-                                      >
-                                        <DeleteIcon fontSize="small" />
-                                      </IconButton>
-                                    </ListItemSecondaryAction>
-                                  </ListItem>
-                                ))}
-                              </List>
-                            ) : (
-                              <Typography
-                                variant="body2"
-                                color="text.secondary"
-                                sx={{ ml: 4 }}
-                              >
-                                Chưa có slide nào
-                              </Typography>
-                            )}
-                          </Box>
-
-                          {/* Videos */}
-                          <Box sx={{ mb: 2 }}>
-                            <Box
-                              sx={{
-                                display: "flex",
-                                justifyContent: "space-between",
-                                alignItems: "center",
-                                mb: 1,
-                              }}
-                            >
-                              <Typography variant="subtitle1">
-                                <VideoLibraryIcon
-                                  sx={{ verticalAlign: "middle", mr: 1 }}
-                                />
-                                Videos ({lesson.videos?.length || 0})
-                              </Typography>
-                              <Button
-                                size="small"
-                                startIcon={<AddIcon />}
-                                onClick={() => handleAddVideo(course, lesson)}
-                              >
-                                Thêm Video
-                              </Button>
-                            </Box>
-                            {lesson.videos && lesson.videos.length > 0 ? (
-                              <List dense>
-                                {lesson.videos.map((video) => (
-                                  <ListItem key={video._id}>
-                                    <ListItemText
-                                      primary={video.title}
-                                      secondary={`URL: ${video.url}`}
-                                    />
-                                    <ListItemSecondaryAction>
-                                      <IconButton
-                                        size="small"
-                                        color="error"
-                                        onClick={() =>
-                                          handleDeleteVideo(
-                                            course._id,
-                                            lesson._id,
-                                            video._id
-                                          )
-                                        }
-                                      >
-                                        <DeleteIcon fontSize="small" />
-                                      </IconButton>
-                                    </ListItemSecondaryAction>
-                                  </ListItem>
-                                ))}
-                              </List>
-                            ) : (
-                              <Typography
-                                variant="body2"
-                                color="text.secondary"
-                                sx={{ ml: 4 }}
-                              >
-                                Chưa có video nào
-                              </Typography>
-                            )}
-                          </Box>
-
-                          {/* References */}
-                          <Box>
-                            <Box
-                              sx={{
-                                display: "flex",
-                                justifyContent: "space-between",
-                                alignItems: "center",
-                                mb: 1,
-                              }}
-                            >
-                              <Typography variant="subtitle1">
-                                <DescriptionIcon
-                                  sx={{ verticalAlign: "middle", mr: 1 }}
-                                />
-                                Tài liệu tham khảo ({lesson.references?.length || 0})
-                              </Typography>
-                              <Button
-                                size="small"
-                                startIcon={<AddIcon />}
-                                onClick={() =>
-                                  handleAddReference(course, lesson)
-                                }
-                              >
-                                Thêm Tài liệu
-                              </Button>
-                            </Box>
-                            {lesson.references && lesson.references.length > 0 ? (
-                              <List dense>
-                                {lesson.references.map((ref) => (
-                                  <ListItem key={ref._id}>
-                                    <ListItemText
-                                      primary={ref.title}
-                                      secondary={`URL: ${ref.url}`}
-                                    />
-                                    <ListItemSecondaryAction>
-                                      <IconButton
-                                        size="small"
-                                        color="error"
-                                        onClick={() =>
-                                          handleDeleteReference(
-                                            course._id,
-                                            lesson._id,
-                                            ref._id
-                                          )
-                                        }
-                                      >
-                                        <DeleteIcon fontSize="small" />
-                                      </IconButton>
-                                    </ListItemSecondaryAction>
-                                  </ListItem>
-                                ))}
-                              </List>
-                            ) : (
-                              <Typography
-                                variant="body2"
-                                color="text.secondary"
-                                sx={{ ml: 4 }}
-                              >
-                                Chưa có tài liệu nào
-                              </Typography>
-                            )}
-                          </Box>
-                        </CardContent>
-                      </Card>
+                          </CardContent>
+                        </Card>
                       ))}
                     </Box>
                   )}
@@ -963,7 +1009,7 @@ export default function AdminContent() {
         fullWidth
       >
         <DialogTitle>
-          {selectedCourse ? "Sửa Học phần" : "Thêm Học phần"}
+          {selectedCourse ? 'Sửa Học phần' : 'Thêm Học phần'}
         </DialogTitle>
         <DialogContent>
           <Grid container spacing={2} sx={{ mt: 1 }}>
@@ -1013,8 +1059,12 @@ export default function AdminContent() {
           <Button onClick={() => setOpenCourseDialog(false)} disabled={saving}>
             Hủy
           </Button>
-          <Button onClick={handleSaveCourse} variant="contained" disabled={saving}>
-            {saving ? "Đang lưu..." : "Lưu"}
+          <Button
+            onClick={handleSaveCourse}
+            variant="contained"
+            disabled={saving}
+          >
+            {saving ? 'Đang lưu...' : 'Lưu'}
           </Button>
         </DialogActions>
       </Dialog>
@@ -1027,7 +1077,7 @@ export default function AdminContent() {
         fullWidth
       >
         <DialogTitle>
-          {selectedLesson ? "Sửa Bài học" : "Thêm Bài học"}
+          {selectedLesson ? 'Sửa Bài học' : 'Thêm Bài học'}
         </DialogTitle>
         <DialogContent>
           <Grid container spacing={2} sx={{ mt: 1 }}>
@@ -1050,8 +1100,12 @@ export default function AdminContent() {
           <Button onClick={() => setOpenLessonDialog(false)} disabled={saving}>
             Hủy
           </Button>
-          <Button onClick={handleSaveLesson} variant="contained" disabled={saving}>
-            {saving ? "Đang lưu..." : "Lưu"}
+          <Button
+            onClick={handleSaveLesson}
+            variant="contained"
+            disabled={saving}
+          >
+            {saving ? 'Đang lưu...' : 'Lưu'}
           </Button>
         </DialogActions>
       </Dialog>
@@ -1065,7 +1119,7 @@ export default function AdminContent() {
         PaperProps={{
           sx: {
             borderRadius: 3,
-            boxShadow: "0 8px 32px rgba(0,0,0,0.12)",
+            boxShadow: '0 8px 32px rgba(0,0,0,0.12)',
           },
         }}
       >
@@ -1073,9 +1127,9 @@ export default function AdminContent() {
           sx={{
             pb: 2,
             borderBottom: 1,
-            borderColor: "divider",
+            borderColor: 'divider',
             fontWeight: 600,
-            fontSize: "1.5rem",
+            fontSize: '1.5rem',
           }}
         >
           Thêm Slide
@@ -1089,10 +1143,10 @@ export default function AdminContent() {
                 sx={{
                   mb: 1,
                   fontWeight: 500,
-                  color: "text.primary",
+                  color: 'text.primary',
                 }}
               >
-                Tiêu đề slide <span style={{ color: "red" }}>*</span>
+                Tiêu đề slide <span style={{ color: 'red' }}>*</span>
               </Typography>
               <TextField
                 fullWidth
@@ -1103,7 +1157,7 @@ export default function AdminContent() {
                 }
                 disabled={saving}
                 sx={{
-                  "& .MuiOutlinedInput-root": {
+                  '& .MuiOutlinedInput-root': {
                     borderRadius: 2,
                   },
                 }}
@@ -1126,7 +1180,7 @@ export default function AdminContent() {
             px: 3,
             py: 2,
             borderTop: 1,
-            borderColor: "divider",
+            borderColor: 'divider',
             gap: 1,
           }}
         >
@@ -1134,7 +1188,7 @@ export default function AdminContent() {
             onClick={() => setOpenSlideDialog(false)}
             disabled={saving}
             sx={{
-              textTransform: "none",
+              textTransform: 'none',
               px: 3,
             }}
           >
@@ -1145,13 +1199,13 @@ export default function AdminContent() {
             variant="contained"
             disabled={saving}
             sx={{
-              textTransform: "none",
+              textTransform: 'none',
               px: 3,
               borderRadius: 2,
               fontWeight: 500,
             }}
           >
-            {saving ? "Đang lưu..." : "Lưu"}
+            {saving ? 'Đang lưu...' : 'Lưu'}
           </Button>
         </DialogActions>
       </Dialog>
@@ -1165,7 +1219,7 @@ export default function AdminContent() {
         PaperProps={{
           sx: {
             borderRadius: 3,
-            boxShadow: "0 8px 32px rgba(0,0,0,0.12)",
+            boxShadow: '0 8px 32px rgba(0,0,0,0.12)',
           },
         }}
       >
@@ -1173,9 +1227,9 @@ export default function AdminContent() {
           sx={{
             pb: 2,
             borderBottom: 1,
-            borderColor: "divider",
+            borderColor: 'divider',
             fontWeight: 600,
-            fontSize: "1.5rem",
+            fontSize: '1.5rem',
           }}
         >
           Thêm Video
@@ -1189,10 +1243,10 @@ export default function AdminContent() {
                 sx={{
                   mb: 1,
                   fontWeight: 500,
-                  color: "text.primary",
+                  color: 'text.primary',
                 }}
               >
-                Tiêu đề video <span style={{ color: "red" }}>*</span>
+                Tiêu đề video <span style={{ color: 'red' }}>*</span>
               </Typography>
               <TextField
                 fullWidth
@@ -1203,7 +1257,7 @@ export default function AdminContent() {
                 }
                 disabled={saving}
                 sx={{
-                  "& .MuiOutlinedInput-root": {
+                  '& .MuiOutlinedInput-root': {
                     borderRadius: 2,
                   },
                 }}
@@ -1226,7 +1280,7 @@ export default function AdminContent() {
             px: 3,
             py: 2,
             borderTop: 1,
-            borderColor: "divider",
+            borderColor: 'divider',
             gap: 1,
           }}
         >
@@ -1234,7 +1288,7 @@ export default function AdminContent() {
             onClick={() => setOpenVideoDialog(false)}
             disabled={saving}
             sx={{
-              textTransform: "none",
+              textTransform: 'none',
               px: 3,
             }}
           >
@@ -1245,13 +1299,13 @@ export default function AdminContent() {
             variant="contained"
             disabled={saving}
             sx={{
-              textTransform: "none",
+              textTransform: 'none',
               px: 3,
               borderRadius: 2,
               fontWeight: 500,
             }}
           >
-            {saving ? "Đang lưu..." : "Lưu"}
+            {saving ? 'Đang lưu...' : 'Lưu'}
           </Button>
         </DialogActions>
       </Dialog>
@@ -1265,7 +1319,7 @@ export default function AdminContent() {
         PaperProps={{
           sx: {
             borderRadius: 3,
-            boxShadow: "0 8px 32px rgba(0,0,0,0.12)",
+            boxShadow: '0 8px 32px rgba(0,0,0,0.12)',
           },
         }}
       >
@@ -1273,9 +1327,9 @@ export default function AdminContent() {
           sx={{
             pb: 2,
             borderBottom: 1,
-            borderColor: "divider",
+            borderColor: 'divider',
             fontWeight: 600,
-            fontSize: "1.5rem",
+            fontSize: '1.5rem',
           }}
         >
           Thêm Tài liệu tham khảo
@@ -1289,10 +1343,10 @@ export default function AdminContent() {
                 sx={{
                   mb: 1,
                   fontWeight: 500,
-                  color: "text.primary",
+                  color: 'text.primary',
                 }}
               >
-                Tiêu đề tài liệu <span style={{ color: "red" }}>*</span>
+                Tiêu đề tài liệu <span style={{ color: 'red' }}>*</span>
               </Typography>
               <TextField
                 fullWidth
@@ -1303,7 +1357,7 @@ export default function AdminContent() {
                 }
                 disabled={saving}
                 sx={{
-                  "& .MuiOutlinedInput-root": {
+                  '& .MuiOutlinedInput-root': {
                     borderRadius: 2,
                   },
                 }}
@@ -1313,7 +1367,9 @@ export default function AdminContent() {
             <Grid item xs={12}>
               <FilePicker
                 value={referenceForm.url}
-                onChange={(url: string) => setReferenceForm({ ...referenceForm, url })}
+                onChange={(url: string) =>
+                  setReferenceForm({ ...referenceForm, url })
+                }
                 label="URL tài liệu"
                 helperText="Nhấn 'Chọn file' để mở file manager hoặc nhập URL trực tiếp"
                 disabled={saving}
@@ -1326,7 +1382,7 @@ export default function AdminContent() {
             px: 3,
             py: 2,
             borderTop: 1,
-            borderColor: "divider",
+            borderColor: 'divider',
             gap: 1,
           }}
         >
@@ -1334,7 +1390,7 @@ export default function AdminContent() {
             onClick={() => setOpenReferenceDialog(false)}
             disabled={saving}
             sx={{
-              textTransform: "none",
+              textTransform: 'none',
               px: 3,
             }}
           >
@@ -1345,13 +1401,13 @@ export default function AdminContent() {
             variant="contained"
             disabled={saving}
             sx={{
-              textTransform: "none",
+              textTransform: 'none',
               px: 3,
               borderRadius: 2,
               fontWeight: 500,
             }}
           >
-            {saving ? "Đang lưu..." : "Lưu"}
+            {saving ? 'Đang lưu...' : 'Lưu'}
           </Button>
         </DialogActions>
       </Dialog>

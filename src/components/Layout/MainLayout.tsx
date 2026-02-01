@@ -1,5 +1,5 @@
-import { useState } from "react";
-import { Outlet, useNavigate, useLocation } from "react-router-dom";
+import { useState } from 'react';
+import { Outlet, useNavigate, useLocation } from 'react-router-dom';
 import {
   Box,
   Drawer,
@@ -26,7 +26,7 @@ import {
   TextField,
   Button,
   Alert,
-} from "@mui/material";
+} from '@mui/material';
 import {
   Menu as MenuIcon,
   Dashboard as DashboardIcon,
@@ -41,13 +41,13 @@ import {
   Logout as LogoutIcon,
   Person as PersonIcon,
   Lock as LockIcon,
-} from "@mui/icons-material";
-import axios from "axios";
-import { useAuthStore } from "../../store/auth.store";
-import { userService } from "../../services/user.service";
-import { authService } from "../../services/auth.service";
-import { toast } from "../../utils/toast";
-import type { User } from "../../types";
+} from '@mui/icons-material';
+import axios from 'axios';
+import { useAuthStore } from '../../store/auth.store';
+import { userService } from '../../services/user.service';
+import { authService } from '../../services/auth.service';
+import { toast } from '../../utils/toast';
+import type { User } from '../../types';
 
 const drawerWidth = 240;
 
@@ -56,18 +56,18 @@ export default function MainLayout() {
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
   const [profileOpen, setProfileOpen] = useState(false);
   const [changePasswordOpen, setChangePasswordOpen] = useState(false);
-  const [formData, setFormData] = useState({ username: "", email: "" });
+  const [formData, setFormData] = useState({ username: '', email: '' });
   const [passwordData, setPasswordData] = useState({
-    oldPassword: "",
-    newPassword: "",
-    confirmPassword: "",
+    oldPassword: '',
+    newPassword: '',
+    confirmPassword: '',
   });
-  const [passwordError, setPasswordError] = useState("");
-  const [profileError, setProfileError] = useState("");
+  const [passwordError, setPasswordError] = useState('');
+  const [profileError, setProfileError] = useState('');
   const [profileSaving, setProfileSaving] = useState(false);
   const [passwordSaving, setPasswordSaving] = useState(false);
   const theme = useTheme();
-  const isMobile = useMediaQuery(theme.breakpoints.down("md"));
+  const isMobile = useMediaQuery(theme.breakpoints.down('md'));
   const navigate = useNavigate();
   const location = useLocation();
   const user = useAuthStore((s) => s.user);
@@ -75,23 +75,23 @@ export default function MainLayout() {
   const updateUserInStore = useAuthStore((s) => s.updateUser);
 
   const menuItems = () => [
-    { text: "Trang chủ", icon: <DashboardIcon />, path: "/" },
-    { text: "Tài liệu học tập", icon: <MenuBookIcon />, path: "/materials" },
-    { text: "Bài tập", icon: <AssignmentIcon />, path: "/exercises" },
-    { text: "Quiz", icon: <QuizIcon />, path: "/quizzes" },
-    ...(user?.role === "teacher"
+    { text: 'Trang chủ', icon: <DashboardIcon />, path: '/' },
+    { text: 'Tài liệu học tập', icon: <MenuBookIcon />, path: '/materials' },
+    { text: 'Bài tập', icon: <AssignmentIcon />, path: '/exercises' },
+    { text: 'Quiz', icon: <QuizIcon />, path: '/quizzes' },
+    ...(user?.role === 'teacher'
       ? [
           {
-            text: "Báo cáo thống kê",
+            text: 'Báo cáo thống kê',
             icon: <BarChartIcon />,
-            path: "/statistics",
+            path: '/statistics',
           },
         ]
       : [
           {
-            text: "Tiến độ học tập",
+            text: 'Tiến độ học tập',
             icon: <AssessmentIcon />,
-            path: "/progress",
+            path: '/progress',
           },
         ]),
   ];
@@ -119,10 +119,10 @@ export default function MainLayout() {
     handleMenuClose();
     if (user) {
       setFormData({
-        username: user.username || "",
-        email: user.email || "",
+        username: user.username || '',
+        email: user.email || '',
       });
-      setProfileError("");
+      setProfileError('');
       setProfileOpen(true);
     }
   };
@@ -132,8 +132,8 @@ export default function MainLayout() {
     // Reset form data to original values
     if (user) {
       setFormData({
-        username: user.username || "",
-        email: user.email || "",
+        username: user.username || '',
+        email: user.email || '',
       });
     }
   };
@@ -142,8 +142,8 @@ export default function MainLayout() {
     // Reset form data to original values
     if (user) {
       setFormData({
-        username: user.username || "",
-        email: user.email || "",
+        username: user.username || '',
+        email: user.email || '',
       });
     }
     setProfileOpen(false);
@@ -151,7 +151,7 @@ export default function MainLayout() {
 
   const handleProfileSave = async () => {
     if (!user) return;
-    setProfileError("");
+    setProfileError('');
     setProfileSaving(true);
     try {
       const dto: Partial<User> = {
@@ -166,10 +166,10 @@ export default function MainLayout() {
         const msg =
           (e.response?.data as { message?: string })?.message ??
           e.response?.statusText ??
-          "Cập nhật thông tin thất bại";
+          'Cập nhật thông tin thất bại';
         setProfileError(String(msg));
       } else {
-        setProfileError("Cập nhật thông tin thất bại");
+        setProfileError('Cập nhật thông tin thất bại');
       }
     } finally {
       setProfileSaving(false);
@@ -178,31 +178,31 @@ export default function MainLayout() {
 
   const handleChangePasswordClick = () => {
     handleMenuClose();
-    setPasswordData({ oldPassword: "", newPassword: "", confirmPassword: "" });
-    setPasswordError("");
+    setPasswordData({ oldPassword: '', newPassword: '', confirmPassword: '' });
+    setPasswordError('');
     setChangePasswordOpen(true);
   };
 
   const handleChangePasswordClose = () => {
     setChangePasswordOpen(false);
-    setPasswordData({ oldPassword: "", newPassword: "", confirmPassword: "" });
-    setPasswordError("");
+    setPasswordData({ oldPassword: '', newPassword: '', confirmPassword: '' });
+    setPasswordError('');
   };
 
   const handleChangePasswordSave = async () => {
-    setPasswordError("");
+    setPasswordError('');
 
     if (
       !passwordData.oldPassword ||
       !passwordData.newPassword ||
       !passwordData.confirmPassword
     ) {
-      setPasswordError("Vui lòng điền đầy đủ thông tin");
+      setPasswordError('Vui lòng điền đầy đủ thông tin');
       return;
     }
 
     if (passwordData.newPassword !== passwordData.confirmPassword) {
-      setPasswordError("Mật khẩu xác nhận không khớp");
+      setPasswordError('Mật khẩu xác nhận không khớp');
       return;
     }
 
@@ -214,21 +214,21 @@ export default function MainLayout() {
       );
       setChangePasswordOpen(false);
       setPasswordData({
-        oldPassword: "",
-        newPassword: "",
-        confirmPassword: "",
+        oldPassword: '',
+        newPassword: '',
+        confirmPassword: '',
       });
-      setPasswordError("");
-      toast.success("Đổi mật khẩu thành công!");
+      setPasswordError('');
+      toast.success('Đổi mật khẩu thành công!');
     } catch (e: unknown) {
       if (axios.isAxiosError(e)) {
         const msg =
           (e.response?.data as { message?: string })?.message ??
           e.response?.statusText ??
-          "Đổi mật khẩu thất bại";
+          'Đổi mật khẩu thất bại';
         setPasswordError(String(msg));
       } else {
-        setPasswordError("Đổi mật khẩu thất bại");
+        setPasswordError('Đổi mật khẩu thất bại');
       }
     } finally {
       setPasswordSaving(false);
@@ -237,21 +237,21 @@ export default function MainLayout() {
 
   const handleAdminClick = () => {
     handleMenuClose();
-    navigate("/admin");
+    navigate('/admin');
   };
 
   const handleLogout = () => {
     handleMenuClose();
     logout();
-    toast.success("Đăng xuất thành công!");
-    navigate("/login");
+    toast.success('Đăng xuất thành công!');
+    navigate('/login');
   };
 
   const isMenuOpen = Boolean(anchorEl);
 
   const drawer = (
     <Box>
-      <Toolbar sx={{ bgcolor: "primary.main", color: "white" }}>
+      <Toolbar sx={{ bgcolor: 'primary.main', color: 'white' }}>
         <SchoolIcon sx={{ mr: 2 }} />
         <Typography variant="h6" noWrap component="div">
           Học Tiếng Anh
@@ -261,7 +261,7 @@ export default function MainLayout() {
       <List>
         {menuItems().map((item) => {
           // Hide teacher-only items for students
-          if (user?.role === "student" && item.path === "/statistics") {
+          if (user?.role === 'student' && item.path === '/statistics') {
             return null;
           }
           return (
@@ -274,8 +274,8 @@ export default function MainLayout() {
                   sx={{
                     color:
                       location.pathname === item.path
-                        ? "primary.main"
-                        : "inherit",
+                        ? 'primary.main'
+                        : 'inherit',
                   }}
                 >
                   {item.icon}
@@ -290,7 +290,7 @@ export default function MainLayout() {
   );
 
   return (
-    <Box sx={{ display: "flex" }}>
+    <Box sx={{ display: 'flex' }}>
       <AppBar
         position="fixed"
         sx={{
@@ -304,7 +304,7 @@ export default function MainLayout() {
             aria-label="open drawer"
             edge="start"
             onClick={handleDrawerToggle}
-            sx={{ mr: 2, display: { md: "none" } }}
+            sx={{ mr: 2, display: { md: 'none' } }}
           >
             <MenuIcon />
           </IconButton>
@@ -315,13 +315,13 @@ export default function MainLayout() {
             size="large"
             edge="end"
             aria-label="account menu"
-            aria-controls={isMenuOpen ? "account-menu" : undefined}
+            aria-controls={isMenuOpen ? 'account-menu' : undefined}
             aria-haspopup="true"
             onClick={handleMenuOpen}
             color="inherit"
           >
-            <Avatar sx={{ width: 32, height: 32, bgcolor: "secondary.main" }}>
-              {user?.username?.charAt(0).toUpperCase() || "U"}
+            <Avatar sx={{ width: 32, height: 32, bgcolor: 'secondary.main' }}>
+              {user?.username?.charAt(0).toUpperCase() || 'U'}
             </Avatar>
           </IconButton>
           <Menu
@@ -333,47 +333,47 @@ export default function MainLayout() {
             PaperProps={{
               elevation: 0,
               sx: {
-                overflow: "visible",
-                filter: "drop-shadow(0px 2px 8px rgba(0,0,0,0.32))",
+                overflow: 'visible',
+                filter: 'drop-shadow(0px 2px 8px rgba(0,0,0,0.32))',
                 mt: 1.5,
-                "& .MuiAvatar-root": {
+                '& .MuiAvatar-root': {
                   width: 32,
                   height: 32,
                   ml: -0.5,
                   mr: 1,
                 },
-                "&:before": {
+                '&:before': {
                   content: '""',
-                  display: "block",
-                  position: "absolute",
+                  display: 'block',
+                  position: 'absolute',
                   top: 0,
                   right: 14,
                   width: 10,
                   height: 10,
-                  bgcolor: "background.paper",
-                  transform: "translateY(-50%) rotate(45deg)",
+                  bgcolor: 'background.paper',
+                  transform: 'translateY(-50%) rotate(45deg)',
                   zIndex: 0,
                 },
               },
             }}
-            transformOrigin={{ horizontal: "right", vertical: "top" }}
-            anchorOrigin={{ horizontal: "right", vertical: "bottom" }}
+            transformOrigin={{ horizontal: 'right', vertical: 'top' }}
+            anchorOrigin={{ horizontal: 'right', vertical: 'bottom' }}
           >
             <MenuItem onClick={handleProfileClick}>
-              <Avatar sx={{ bgcolor: "primary.main" }}>
+              <Avatar sx={{ bgcolor: 'primary.main' }}>
                 <PersonIcon />
               </Avatar>
               <Box sx={{ flexGrow: 1 }}>
                 <Typography variant="body1" sx={{ fontWeight: 500 }}>
-                  {user?.username || "Người dùng"}
+                  {user?.username || 'Người dùng'}
                 </Typography>
                 <Typography variant="body2" color="text.secondary">
-                  {user?.email || ""}
+                  {user?.email || ''}
                 </Typography>
                 <Box sx={{ mt: 1 }}>
                   <Chip
                     label={
-                      user?.role === "teacher" ? "Giảng viên" : "Sinh viên"
+                      user?.role === 'teacher' ? 'Giảng viên' : 'Sinh viên'
                     }
                     size="small"
                     color="secondary"
@@ -382,7 +382,7 @@ export default function MainLayout() {
               </Box>
             </MenuItem>
             <Divider />
-            {user?.role === "teacher" && (
+            {user?.role === 'teacher' && (
               <MenuItem onClick={handleAdminClick}>
                 <ListItemIcon>
                   <SettingsIcon fontSize="small" />
@@ -423,9 +423,9 @@ export default function MainLayout() {
             keepMounted: true, // Better open performance on mobile.
           }}
           sx={{
-            display: { xs: "block", md: "none" },
-            "& .MuiDrawer-paper": {
-              boxSizing: "border-box",
+            display: { xs: 'block', md: 'none' },
+            '& .MuiDrawer-paper': {
+              boxSizing: 'border-box',
               width: drawerWidth,
             },
           }}
@@ -435,9 +435,9 @@ export default function MainLayout() {
         <Drawer
           variant="permanent"
           sx={{
-            display: { xs: "none", md: "block" },
-            "& .MuiDrawer-paper": {
-              boxSizing: "border-box",
+            display: { xs: 'none', md: 'block' },
+            '& .MuiDrawer-paper': {
+              boxSizing: 'border-box',
               width: drawerWidth,
             },
           }}
@@ -452,8 +452,8 @@ export default function MainLayout() {
           flexGrow: 1,
           p: 3,
           width: { md: `calc(100% - ${drawerWidth}px)` },
-          minHeight: "100vh",
-          bgcolor: "background.default",
+          minHeight: '100vh',
+          bgcolor: 'background.default',
         }}
       >
         <Toolbar />
@@ -474,7 +474,7 @@ export default function MainLayout() {
               <Alert
                 severity="error"
                 sx={{ mb: 2 }}
-                onClose={() => setProfileError("")}
+                onClose={() => setProfileError('')}
               >
                 {profileError}
               </Alert>
@@ -501,7 +501,7 @@ export default function MainLayout() {
             <TextField
               fullWidth
               label="Vai trò"
-              value={user?.role === "teacher" ? "Giảng viên" : "Sinh viên"}
+              value={user?.role === 'teacher' ? 'Giảng viên' : 'Sinh viên'}
               disabled
               margin="normal"
             />
@@ -516,7 +516,7 @@ export default function MainLayout() {
             variant="contained"
             disabled={profileSaving}
           >
-            {profileSaving ? "Đang lưu..." : "Lưu"}
+            {profileSaving ? 'Đang lưu...' : 'Lưu'}
           </Button>
         </DialogActions>
       </Dialog>
@@ -535,7 +535,7 @@ export default function MainLayout() {
               <Alert
                 severity="error"
                 sx={{ mb: 2 }}
-                onClose={() => setPasswordError("")}
+                onClose={() => setPasswordError('')}
               >
                 {passwordError}
               </Alert>
@@ -590,7 +590,7 @@ export default function MainLayout() {
             variant="contained"
             disabled={passwordSaving}
           >
-            {passwordSaving ? "Đang lưu..." : "Lưu"}
+            {passwordSaving ? 'Đang lưu...' : 'Lưu'}
           </Button>
         </DialogActions>
       </Dialog>

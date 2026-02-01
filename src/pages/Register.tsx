@@ -1,5 +1,5 @@
-import { useState } from "react";
-import { useNavigate, Link } from "react-router-dom";
+import { useState } from 'react';
+import { useNavigate, Link } from 'react-router-dom';
 import {
   Container,
   Paper,
@@ -15,16 +15,16 @@ import {
   Visibility,
   VisibilityOff,
 } from '@mui/icons-material';
-import axios from "axios";
-import { authService } from "../services/auth.service";
-import { toast } from "../utils/toast";
-import type { RegisterDto } from "../types/dto";
+import axios from 'axios';
+import { authService } from '../services/auth.service';
+import { toast } from '../utils/toast';
+import type { RegisterDto } from '../types/dto';
 
 export default function Register() {
-  const [username, setUsername] = useState("");
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
-  const [confirmPassword, setConfirmPassword] = useState("");
+  const [username, setUsername] = useState('');
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [loading, setLoading] = useState(false);
@@ -32,12 +32,12 @@ export default function Register() {
 
   const handleRegister = async () => {
     if (!username || !email || !password || !confirmPassword) {
-      toast.error("Vui lòng điền đầy đủ thông tin");
+      toast.error('Vui lòng điền đầy đủ thông tin');
       return;
     }
 
     if (password !== confirmPassword) {
-      toast.error("Mật khẩu xác nhận không khớp");
+      toast.error('Mật khẩu xác nhận không khớp');
       return;
     }
 
@@ -50,7 +50,7 @@ export default function Register() {
     try {
       setLoading(true);
       await authService.register(dto);
-      toast.success("Đăng ký thành công! Đang chuyển đến trang đăng nhập...");
+      toast.success('Đăng ký thành công! Đang chuyển đến trang đăng nhập...');
       setTimeout(() => {
         navigate('/login');
       }, 1500);
@@ -59,10 +59,10 @@ export default function Register() {
         const msg =
           (e.response?.data as { message?: string })?.message ??
           e.response?.statusText ??
-          "Đăng ký thất bại";
+          'Đăng ký thất bại';
         toast.error(String(msg));
       } else {
-        toast.error("Đăng ký thất bại");
+        toast.error('Đăng ký thất bại');
       }
     } finally {
       setLoading(false);
@@ -86,13 +86,19 @@ export default function Register() {
         }}
       >
         <Paper elevation={3} sx={{ p: 4, width: '100%' }}>
-          <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center', mb: 3 }}>
+          <Box
+            sx={{
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              mb: 3,
+            }}
+          >
             <SchoolIcon sx={{ fontSize: 48, color: 'primary.main', mr: 2 }} />
             <Typography variant="h4" component="h1">
               Đăng ký
             </Typography>
           </Box>
-
 
           <Box component="form" sx={{ mt: 1 }}>
             <TextField
@@ -156,7 +162,9 @@ export default function Register() {
                   <InputAdornment position="end">
                     <IconButton
                       aria-label="toggle password visibility"
-                      onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                      onClick={() =>
+                        setShowConfirmPassword(!showConfirmPassword)
+                      }
                       edge="end"
                     >
                       {showConfirmPassword ? <VisibilityOff /> : <Visibility />}
@@ -173,12 +181,15 @@ export default function Register() {
               onClick={handleRegister}
               disabled={loading}
             >
-              {loading ? "Đang đăng ký..." : "Đăng ký"}
+              {loading ? 'Đang đăng ký...' : 'Đăng ký'}
             </Button>
             <Box sx={{ textAlign: 'center', mt: 2 }}>
               <Typography variant="body2" color="text.secondary">
                 Đã có tài khoản?{' '}
-                <Link to="/login" style={{ color: 'inherit', textDecoration: 'underline' }}>
+                <Link
+                  to="/login"
+                  style={{ color: 'inherit', textDecoration: 'underline' }}
+                >
                   Đăng nhập ngay
                 </Link>
               </Typography>
@@ -189,4 +200,3 @@ export default function Register() {
     </Container>
   );
 }
-

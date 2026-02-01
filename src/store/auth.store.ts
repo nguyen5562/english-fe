@@ -1,6 +1,6 @@
-import { create } from "zustand";
-import { persist } from "zustand/middleware";
-import type { User } from "../types";
+import { create } from 'zustand';
+import { persist } from 'zustand/middleware';
+import type { User } from '../types';
 
 type AuthState = {
   user: User | null;
@@ -20,12 +20,11 @@ export const useAuthStore = create<AuthState>()(
       logout: () => set({ user: null, accessToken: null }),
     }),
     {
-      name: "auth",
+      name: 'auth',
       partialize: (state) => ({
         user: state.user,
         accessToken: state.accessToken,
       }),
-    }
-  )
+    },
+  ),
 );
-

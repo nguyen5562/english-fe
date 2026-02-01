@@ -1,5 +1,5 @@
-import { useState, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
+import { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import {
   Box,
   Typography,
@@ -19,21 +19,21 @@ import {
   Select,
   MenuItem,
   CircularProgress,
-} from "@mui/material";
+} from '@mui/material';
 import {
   Add as AddIcon,
   Edit as EditIcon,
   Delete as DeleteIcon,
   Quiz as QuizIcon,
-} from "@mui/icons-material";
-import axios from "axios";
-import { quizService } from "../../services/quiz.service";
-import { courseService } from "../../services/course.service";
-import { useConfirm } from "../../components/ConfirmDialog";
-import { toast } from "../../utils/toast";
-import { buildSlugId } from "../../utils/slug";
-import type { Quiz, Course } from "../../types";
-import type { CreateQuizDto } from "../../types/dto";
+} from '@mui/icons-material';
+import axios from 'axios';
+import { quizService } from '../../services/quiz.service';
+import { courseService } from '../../services/course.service';
+import { useConfirm } from '../../components/ConfirmDialog';
+import { toast } from '../../utils/toast';
+import { toSlug } from '../../utils/slug';
+import type { Quiz, Course } from '../../types';
+import type { CreateQuizDto } from '../../types/dto';
 
 export default function AdminQuizzes() {
   const navigate = useNavigate();
@@ -50,9 +50,9 @@ export default function AdminQuizzes() {
     description: string;
     timeLimit: number;
   }>({
-    courseId: "",
-    title: "",
-    description: "",
+    courseId: '',
+    title: '',
+    description: '',
     timeLimit: 60,
   });
 
@@ -70,10 +70,10 @@ export default function AdminQuizzes() {
         const msg =
           (e.response?.data as { message?: string })?.message ??
           e.response?.statusText ??
-          "Không thể tải dữ liệu";
+          'Không thể tải dữ liệu';
         toast.error(String(msg));
       } else {
-        toast.error("Không thể tải dữ liệu");
+        toast.error('Không thể tải dữ liệu');
       }
     } finally {
       setLoading(false);
@@ -86,34 +86,34 @@ export default function AdminQuizzes() {
 
   const handleDelete = async (quizId: string) => {
     const ok = await confirm({
-      title: "Xác nhận xóa quiz",
-      message: "Bạn có chắc muốn xóa quiz này?",
-      confirmText: "Xóa",
-      confirmColor: "error",
+      title: 'Xác nhận xóa quiz',
+      message: 'Bạn có chắc muốn xóa quiz này?',
+      confirmText: 'Xóa',
+      confirmColor: 'error',
     });
     if (!ok) return;
     try {
       await quizService.deleteQuiz(quizId);
-      toast.success("Đã xóa quiz");
+      toast.success('Đã xóa quiz');
       fetchData();
     } catch (e: unknown) {
       if (axios.isAxiosError(e)) {
         const msg =
           (e.response?.data as { message?: string })?.message ??
           e.response?.statusText ??
-          "Không thể xóa";
+          'Không thể xóa';
         toast.error(String(msg));
       } else {
-        toast.error("Không thể xóa quiz");
+        toast.error('Không thể xóa quiz');
       }
     }
   };
 
   const handleAddQuiz = () => {
     setAddForm({
-      courseId: courses[0]?._id ?? "",
-      title: "",
-      description: "",
+      courseId: courses[0]?._id ?? '',
+      title: '',
+      description: '',
       timeLimit: 60,
     });
     setOpenAddQuiz(true);
@@ -121,7 +121,7 @@ export default function AdminQuizzes() {
 
   const handleSaveNewQuiz = async () => {
     if (!addForm.courseId || !addForm.title.trim()) {
-      toast.error("Vui lòng chọn khóa học và nhập tên quiz");
+      toast.error('Vui lòng chọn khóa học và nhập tên quiz');
       return;
     }
     try {
@@ -133,19 +133,19 @@ export default function AdminQuizzes() {
         timeLimit: addForm.timeLimit,
       };
       const created = await quizService.createQuiz(dto);
-      toast.success("Đã thêm quiz");
+      toast.success('Đã thêm quiz');
       setOpenAddQuiz(false);
       fetchData();
-      navigate(`/admin/quizzes/${buildSlugId(created.title ?? "", created._id)}`);
+      navigate(`/admin/quizzes/${toSlug(created.title ?? '')}`);
     } catch (e: unknown) {
       if (axios.isAxiosError(e)) {
         const msg =
           (e.response?.data as { message?: string })?.message ??
           e.response?.statusText ??
-          "Không thể thêm quiz";
+          'Không thể thêm quiz';
         toast.error(String(msg));
       } else {
-        toast.error("Không thể thêm quiz");
+        toast.error('Không thể thêm quiz');
       }
     } finally {
       setSaving(false);
@@ -153,16 +153,16 @@ export default function AdminQuizzes() {
   };
 
   const handleEdit = (quiz: Quiz) => {
-    navigate(`/admin/quizzes/${buildSlugId(quiz.title ?? "", quiz._id)}`);
+    navigate(`/admin/quizzes/${toSlug(quiz.title ?? '')}`);
   };
 
   return (
     <Box>
       <Box
         sx={{
-          display: "flex",
-          justifyContent: "space-between",
-          alignItems: "center",
+          display: 'flex',
+          justifyContent: 'space-between',
+          alignItems: 'center',
           mb: 3,
         }}
       >
@@ -177,7 +177,7 @@ export default function AdminQuizzes() {
       </Box>
 
       {loading ? (
-        <Box sx={{ display: "flex", justifyContent: "center", p: 4 }}>
+        <Box sx={{ display: 'flex', justifyContent: 'center', p: 4 }}>
           <CircularProgress />
         </Box>
       ) : quizzes.length === 0 ? (
@@ -197,35 +197,32 @@ export default function AdminQuizzes() {
                 <CardContent>
                   <Box
                     sx={{
-                      display: "flex",
-                      justifyContent: "space-between",
-                      alignItems: "start",
+                      display: 'flex',
+                      justifyContent: 'space-between',
+                      alignItems: 'start',
                       mb: 2,
                     }}
                   >
                     <Box
                       sx={{
-                        display: "flex",
-                        alignItems: "center",
+                        display: 'flex',
+                        alignItems: 'center',
                         flexGrow: 1,
                       }}
                     >
                       <QuizIcon
-                        sx={{ fontSize: 40, color: "secondary.main", mr: 2 }}
+                        sx={{ fontSize: 40, color: 'secondary.main', mr: 2 }}
                       />
                       <Box>
                         <Typography variant="h6">{quiz.title}</Typography>
                         <Typography variant="body2" color="text.secondary">
                           {courses.find((c) => c._id === quiz.courseId)?.name ??
-                            "N/A"}
+                            'N/A'}
                         </Typography>
                       </Box>
                     </Box>
                     <Box>
-                      <IconButton
-                        size="small"
-                        onClick={() => handleEdit(quiz)}
-                      >
+                      <IconButton size="small" onClick={() => handleEdit(quiz)}>
                         <EditIcon fontSize="small" />
                       </IconButton>
                       <IconButton
@@ -238,9 +235,9 @@ export default function AdminQuizzes() {
                     </Box>
                   </Box>
                   <Typography variant="body2" paragraph>
-                    {quiz.description ?? ""}
+                    {quiz.description ?? ''}
                   </Typography>
-                  <Box sx={{ display: "flex", gap: 1, flexWrap: "wrap" }}>
+                  <Box sx={{ display: 'flex', gap: 1, flexWrap: 'wrap' }}>
                     <Chip
                       label={`${quiz.sections?.length ?? 0} phần`}
                       size="small"
@@ -250,14 +247,11 @@ export default function AdminQuizzes() {
                     <Chip
                       label={`${(quiz.sections ?? []).reduce(
                         (total, s) => total + (s.questions?.length ?? 0),
-                        0
+                        0,
                       )} câu hỏi`}
                       size="small"
                     />
-                    <Chip
-                      label={`${quiz.timeLimit} phút`}
-                      size="small"
-                    />
+                    <Chip label={`${quiz.timeLimit} phút`} size="small" />
                   </Box>
                 </CardContent>
               </Card>
@@ -332,7 +326,7 @@ export default function AdminQuizzes() {
             onClick={handleSaveNewQuiz}
             disabled={saving}
           >
-            {saving ? "Đang lưu..." : "Thêm"}
+            {saving ? 'Đang lưu...' : 'Thêm'}
           </Button>
         </DialogActions>
       </Dialog>

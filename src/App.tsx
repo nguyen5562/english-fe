@@ -84,10 +84,16 @@ function App() {
             <Route path="content" element={<AdminContent />} />
             <Route path="exercises" element={<AdminExercises />} />
             <Route path="exercises/:slug" element={<AdminExerciseEdit />} />
-            <Route path="exercises/:exerciseSlug/sections/:sectionId" element={<AdminSectionEdit />} />
+            <Route
+              path="exercises/:exerciseSlug/sections/:sectionSlug"
+              element={<AdminSectionEdit />}
+            />
             <Route path="quizzes" element={<AdminQuizzes />} />
             <Route path="quizzes/:slug" element={<AdminQuizEdit />} />
-            <Route path="quizzes/:quizSlug/sections/:sectionId" element={<AdminQuizSectionEdit />} />
+            <Route
+              path="quizzes/:quizSlug/sections/:sectionSlug"
+              element={<AdminQuizSectionEdit />}
+            />
             <Route path="students" element={<AdminStudents />} />
             <Route path="statistics" element={<Statistics />} />
             <Route path="content" element={<AdminContent />} />

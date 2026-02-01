@@ -1,32 +1,32 @@
-import { createTheme } from "@mui/material/styles";
+import { createTheme } from '@mui/material/styles';
 
 export const theme = createTheme({
   palette: {
     primary: {
-      main: "#1976d2",
-      light: "#42a5f5",
-      dark: "#1565c0",
+      main: '#1976d2',
+      light: '#42a5f5',
+      dark: '#1565c0',
     },
     secondary: {
-      main: "#dc004e",
-      light: "#e33371",
-      dark: "#9a0036",
+      main: '#dc004e',
+      light: '#e33371',
+      dark: '#9a0036',
     },
     background: {
-      default: "#f5f5f5",
-      paper: "#ffffff",
+      default: '#f5f5f5',
+      paper: '#ffffff',
     },
   },
   typography: {
     fontFamily: [
-      "-apple-system",
-      "BlinkMacSystemFont",
+      '-apple-system',
+      'BlinkMacSystemFont',
       '"Segoe UI"',
-      "Roboto",
+      'Roboto',
       '"Helvetica Neue"',
-      "Arial",
-      "sans-serif",
-    ].join(","),
+      'Arial',
+      'sans-serif',
+    ].join(','),
     h4: {
       fontWeight: 600,
     },
@@ -44,7 +44,7 @@ export const theme = createTheme({
     MuiButton: {
       styleOverrides: {
         root: {
-          textTransform: "none",
+          textTransform: 'none',
           fontWeight: 500,
         },
       },
@@ -52,7 +52,7 @@ export const theme = createTheme({
     MuiCard: {
       styleOverrides: {
         root: {
-          boxShadow: "0 2px 8px rgba(0,0,0,0.1)",
+          boxShadow: '0 2px 8px rgba(0,0,0,0.1)',
         },
       },
     },

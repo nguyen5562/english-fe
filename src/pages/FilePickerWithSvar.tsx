@@ -1,19 +1,19 @@
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState } from 'react';
 
 export default function FilePickerWithSvar() {
-  const [value, setValue] = useState("");
+  const [value, setValue] = useState('');
   const popupRef = useRef<Window | null>(null);
 
   useEffect(() => {
     const onMsg = (e: MessageEvent) => {
       // chặn domain lạ
       if (e.origin !== window.location.origin) return;
-      if (e.data?.type === "FM_PICK" && typeof e.data.url === "string") {
+      if (e.data?.type === 'FM_PICK' && typeof e.data.url === 'string') {
         setValue(e.data.url);
       }
     };
-    window.addEventListener("message", onMsg);
-    return () => window.removeEventListener("message", onMsg);
+    window.addEventListener('message', onMsg);
+    return () => window.removeEventListener('message', onMsg);
   }, []);
 
   const openPopup = () => {
@@ -24,15 +24,15 @@ export default function FilePickerWithSvar() {
     }
 
     popupRef.current = window.open(
-      "/file-manager-popup",
-      "FileManager",
-      "width=1200,height=800"
+      '/file-manager-popup',
+      'FileManager',
+      'width=1200,height=800',
     );
   };
 
   return (
     <div style={{ padding: 16 }}>
-      <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
+      <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
         <input
           style={{ width: 520, padding: 8 }}
           value={value}

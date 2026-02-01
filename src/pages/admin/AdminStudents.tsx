@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect } from 'react';
 import {
   Box,
   Typography,
@@ -23,23 +23,23 @@ import {
   Select,
   MenuItem,
   CircularProgress,
-} from "@mui/material";
+} from '@mui/material';
 import {
   People as PeopleIcon,
   Add as AddIcon,
   Edit as EditIcon,
   Delete as DeleteIcon,
-} from "@mui/icons-material";
-import axios from "axios";
-import { userService } from "../../services/user.service";
-import { useConfirm } from "../../components/ConfirmDialog";
-import { toast } from "../../utils/toast";
-import type { User } from "../../types";
-import type { CreateUserDto, UpdateUserDto } from "../../types/dto";
+} from '@mui/icons-material';
+import axios from 'axios';
+import { userService } from '../../services/user.service';
+import { useConfirm } from '../../components/ConfirmDialog';
+import { toast } from '../../utils/toast';
+import type { User } from '../../types';
+import type { CreateUserDto, UpdateUserDto } from '../../types/dto';
 
 const ROLE_OPTIONS = [
-  { value: "student", label: "Sinh viên" },
-  { value: "teacher", label: "Giáo viên" },
+  { value: 'student', label: 'Sinh viên' },
+  { value: 'teacher', label: 'Giáo viên' },
 ];
 
 export default function AdminStudents() {
@@ -52,19 +52,19 @@ export default function AdminStudents() {
   const [editingUser, setEditingUser] = useState<User | null>(null);
 
   const [addForm, setAddForm] = useState<CreateUserDto>({
-    username: "",
-    email: "",
-    password: "",
-    role: "student",
+    username: '',
+    email: '',
+    password: '',
+    role: 'student',
   });
   const [editForm, setEditForm] = useState<{
     username: string;
     email: string;
     role: string;
   }>({
-    username: "",
-    email: "",
-    role: "student",
+    username: '',
+    email: '',
+    role: 'student',
   });
 
   const fetchUsers = async () => {
@@ -77,10 +77,10 @@ export default function AdminStudents() {
         const msg =
           (e.response?.data as { message?: string })?.message ??
           e.response?.statusText ??
-          "Không thể tải danh sách người dùng";
+          'Không thể tải danh sách người dùng';
         toast.error(String(msg));
       } else {
-        toast.error("Không thể tải danh sách người dùng");
+        toast.error('Không thể tải danh sách người dùng');
       }
     } finally {
       setLoading(false);
@@ -93,23 +93,27 @@ export default function AdminStudents() {
 
   const handleOpenAdd = () => {
     setAddForm({
-      username: "",
-      email: "",
-      password: "",
-      role: "student",
+      username: '',
+      email: '',
+      password: '',
+      role: 'student',
     });
     setOpenAdd(true);
   };
 
   const handleSaveAdd = async () => {
-    if (!addForm.username.trim() || !addForm.email.trim() || !addForm.password.trim()) {
-      toast.error("Vui lòng nhập đủ username, email và mật khẩu");
+    if (
+      !addForm.username.trim() ||
+      !addForm.email.trim() ||
+      !addForm.password.trim()
+    ) {
+      toast.error('Vui lòng nhập đủ username, email và mật khẩu');
       return;
     }
     try {
       setSaving(true);
       await userService.createUser(addForm);
-      toast.success("Đã thêm tài khoản");
+      toast.success('Đã thêm tài khoản');
       setOpenAdd(false);
       fetchUsers();
     } catch (e: unknown) {
@@ -117,10 +121,10 @@ export default function AdminStudents() {
         const msg =
           (e.response?.data as { message?: string })?.message ??
           e.response?.statusText ??
-          "Không thể thêm tài khoản";
+          'Không thể thêm tài khoản';
         toast.error(String(msg));
       } else {
-        toast.error("Không thể thêm tài khoản");
+        toast.error('Không thể thêm tài khoản');
       }
     } finally {
       setSaving(false);
@@ -130,9 +134,9 @@ export default function AdminStudents() {
   const handleOpenEdit = (u: User) => {
     setEditingUser(u);
     setEditForm({
-      username: u.username ?? "",
-      email: u.email ?? "",
-      role: u.role ?? "student",
+      username: u.username ?? '',
+      email: u.email ?? '',
+      role: u.role ?? 'student',
     });
     setOpenEdit(true);
   };
@@ -140,7 +144,7 @@ export default function AdminStudents() {
   const handleSaveEdit = async () => {
     if (!editingUser) return;
     if (!editForm.username.trim() || !editForm.email.trim()) {
-      toast.error("Vui lòng nhập username và email");
+      toast.error('Vui lòng nhập username và email');
       return;
     }
     try {
@@ -151,7 +155,7 @@ export default function AdminStudents() {
         role: editForm.role,
       };
       await userService.updateUser(editingUser._id, dto);
-      toast.success("Đã cập nhật tài khoản");
+      toast.success('Đã cập nhật tài khoản');
       setOpenEdit(false);
       setEditingUser(null);
       fetchUsers();
@@ -160,10 +164,10 @@ export default function AdminStudents() {
         const msg =
           (e.response?.data as { message?: string })?.message ??
           e.response?.statusText ??
-          "Không thể cập nhật tài khoản";
+          'Không thể cập nhật tài khoản';
         toast.error(String(msg));
       } else {
-        toast.error("Không thể cập nhật tài khoản");
+        toast.error('Không thể cập nhật tài khoản');
       }
     } finally {
       setSaving(false);
@@ -172,26 +176,26 @@ export default function AdminStudents() {
 
   const handleDelete = async (u: User) => {
     const ok = await confirm({
-      title: "Xác nhận xóa tài khoản",
+      title: 'Xác nhận xóa tài khoản',
       message: `Bạn có chắc muốn xóa tài khoản "${u.username}" (${u.email})?`,
-      confirmText: "Xóa",
-      confirmColor: "error",
+      confirmText: 'Xóa',
+      confirmColor: 'error',
     });
     if (!ok) return;
     try {
       setSaving(true);
       await userService.deleteUser(u._id);
-      toast.success("Đã xóa tài khoản");
+      toast.success('Đã xóa tài khoản');
       fetchUsers();
     } catch (e: unknown) {
       if (axios.isAxiosError(e)) {
         const msg =
           (e.response?.data as { message?: string })?.message ??
           e.response?.statusText ??
-          "Không thể xóa tài khoản";
+          'Không thể xóa tài khoản';
         toast.error(String(msg));
       } else {
-        toast.error("Không thể xóa tài khoản");
+        toast.error('Không thể xóa tài khoản');
       }
     } finally {
       setSaving(false);
@@ -203,9 +207,16 @@ export default function AdminStudents() {
 
   return (
     <Box>
-      <Box sx={{ display: "flex", justifyContent: "space-between", alignItems: "center", mb: 3 }}>
-        <Box sx={{ display: "flex", alignItems: "center" }}>
-          <PeopleIcon sx={{ fontSize: 40, color: "primary.main", mr: 2 }} />
+      <Box
+        sx={{
+          display: 'flex',
+          justifyContent: 'space-between',
+          alignItems: 'center',
+          mb: 3,
+        }}
+      >
+        <Box sx={{ display: 'flex', alignItems: 'center' }}>
+          <PeopleIcon sx={{ fontSize: 40, color: 'primary.main', mr: 2 }} />
           <Box>
             <Typography variant="h4">Quản lý người dùng</Typography>
             <Typography variant="body2" color="text.secondary">
@@ -213,13 +224,17 @@ export default function AdminStudents() {
             </Typography>
           </Box>
         </Box>
-        <Button variant="contained" startIcon={<AddIcon />} onClick={handleOpenAdd}>
+        <Button
+          variant="contained"
+          startIcon={<AddIcon />}
+          onClick={handleOpenAdd}
+        >
           Thêm tài khoản
         </Button>
       </Box>
 
       {loading ? (
-        <Box sx={{ display: "flex", justifyContent: "center", p: 4 }}>
+        <Box sx={{ display: 'flex', justifyContent: 'center', p: 4 }}>
           <CircularProgress />
         </Box>
       ) : (
@@ -251,7 +266,10 @@ export default function AdminStudents() {
                         <TableCell>{u.email}</TableCell>
                         <TableCell>{roleLabel(u.role)}</TableCell>
                         <TableCell align="right">
-                          <IconButton size="small" onClick={() => handleOpenEdit(u)}>
+                          <IconButton
+                            size="small"
+                            onClick={() => handleOpenEdit(u)}
+                          >
                             <EditIcon fontSize="small" />
                           </IconButton>
                           <IconButton
@@ -273,14 +291,21 @@ export default function AdminStudents() {
         </Card>
       )}
 
-      <Dialog open={openAdd} onClose={() => setOpenAdd(false)} maxWidth="sm" fullWidth>
+      <Dialog
+        open={openAdd}
+        onClose={() => setOpenAdd(false)}
+        maxWidth="sm"
+        fullWidth
+      >
         <DialogTitle>Thêm tài khoản</DialogTitle>
         <DialogContent>
           <TextField
             fullWidth
             label="Username"
             value={addForm.username}
-            onChange={(e) => setAddForm((f) => ({ ...f, username: e.target.value }))}
+            onChange={(e) =>
+              setAddForm((f) => ({ ...f, username: e.target.value }))
+            }
             sx={{ mt: 1 }}
           />
           <TextField
@@ -288,7 +313,9 @@ export default function AdminStudents() {
             label="Email"
             type="email"
             value={addForm.email}
-            onChange={(e) => setAddForm((f) => ({ ...f, email: e.target.value }))}
+            onChange={(e) =>
+              setAddForm((f) => ({ ...f, email: e.target.value }))
+            }
             sx={{ mt: 2 }}
           />
           <TextField
@@ -296,7 +323,9 @@ export default function AdminStudents() {
             label="Mật khẩu"
             type="password"
             value={addForm.password}
-            onChange={(e) => setAddForm((f) => ({ ...f, password: e.target.value }))}
+            onChange={(e) =>
+              setAddForm((f) => ({ ...f, password: e.target.value }))
+            }
             sx={{ mt: 2 }}
           />
           <FormControl fullWidth sx={{ mt: 2 }}>
@@ -304,7 +333,9 @@ export default function AdminStudents() {
             <Select
               value={addForm.role}
               label="Vai trò"
-              onChange={(e) => setAddForm((f) => ({ ...f, role: e.target.value }))}
+              onChange={(e) =>
+                setAddForm((f) => ({ ...f, role: e.target.value }))
+              }
             >
               {ROLE_OPTIONS.map((r) => (
                 <MenuItem key={r.value} value={r.value}>
@@ -317,19 +348,29 @@ export default function AdminStudents() {
         <DialogActions>
           <Button onClick={() => setOpenAdd(false)}>Hủy</Button>
           <Button variant="contained" onClick={handleSaveAdd} disabled={saving}>
-            {saving ? "Đang lưu..." : "Thêm"}
+            {saving ? 'Đang lưu...' : 'Thêm'}
           </Button>
         </DialogActions>
       </Dialog>
 
-      <Dialog open={openEdit} onClose={() => { setOpenEdit(false); setEditingUser(null); }} maxWidth="sm" fullWidth>
+      <Dialog
+        open={openEdit}
+        onClose={() => {
+          setOpenEdit(false);
+          setEditingUser(null);
+        }}
+        maxWidth="sm"
+        fullWidth
+      >
         <DialogTitle>Sửa tài khoản</DialogTitle>
         <DialogContent>
           <TextField
             fullWidth
             label="Username"
             value={editForm.username}
-            onChange={(e) => setEditForm((f) => ({ ...f, username: e.target.value }))}
+            onChange={(e) =>
+              setEditForm((f) => ({ ...f, username: e.target.value }))
+            }
             sx={{ mt: 1 }}
           />
           <TextField
@@ -337,7 +378,9 @@ export default function AdminStudents() {
             label="Email"
             type="email"
             value={editForm.email}
-            onChange={(e) => setEditForm((f) => ({ ...f, email: e.target.value }))}
+            onChange={(e) =>
+              setEditForm((f) => ({ ...f, email: e.target.value }))
+            }
             sx={{ mt: 2 }}
           />
           <FormControl fullWidth sx={{ mt: 2 }}>
@@ -345,7 +388,9 @@ export default function AdminStudents() {
             <Select
               value={editForm.role}
               label="Vai trò"
-              onChange={(e) => setEditForm((f) => ({ ...f, role: e.target.value }))}
+              onChange={(e) =>
+                setEditForm((f) => ({ ...f, role: e.target.value }))
+              }
             >
               {ROLE_OPTIONS.map((r) => (
                 <MenuItem key={r.value} value={r.value}>
@@ -356,9 +401,20 @@ export default function AdminStudents() {
           </FormControl>
         </DialogContent>
         <DialogActions>
-          <Button onClick={() => { setOpenEdit(false); setEditingUser(null); }}>Hủy</Button>
-          <Button variant="contained" onClick={handleSaveEdit} disabled={saving}>
-            {saving ? "Đang lưu..." : "Lưu"}
+          <Button
+            onClick={() => {
+              setOpenEdit(false);
+              setEditingUser(null);
+            }}
+          >
+            Hủy
+          </Button>
+          <Button
+            variant="contained"
+            onClick={handleSaveEdit}
+            disabled={saving}
+          >
+            {saving ? 'Đang lưu...' : 'Lưu'}
           </Button>
         </DialogActions>
       </Dialog>

@@ -1,5 +1,5 @@
-import { useState, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
+import { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import {
   Box,
   Typography,
@@ -19,21 +19,21 @@ import {
   Select,
   MenuItem,
   CircularProgress,
-} from "@mui/material";
+} from '@mui/material';
 import {
   Add as AddIcon,
   Edit as EditIcon,
   Delete as DeleteIcon,
   Assignment as AssignmentIcon,
-} from "@mui/icons-material";
-import axios from "axios";
-import { exerciseService } from "../../services/exercise.service";
-import { courseService } from "../../services/course.service";
-import { useConfirm } from "../../components/ConfirmDialog";
-import { toast } from "../../utils/toast";
-import { buildSlugId } from "../../utils/slug";
-import type { Exercise, Course } from "../../types";
-import type { CreateExerciseDto } from "../../types/dto";
+} from '@mui/icons-material';
+import axios from 'axios';
+import { exerciseService } from '../../services/exercise.service';
+import { courseService } from '../../services/course.service';
+import { useConfirm } from '../../components/ConfirmDialog';
+import { toast } from '../../utils/toast';
+import { toSlug } from '../../utils/slug';
+import type { Exercise, Course } from '../../types';
+import type { CreateExerciseDto } from '../../types/dto';
 
 export default function AdminExercises() {
   const navigate = useNavigate();
@@ -44,10 +44,14 @@ export default function AdminExercises() {
   const [openAddExercise, setOpenAddExercise] = useState(false);
   const [saving, setSaving] = useState(false);
 
-  const [addForm, setAddForm] = useState<{ courseId: string; title: string; description: string }>({
-    courseId: "",
-    title: "",
-    description: "",
+  const [addForm, setAddForm] = useState<{
+    courseId: string;
+    title: string;
+    description: string;
+  }>({
+    courseId: '',
+    title: '',
+    description: '',
   });
 
   const fetchData = async () => {
@@ -64,10 +68,10 @@ export default function AdminExercises() {
         const msg =
           (e.response?.data as { message?: string })?.message ??
           e.response?.statusText ??
-          "Không thể tải dữ liệu";
+          'Không thể tải dữ liệu';
         toast.error(String(msg));
       } else {
-        toast.error("Không thể tải dữ liệu");
+        toast.error('Không thể tải dữ liệu');
       }
     } finally {
       setLoading(false);
@@ -80,37 +84,37 @@ export default function AdminExercises() {
 
   const handleDelete = async (id: string) => {
     const ok = await confirm({
-      title: "Xác nhận xóa bài tập",
-      message: "Bạn có chắc muốn xóa bài tập này?",
-      confirmText: "Xóa",
-      confirmColor: "error",
+      title: 'Xác nhận xóa bài tập',
+      message: 'Bạn có chắc muốn xóa bài tập này?',
+      confirmText: 'Xóa',
+      confirmColor: 'error',
     });
     if (!ok) return;
     try {
       await exerciseService.deleteExercise(id);
-      toast.success("Đã xóa bài tập");
+      toast.success('Đã xóa bài tập');
       fetchData();
     } catch (e: unknown) {
       if (axios.isAxiosError(e)) {
         const msg =
           (e.response?.data as { message?: string })?.message ??
           e.response?.statusText ??
-          "Không thể xóa";
+          'Không thể xóa';
         toast.error(String(msg));
       } else {
-        toast.error("Không thể xóa bài tập");
+        toast.error('Không thể xóa bài tập');
       }
     }
   };
 
   const handleAddExercise = () => {
-    setAddForm({ courseId: courses[0]?._id ?? "", title: "", description: "" });
+    setAddForm({ courseId: courses[0]?._id ?? '', title: '', description: '' });
     setOpenAddExercise(true);
   };
 
   const handleSaveNewExercise = async () => {
     if (!addForm.courseId || !addForm.title.trim()) {
-      toast.error("Vui lòng chọn khóa học và nhập tên bài tập");
+      toast.error('Vui lòng chọn khóa học và nhập tên bài tập');
       return;
     }
     try {
@@ -121,19 +125,19 @@ export default function AdminExercises() {
         description: addForm.description.trim() || null,
       };
       const created = await exerciseService.createExercise(dto);
-      toast.success("Đã thêm bài tập");
+      toast.success('Đã thêm bài tập');
       setOpenAddExercise(false);
       fetchData();
-      navigate(`/admin/exercises/${buildSlugId(created.title ?? "", created._id)}`);
+      navigate(`/admin/exercises/${toSlug(created.title ?? '')}`);
     } catch (e: unknown) {
       if (axios.isAxiosError(e)) {
         const msg =
           (e.response?.data as { message?: string })?.message ??
           e.response?.statusText ??
-          "Không thể thêm bài tập";
+          'Không thể thêm bài tập';
         toast.error(String(msg));
       } else {
-        toast.error("Không thể thêm bài tập");
+        toast.error('Không thể thêm bài tập');
       }
     } finally {
       setSaving(false);
@@ -141,20 +145,31 @@ export default function AdminExercises() {
   };
 
   const handleEdit = (exercise: Exercise) => {
-    navigate(`/admin/exercises/${buildSlugId(exercise.title ?? "", exercise._id)}`);
+    navigate(`/admin/exercises/${toSlug(exercise.title ?? '')}`);
   };
 
   return (
     <Box>
-      <Box sx={{ display: "flex", justifyContent: "space-between", alignItems: "center", mb: 3 }}>
+      <Box
+        sx={{
+          display: 'flex',
+          justifyContent: 'space-between',
+          alignItems: 'center',
+          mb: 3,
+        }}
+      >
         <Typography variant="h4">Quản lý Bài tập</Typography>
-        <Button variant="contained" startIcon={<AddIcon />} onClick={handleAddExercise}>
+        <Button
+          variant="contained"
+          startIcon={<AddIcon />}
+          onClick={handleAddExercise}
+        >
           Thêm Bài tập
         </Button>
       </Box>
 
       {loading ? (
-        <Box sx={{ display: "flex", justifyContent: "center", p: 4 }}>
+        <Box sx={{ display: 'flex', justifyContent: 'center', p: 4 }}>
           <CircularProgress />
         </Box>
       ) : exercises.length === 0 ? (
@@ -172,18 +187,37 @@ export default function AdminExercises() {
             <Grid item xs={12} md={6} key={exercise._id}>
               <Card>
                 <CardContent>
-                  <Box sx={{ display: "flex", justifyContent: "space-between", alignItems: "start", mb: 2 }}>
-                    <Box sx={{ display: "flex", alignItems: "center", flexGrow: 1 }}>
-                      <AssignmentIcon sx={{ fontSize: 40, color: "primary.main", mr: 2 }} />
+                  <Box
+                    sx={{
+                      display: 'flex',
+                      justifyContent: 'space-between',
+                      alignItems: 'start',
+                      mb: 2,
+                    }}
+                  >
+                    <Box
+                      sx={{
+                        display: 'flex',
+                        alignItems: 'center',
+                        flexGrow: 1,
+                      }}
+                    >
+                      <AssignmentIcon
+                        sx={{ fontSize: 40, color: 'primary.main', mr: 2 }}
+                      />
                       <Box>
                         <Typography variant="h6">{exercise.title}</Typography>
                         <Typography variant="body2" color="text.secondary">
-                          {courses.find((c) => c._id === exercise.courseId)?.name ?? "N/A"}
+                          {courses.find((c) => c._id === exercise.courseId)
+                            ?.name ?? 'N/A'}
                         </Typography>
                       </Box>
                     </Box>
                     <Box>
-                      <IconButton size="small" onClick={() => handleEdit(exercise)}>
+                      <IconButton
+                        size="small"
+                        onClick={() => handleEdit(exercise)}
+                      >
                         <EditIcon fontSize="small" />
                       </IconButton>
                       <IconButton
@@ -195,7 +229,7 @@ export default function AdminExercises() {
                       </IconButton>
                     </Box>
                   </Box>
-                  <Box sx={{ display: "flex", gap: 1, flexWrap: "wrap" }}>
+                  <Box sx={{ display: 'flex', gap: 1, flexWrap: 'wrap' }}>
                     <Chip
                       label={`${exercise.sections?.length ?? 0} phần`}
                       size="small"
@@ -205,7 +239,7 @@ export default function AdminExercises() {
                     <Chip
                       label={`${(exercise.sections ?? []).reduce(
                         (total, s) => total + (s.questions?.length ?? 0),
-                        0
+                        0,
                       )} câu hỏi`}
                       size="small"
                     />
@@ -218,7 +252,12 @@ export default function AdminExercises() {
       )}
 
       {/* Dialog: Thêm bài tập */}
-      <Dialog open={openAddExercise} onClose={() => setOpenAddExercise(false)} maxWidth="sm" fullWidth>
+      <Dialog
+        open={openAddExercise}
+        onClose={() => setOpenAddExercise(false)}
+        maxWidth="sm"
+        fullWidth
+      >
         <DialogTitle>Thêm bài tập</DialogTitle>
         <DialogContent>
           <FormControl fullWidth sx={{ mt: 1 }}>
@@ -226,7 +265,9 @@ export default function AdminExercises() {
             <Select
               value={addForm.courseId}
               label="Khóa học"
-              onChange={(e) => setAddForm((f) => ({ ...f, courseId: e.target.value }))}
+              onChange={(e) =>
+                setAddForm((f) => ({ ...f, courseId: e.target.value }))
+              }
             >
               {courses.map((c) => (
                 <MenuItem key={c._id} value={c._id}>
@@ -239,14 +280,18 @@ export default function AdminExercises() {
             fullWidth
             label="Tên bài tập"
             value={addForm.title}
-            onChange={(e) => setAddForm((f) => ({ ...f, title: e.target.value }))}
+            onChange={(e) =>
+              setAddForm((f) => ({ ...f, title: e.target.value }))
+            }
             sx={{ mt: 2 }}
           />
           <TextField
             fullWidth
             label="Mô tả"
             value={addForm.description}
-            onChange={(e) => setAddForm((f) => ({ ...f, description: e.target.value }))}
+            onChange={(e) =>
+              setAddForm((f) => ({ ...f, description: e.target.value }))
+            }
             multiline
             rows={2}
             sx={{ mt: 2 }}
@@ -254,8 +299,12 @@ export default function AdminExercises() {
         </DialogContent>
         <DialogActions>
           <Button onClick={() => setOpenAddExercise(false)}>Hủy</Button>
-          <Button variant="contained" onClick={handleSaveNewExercise} disabled={saving}>
-            {saving ? "Đang lưu..." : "Thêm"}
+          <Button
+            variant="contained"
+            onClick={handleSaveNewExercise}
+            disabled={saving}
+          >
+            {saving ? 'Đang lưu...' : 'Thêm'}
           </Button>
         </DialogActions>
       </Dialog>

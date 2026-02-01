@@ -5,7 +5,7 @@ import type {
   Lesson,
   LessonObj,
   Quiz,
-} from ".";
+} from '.';
 
 // Auth
 export type RegisterDto = {
@@ -22,10 +22,10 @@ export type CreateUserDto = {
   role: string;
 };
 
-export type UpdateUserDto = Partial<Omit<CreateUserDto, "password">>;
+export type UpdateUserDto = Partial<Omit<CreateUserDto, 'password'>>;
 
 // Lesson
-export type LessonObjType = Omit<LessonObj, "_id">;
+export type LessonObjType = Omit<LessonObj, '_id'>;
 
 export type CreateLessonDto = {
   title: string;
@@ -33,11 +33,11 @@ export type CreateLessonDto = {
 };
 
 export type UpdateLessonDto = Partial<
-  Omit<Lesson, "_id" | "slides" | "videos" | "references">
+  Omit<Lesson, '_id' | 'slides' | 'videos' | 'references'>
 >;
 
 // Exercise
-export type CreateExerciseDto = Omit<Exercise, "_id" | "sections">;
+export type CreateExerciseDto = Omit<Exercise, '_id' | 'sections'>;
 
 export type UpdateExerciseDto = Partial<CreateExerciseDto>;
 
@@ -67,12 +67,12 @@ export type QuestionDto = {
 };
 
 // Quiz
-export type CreateQuizDto = Omit<Quiz, "_id" | "sections">;
+export type CreateQuizDto = Omit<Quiz, '_id' | 'sections'>;
 
 export type UpdateQuizDto = Partial<CreateQuizDto>;
 
 // Exercise Attempt
-export type AnswerDto = Omit<Answer, "_id">;
+export type AnswerDto = Omit<Answer, '_id'>;
 
 export type SectionAttemptDto = {
   sectionId: string;
@@ -81,11 +81,11 @@ export type SectionAttemptDto = {
 
 export type ExerciseAttemptDto = Omit<
   ExerciseAttempt,
-  "_id" | "sectionAttempts" | "totalScore"
+  '_id' | 'sectionAttempts' | 'totalScore'
 >;
 
 // Quiz Attempt
-export type SubmitAttemptDto = Omit<SectionAttemptDto, "sectionId">;
+export type SubmitAttemptDto = Omit<SectionAttemptDto, 'sectionId'>;
 
 export type QuizAttemptDto = {
   quizId: string;

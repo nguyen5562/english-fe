@@ -1,19 +1,19 @@
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import {
   Filemanager,
   Willow,
   type IApi,
   type IEntity,
-} from "@svar-ui/react-filemanager";
-import { RestDataProvider } from "@svar-ui/filemanager-data-provider";
-import "@svar-ui/react-filemanager/all.css";
-import { API_ROUTES, API_URL } from "../const/apiConfig";
+} from '@svar-ui/react-filemanager';
+import { RestDataProvider } from '@svar-ui/filemanager-data-provider';
+import '@svar-ui/react-filemanager/all.css';
+import { API_ROUTES, API_URL } from '../const/apiConfig';
 
 function encodePathPreserveSlash(p: string) {
   return p
-    .split("/")
+    .split('/')
     .map((seg) => encodeURIComponent(seg))
-    .join("/");
+    .join('/');
 }
 
 /**
@@ -31,11 +31,11 @@ function normalizeEntities(input: unknown): IEntity[] {
 
     if (d instanceof Date) {
       date = d;
-    } else if (typeof d === "number") {
+    } else if (typeof d === 'number') {
       const ms = d < 1e12 ? d * 1000 : d; // seconds -> ms
       date = new Date(ms);
       if (Number.isNaN(date.getTime())) date = undefined;
-    } else if (typeof d === "string") {
+    } else if (typeof d === 'string') {
       const dt = new Date(d);
       date = Number.isNaN(dt.getTime()) ? undefined : dt;
     }
@@ -52,16 +52,16 @@ function normalizeEntities(input: unknown): IEntity[] {
  * - hoặc array (một số impl)
  */
 function parseDrive(info: unknown): { used: number; total: number } {
-  if (info && typeof info === "object") {
+  if (info && typeof info === 'object') {
     // case { stats: {...} }
-    if ("stats" in info) {
+    if ('stats' in info) {
       const stats = (info as { stats?: unknown }).stats;
-      if (stats && typeof stats === "object") {
+      if (stats && typeof stats === 'object') {
         const used = (stats as { used?: unknown }).used;
         const total = (stats as { total?: unknown }).total;
         return {
-          used: typeof used === "number" ? used : 0,
-          total: typeof total === "number" ? total : 0,
+          used: typeof used === 'number' ? used : 0,
+          total: typeof total === 'number' ? total : 0,
         };
       }
     }
@@ -70,8 +70,8 @@ function parseDrive(info: unknown): { used: number; total: number } {
     const used = (info as { used?: unknown }).used;
     const total = (info as { total?: unknown }).total;
     return {
-      used: typeof used === "number" ? used : 0,
-      total: typeof total === "number" ? total : 0,
+      used: typeof used === 'number' ? used : 0,
+      total: typeof total === 'number' ? total : 0,
     };
   }
 
@@ -83,7 +83,7 @@ function parseDrive(info: unknown): { used: number; total: number } {
 
 export default function FileManagerPopup() {
   const API_BASE = API_URL + API_ROUTES.FILE_MANAGER;
-  const PUBLIC_BASE = (API_URL + API_ROUTES.RESOURCES).replace(/\/$/, "");
+  const PUBLIC_BASE = (API_URL + API_ROUTES.RESOURCES).replace(/\/$/, '');
 
   const restProvider = useMemo(
     () => new RestDataProvider(API_BASE),
@@ -99,12 +99,12 @@ export default function FileManagerPopup() {
   const apiRef = useRef<IApi | null>(null);
 
   useEffect(() => {
-    document.documentElement.style.height = "100%";
-    document.body.style.height = "100%";
-    document.body.style.margin = "0";
+    document.documentElement.style.height = '100%';
+    document.body.style.height = '100%';
+    document.body.style.margin = '0';
 
     Promise.all([
-      restProvider.loadFiles("/") as Promise<unknown>,
+      restProvider.loadFiles('/') as Promise<unknown>,
       restProvider.loadInfo(undefined) as Promise<unknown>,
     ]).then(([files, info]) => {
       setData(normalizeEntities(files));
@@ -115,7 +115,7 @@ export default function FileManagerPopup() {
   const sendToOpener = (id: string) => {
     const url = `${PUBLIC_BASE}${encodePathPreserveSlash(id)}`;
     window.opener?.postMessage(
-      { type: "FM_PICK", url, id },
+      { type: 'FM_PICK', url, id },
       window.location.origin,
     );
     window.close();
@@ -124,7 +124,7 @@ export default function FileManagerPopup() {
   const onRequestData = useCallback(
     ({ id }: { id: string }) => {
       (restProvider.loadFiles(id) as Promise<unknown>).then((files) => {
-        apiRef.current?.exec("provide-data", {
+        apiRef.current?.exec('provide-data', {
           id,
           data: normalizeEntities(files),
         });
@@ -138,15 +138,15 @@ export default function FileManagerPopup() {
 
     api.setNext(restProvider);
 
-    api.on("open-file", ({ id }: { id: string }) => {
+    api.on('open-file', ({ id }: { id: string }) => {
       sendToOpener(id);
     });
   };
 
   return (
-    <div style={{ position: "fixed", inset: 0 }}>
+    <div style={{ position: 'fixed', inset: 0 }}>
       <Willow>
-        <div style={{ width: "100%", height: "100%" }}>
+        <div style={{ width: '100%', height: '100%' }}>
           <Filemanager
             init={init}
             data={data}

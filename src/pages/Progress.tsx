@@ -20,39 +20,49 @@ import {
   CheckCircle as CheckCircleIcon,
   TrendingUp as TrendingUpIcon,
 } from '@mui/icons-material';
-import { getAllStudentProgress, getCourses, getExerciseAttempts, getQuizAttempts, getUser, getExercise, getQuiz } from '../types old/storage';
+import {
+  getAllStudentProgress,
+  getCourses,
+  getExerciseAttempts,
+  getQuizAttempts,
+  getUser,
+  getExercise,
+  getQuiz,
+} from '../types old/storage';
 import type { StudentProgress } from '../types old';
 
 export default function Progress() {
   const user = getUser();
-  const progress = useMemo(() => 
-    user?.id ? getAllStudentProgress(user.id) : []
-  , [user]);
-  const courses = useMemo(() => 
-    getCourses().map(c => ({ id: c.id, name: c.name, code: c.code }))
-  , []);
+  const progress = useMemo(
+    () => (user?.id ? getAllStudentProgress(user.id) : []),
+    [user],
+  );
+  const courses = useMemo(
+    () => getCourses().map((c) => ({ id: c.id, name: c.name, code: c.code })),
+    [],
+  );
 
   const getCourseProgress = (courseId: string): StudentProgress | undefined => {
-    return progress.find(p => p.courseId === courseId);
+    return progress.find((p) => p.courseId === courseId);
   };
 
   const getTotalScore = (courseId: string): number => {
     if (!user) return 0;
     const allExerciseAttempts = getExerciseAttempts(user.id);
     const allQuizAttempts = getQuizAttempts(user.id);
-    
-    const exerciseAttempts = allExerciseAttempts.filter(a => {
+
+    const exerciseAttempts = allExerciseAttempts.filter((a) => {
       const exercise = getExercise(a.exerciseId);
       return exercise?.courseId === courseId;
     });
-    const quizAttempts = allQuizAttempts.filter(a => {
+    const quizAttempts = allQuizAttempts.filter((a) => {
       const quiz = getQuiz(a.quizId);
       return quiz?.courseId === courseId;
     });
 
     const allScores = [
-      ...exerciseAttempts.map(a => (a.score / a.maxScore) * 100),
-      ...quizAttempts.map(a => a.percentage),
+      ...exerciseAttempts.map((a) => (a.score / a.maxScore) * 100),
+      ...quizAttempts.map((a) => a.percentage),
     ];
 
     return allScores.length > 0
@@ -65,11 +75,14 @@ export default function Progress() {
     const exerciseAttempts = getExerciseAttempts(user.id);
     const quizAttempts = getQuizAttempts(user.id);
     const allAttempts = [
-      ...exerciseAttempts.map(a => ({ ...a, type: 'exercise' as const })),
-      ...quizAttempts.map(a => ({ ...a, type: 'quiz' as const })),
+      ...exerciseAttempts.map((a) => ({ ...a, type: 'exercise' as const })),
+      ...quizAttempts.map((a) => ({ ...a, type: 'quiz' as const })),
     ];
     return allAttempts
-      .sort((a, b) => new Date(b.completedAt).getTime() - new Date(a.completedAt).getTime())
+      .sort(
+        (a, b) =>
+          new Date(b.completedAt).getTime() - new Date(a.completedAt).getTime(),
+      )
       .slice(0, 10);
   };
 
@@ -86,10 +99,13 @@ export default function Progress() {
         {courses.map((course) => {
           const courseProgress = getCourseProgress(course.id);
           const totalScore = getTotalScore(course.id);
-          const courseData = getCourses().find(c => c.id === course.id);
-          const completionPercent = courseProgress && courseData
-            ? (courseProgress.completedLessons.length / courseData.lessons.length) * 100
-            : 0;
+          const courseData = getCourses().find((c) => c.id === course.id);
+          const completionPercent =
+            courseProgress && courseData
+              ? (courseProgress.completedLessons.length /
+                  courseData.lessons.length) *
+                100
+              : 0;
 
           return (
             // @ts-expect-error - MUI v7 Grid still works with item prop
@@ -97,7 +113,9 @@ export default function Progress() {
               <Card>
                 <CardContent>
                   <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
-                    <AssessmentIcon sx={{ fontSize: 40, color: 'primary.main', mr: 2 }} />
+                    <AssessmentIcon
+                      sx={{ fontSize: 40, color: 'primary.main', mr: 2 }}
+                    />
                     <Box>
                       <Typography variant="h6">{course.name}</Typography>
                       <Typography variant="body2" color="text.secondary">
@@ -107,15 +125,34 @@ export default function Progress() {
                   </Box>
 
                   <Box sx={{ mb: 2 }}>
-                    <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 1 }}>
-                      <Typography variant="body2">Hoàn thành bài học</Typography>
-                      <Typography variant="body2">{Math.round(completionPercent)}%</Typography>
+                    <Box
+                      sx={{
+                        display: 'flex',
+                        justifyContent: 'space-between',
+                        mb: 1,
+                      }}
+                    >
+                      <Typography variant="body2">
+                        Hoàn thành bài học
+                      </Typography>
+                      <Typography variant="body2">
+                        {Math.round(completionPercent)}%
+                      </Typography>
                     </Box>
-                    <LinearProgress variant="determinate" value={completionPercent} />
+                    <LinearProgress
+                      variant="determinate"
+                      value={completionPercent}
+                    />
                   </Box>
 
                   <Box sx={{ mb: 2 }}>
-                    <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 1 }}>
+                    <Box
+                      sx={{
+                        display: 'flex',
+                        justifyContent: 'space-between',
+                        mb: 1,
+                      }}
+                    >
                       <Typography variant="body2">Điểm trung bình</Typography>
                       <Typography variant="body2" fontWeight="bold">
                         {totalScore.toFixed(1)}%
@@ -124,13 +161,20 @@ export default function Progress() {
                     <LinearProgress
                       variant="determinate"
                       value={totalScore}
-                      color={totalScore >= 70 ? 'success' : totalScore >= 50 ? 'warning' : 'error'}
+                      color={
+                        totalScore >= 70
+                          ? 'success'
+                          : totalScore >= 50
+                            ? 'warning'
+                            : 'error'
+                      }
                     />
                   </Box>
 
                   {courseProgress && (
                     <Typography variant="body2" color="text.secondary">
-                      Đã hoàn thành: {courseProgress.completedLessons.length} / {courseData?.lessons.length || 0} bài học
+                      Đã hoàn thành: {courseProgress.completedLessons.length} /{' '}
+                      {courseData?.lessons.length || 0} bài học
                     </Typography>
                   )}
                 </CardContent>
@@ -162,9 +206,15 @@ export default function Progress() {
                       <TableRow key={attempt.id}>
                         <TableCell>
                           <Chip
-                            label={attempt.type === 'exercise' ? 'Bài tập' : 'Quiz'}
+                            label={
+                              attempt.type === 'exercise' ? 'Bài tập' : 'Quiz'
+                            }
                             size="small"
-                            color={attempt.type === 'exercise' ? 'primary' : 'secondary'}
+                            color={
+                              attempt.type === 'exercise'
+                                ? 'primary'
+                                : 'secondary'
+                            }
                           />
                         </TableCell>
                         <TableCell>
@@ -173,7 +223,9 @@ export default function Progress() {
                             : `${attempt.percentage.toFixed(1)}%`}
                         </TableCell>
                         <TableCell>
-                          {new Date(attempt.completedAt).toLocaleString('vi-VN')}
+                          {new Date(attempt.completedAt).toLocaleString(
+                            'vi-VN',
+                          )}
                         </TableCell>
                         <TableCell>
                           {attempt.type === 'quiz' && 'passed' in attempt && (
@@ -206,4 +258,3 @@ export default function Progress() {
     </Box>
   );
 }
-

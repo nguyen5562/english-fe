@@ -1,7 +1,7 @@
-import { API_ROUTES } from "../const/apiConfig";
-import type { QuizAttempt } from "../types";
-import type { QuizAttemptDto, SubmitAttemptDto } from "../types/dto";
-import { api } from "./api";
+import { API_ROUTES } from '../const/apiConfig';
+import type { QuizAttempt } from '../types';
+import type { QuizAttemptDto, SubmitAttemptDto } from '../types/dto';
+import { api } from './api';
 
 const createQuizAttempt = async (dto: QuizAttemptDto): Promise<QuizAttempt> => {
   const response = await api.post(API_ROUTES.QUIZ_ATTEMPT, dto);
@@ -10,24 +10,24 @@ const createQuizAttempt = async (dto: QuizAttemptDto): Promise<QuizAttempt> => {
 
 const submitQuiz = async (
   quizAttemptId: string,
-  dto: SubmitAttemptDto
+  dto: SubmitAttemptDto,
 ): Promise<QuizAttempt> => {
   const response = await api.post(
     `${API_ROUTES.QUIZ_ATTEMPT}/${quizAttemptId}`,
-    dto
+    dto,
   );
   return response.data;
 };
 
 const getQuizAttemptByUserId = async (
-  userId: string
+  userId: string,
 ): Promise<QuizAttempt[]> => {
   const response = await api.get(`${API_ROUTES.QUIZ_ATTEMPT}/user/${userId}`);
   return response.data;
 };
 
 const getQuizAttemptByQuizId = async (
-  quizId: string
+  quizId: string,
 ): Promise<QuizAttempt[]> => {
   const response = await api.get(`${API_ROUTES.QUIZ_ATTEMPT}/quiz/${quizId}`);
   return response.data;
