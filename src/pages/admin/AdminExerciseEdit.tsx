@@ -25,44 +25,16 @@ import { exerciseService } from '../../services/exercise.service';
 import { courseService } from '../../services/course.service';
 import { useConfirm } from '../../components/ConfirmDialog';
 import { toast } from '../../utils/toast';
-import { toSlug } from '../../utils/slug';
 import type { Exercise, Course } from '../../types';
 
 export default function AdminExerciseEdit() {
-  const { slug } = useParams<{ slug: string }>();
-  const [id, setId] = useState<string | null>(null);
+  const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const { confirm, ConfirmDialog } = useConfirm();
   const [exercise, setExercise] = useState<Exercise | null>(null);
   const [courses, setCourses] = useState<Course[]>([]);
   const [loading, setLoading] = useState(true);
   const [deleting, setDeleting] = useState(false);
-
-  useEffect(() => {
-    if (!slug) return;
-    setId(null);
-    setLoading(true);
-    const OBJECT_ID_REGEX = /^[a-f0-9]{24}$/i;
-    if (OBJECT_ID_REGEX.test(slug)) {
-      setId(slug);
-      return;
-    }
-    // Lookup ID from slug
-    exerciseService
-      .getAllExercise()
-      .then((exercises) => {
-        const found = exercises.find((e) => toSlug(e.title) === slug);
-        setId(found?._id ?? null);
-        if (!found) {
-          toast.error('Không tìm thấy bài tập');
-          setLoading(false);
-        }
-      })
-      .catch(() => {
-        toast.error('Lỗi khi tìm bài tập');
-        setLoading(false);
-      });
-  }, [slug]);
 
   useEffect(() => {
     if (!id) return;
@@ -189,7 +161,7 @@ export default function AdminExerciseEdit() {
         startIcon={<AddIcon />}
         onClick={() =>
           navigate(
-            `/admin/exercises/${toSlug(exercise.title ?? '')}/sections/new`,
+            `/admin/exercises/${exercise.title ? exercise._id : ''}/sections/new`,
           )
         }
         sx={{ mb: 2 }}
@@ -241,7 +213,7 @@ export default function AdminExerciseEdit() {
                     <IconButton
                       onClick={() =>
                         navigate(
-                          `/admin/exercises/${toSlug(exercise.title ?? '')}/sections/${toSlug(section.title ?? '')}`,
+                          `/admin/exercises/${exercise._id}/sections/${section._id}`,
                         )
                       }
                       sx={{ mr: 0.5 }}

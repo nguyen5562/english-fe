@@ -26,7 +26,7 @@ import { exerciseService } from '../services/exercise.service';
 import { courseService } from '../services/course.service';
 import { exerciseAttemptService } from '../services/exercise-attempt.service';
 import { toast } from '../utils/toast';
-import { toSlug } from '../utils/slug';
+
 import type { Exercise, Course, ExerciseAttempt } from '../types';
 
 export default function Exercises() {
@@ -301,7 +301,7 @@ export default function Exercises() {
                           key={section._id}
                           onClick={() =>
                             navigate(
-                              `/exercises/${toSlug(exercise.title ?? '')}?section=${idx}`,
+                              `/exercises/${exercise._id}?section=${idx}`,
                             )
                           }
                           sx={{

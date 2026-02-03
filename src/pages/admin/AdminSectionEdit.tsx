@@ -35,7 +35,6 @@ import { courseService } from '../../services/course.service';
 import { useConfirm } from '../../components/ConfirmDialog';
 import { FilePicker } from '../../components/FilePicker';
 import { toast } from '../../utils/toast';
-import { toSlug } from '../../utils/slug';
 import type { Exercise, Course, Section } from '../../types';
 import type { QuestionType, SectionType } from '../../types';
 import type { SectionDto, QuestionDto } from '../../types/dto';
@@ -99,15 +98,13 @@ const QUESTION_TYPE_OPTIONS: { value: QuestionType; label: string }[] = [
 ];
 
 export default function AdminSectionEdit() {
-  const { exerciseSlug, sectionSlug } = useParams<{
-    exerciseSlug: string;
-    sectionSlug: string;
+  const { exerciseId, sectionId } = useParams<{
+    exerciseId: string;
+    sectionId: string;
   }>();
-  const [exerciseId, setExerciseId] = useState<string | null>(null);
-  const [sectionId, setSectionId] = useState<string | null>(null);
   const navigate = useNavigate();
   const { confirm, ConfirmDialog } = useConfirm();
-  const isNew = sectionSlug === 'new';
+  const isNew = sectionId === 'new';
 
   const [exercise, setExercise] = useState<Exercise | null>(null);
   const [courses, setCourses] = useState<Course[]>([]);
@@ -195,50 +192,24 @@ export default function AdminSectionEdit() {
     return () => window.removeEventListener('message', onMsg);
   }, []);
 
-  // Lookup Exercise ID
-  useEffect(() => {
-    if (!exerciseSlug) return;
-    setExerciseId(null);
-    setLoading(true);
-    const OBJECT_ID_REGEX = /^[a-f0-9]{24}$/i;
-    if (OBJECT_ID_REGEX.test(exerciseSlug)) {
-      setExerciseId(exerciseSlug);
-      return;
-    }
-    exerciseService
-      .getAllExercise()
-      .then((exercises) => {
-        const found = exercises.find((e) => toSlug(e.title) === exerciseSlug);
-        setExerciseId(found?._id ?? null);
-        if (!found) {
-          toast.error('Không tìm thấy bài tập');
-          setLoading(false);
-        }
-      })
-      .catch(() => {
-        toast.error('Lỗi khi tìm bài tập');
-        setLoading(false);
-      });
-  }, [exerciseSlug]);
-
   useEffect(() => {
     if (!exerciseId) return;
     let cancelled = false;
     setLoading(true);
+    // Explicitly cast exerciseId to string to satisfy type checker if needed, though useParams provides strings
+    const eId = exerciseId as string;
+
     Promise.all([
-      exerciseService.getExerciseById(exerciseId),
+      exerciseService.getExerciseById(eId),
       courseService.getAllCourse(),
     ])
       .then(([exData, coData]) => {
         if (!cancelled) {
           setExercise(exData);
           setCourses(coData);
-          if (!isNew && sectionSlug) {
-            const section = exData.sections?.find(
-              (s) => toSlug(s.title) === sectionSlug,
-            );
+          if (!isNew && sectionId) {
+            const section = exData.sections?.find((s) => s._id === sectionId);
             if (section) {
-              setSectionId(section._id);
               setSectionForm({
                 sectionType: section.sectionType as SectionType,
                 questionType: section.questionType as QuestionType,
@@ -309,13 +280,9 @@ export default function AdminSectionEdit() {
           updated.sections?.find((s) => s.title === sectionForm.title.trim()) ??
           updated.sections?.slice(-1)[0];
         if (newSection?._id) {
-          navigate(
-            `/admin/exercises/${toSlug(exercise?.title ?? '')}/sections/${toSlug(
-              newSection.title ?? '',
-            )}`,
-          );
+          navigate(`/admin/exercises/${exerciseId}/sections/${newSection._id}`);
         } else {
-          navigate(`/admin/exercises/${toSlug(exercise?.title ?? '')}`);
+          navigate(`/admin/exercises/${exerciseId}`);
         }
       } else if (sectionId) {
         await exerciseService.updateSection(exerciseId, sectionId, dto);
@@ -326,14 +293,9 @@ export default function AdminSectionEdit() {
         const updatedSection = updated.sections?.find(
           (s) => s._id === sectionId,
         );
-        if (
-          updatedSection &&
-          toSlug(updatedSection.title ?? '') !== sectionSlug
-        ) {
+        if (updatedSection && updatedSection._id !== sectionId) {
           navigate(
-            `/admin/exercises/${toSlug(exercise?.title ?? '')}/sections/${toSlug(
-              updatedSection.title ?? '',
-            )}`,
+            `/admin/exercises/${exerciseId}/sections/${updatedSection._id}`,
             { replace: true },
           );
         }
@@ -559,9 +521,7 @@ export default function AdminSectionEdit() {
     <Box>
       <Button
         startIcon={<ArrowBackIcon />}
-        onClick={() =>
-          navigate(`/admin/exercises/${toSlug(exercise?.title ?? '')}`)
-        }
+        onClick={() => navigate(`/admin/exercises/${exercise?._id}`)}
         sx={{ mb: 2 }}
       >
         Quay lại
@@ -796,9 +756,7 @@ export default function AdminSectionEdit() {
         </Button>
         <Button
           variant="outlined"
-          onClick={() =>
-            navigate(`/admin/exercises/${toSlug(exercise?.title ?? '')}`)
-          }
+          onClick={() => navigate(`/admin/exercises/${exercise?._id}`)}
         >
           Hủy
         </Button>

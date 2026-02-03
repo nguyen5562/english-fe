@@ -31,7 +31,7 @@ import { exerciseService } from '../../services/exercise.service';
 import { courseService } from '../../services/course.service';
 import { useConfirm } from '../../components/ConfirmDialog';
 import { toast } from '../../utils/toast';
-import { toSlug } from '../../utils/slug';
+
 import type { Exercise, Course } from '../../types';
 import type { CreateExerciseDto } from '../../types/dto';
 
@@ -128,7 +128,7 @@ export default function AdminExercises() {
       toast.success('Đã thêm bài tập');
       setOpenAddExercise(false);
       fetchData();
-      navigate(`/admin/exercises/${toSlug(created.title ?? '')}`);
+      navigate(`/admin/exercises/${created._id}`);
     } catch (e: unknown) {
       if (axios.isAxiosError(e)) {
         const msg =
@@ -145,7 +145,7 @@ export default function AdminExercises() {
   };
 
   const handleEdit = (exercise: Exercise) => {
-    navigate(`/admin/exercises/${toSlug(exercise.title ?? '')}`);
+    navigate(`/admin/exercises/${exercise._id}`);
   };
 
   return (

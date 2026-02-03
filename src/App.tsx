@@ -66,9 +66,9 @@ function App() {
             <Route index element={<Dashboard />} />
             <Route path="materials" element={<Materials />} />
             <Route path="exercises" element={<Exercises />} />
-            <Route path="exercises/:slug" element={<ExerciseDetail />} />
+            <Route path="exercises/:id" element={<ExerciseDetail />} />
             <Route path="quizzes" element={<Quizzes />} />
-            <Route path="quizzes/:slug" element={<QuizDetail />} />
+            <Route path="quizzes/:id" element={<QuizDetail />} />
             <Route path="progress" element={<Progress />} />
             <Route path="statistics" element={<Statistics />} />
           </Route>
@@ -83,20 +83,19 @@ function App() {
             <Route index element={<AdminDashboard />} />
             <Route path="content" element={<AdminContent />} />
             <Route path="exercises" element={<AdminExercises />} />
-            <Route path="exercises/:slug" element={<AdminExerciseEdit />} />
+            <Route path="exercises/:id" element={<AdminExerciseEdit />} />
             <Route
-              path="exercises/:exerciseSlug/sections/:sectionSlug"
+              path="exercises/:exerciseId/sections/:sectionId"
               element={<AdminSectionEdit />}
             />
             <Route path="quizzes" element={<AdminQuizzes />} />
-            <Route path="quizzes/:slug" element={<AdminQuizEdit />} />
+            <Route path="quizzes/:id" element={<AdminQuizEdit />} />
             <Route
-              path="quizzes/:quizSlug/sections/:sectionSlug"
+              path="quizzes/:quizId/sections/:sectionId"
               element={<AdminQuizSectionEdit />}
             />
             <Route path="students" element={<AdminStudents />} />
             <Route path="statistics" element={<Statistics />} />
-            <Route path="content" element={<AdminContent />} />
           </Route>
         </Routes>
       </BrowserRouter>

@@ -25,44 +25,16 @@ import { quizService } from '../../services/quiz.service';
 import { courseService } from '../../services/course.service';
 import { useConfirm } from '../../components/ConfirmDialog';
 import { toast } from '../../utils/toast';
-import { toSlug } from '../../utils/slug';
 import type { Quiz, Course } from '../../types';
 
 export default function AdminQuizEdit() {
-  const { slug } = useParams<{ slug: string }>();
-  const [id, setId] = useState<string | null>(null);
+  const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const { confirm, ConfirmDialog } = useConfirm();
   const [quiz, setQuiz] = useState<Quiz | null>(null);
   const [courses, setCourses] = useState<Course[]>([]);
   const [loading, setLoading] = useState(true);
   const [deleting, setDeleting] = useState(false);
-
-  useEffect(() => {
-    if (!slug) return;
-    setId(null);
-    setLoading(true);
-    const OBJECT_ID_REGEX = /^[a-f0-9]{24}$/i;
-    if (OBJECT_ID_REGEX.test(slug)) {
-      setId(slug);
-      return;
-    }
-    // Lookup ID from slug
-    quizService
-      .getAllQuiz()
-      .then((quizzes) => {
-        const found = quizzes.find((q) => toSlug(q.title) === slug);
-        setId(found?._id ?? null);
-        if (!found) {
-          toast.error('Không tìm thấy bài kiểm tra');
-          setLoading(false);
-        }
-      })
-      .catch(() => {
-        toast.error('Lỗi khi tìm bài kiểm tra');
-        setLoading(false);
-      });
-  }, [slug]);
 
   useEffect(() => {
     if (!id) return;
@@ -184,7 +156,7 @@ export default function AdminQuizEdit() {
         variant="contained"
         startIcon={<AddIcon />}
         onClick={() =>
-          navigate(`/admin/quizzes/${toSlug(quiz.title ?? '')}/sections/new`)
+          navigate(`/admin/quizzes/${quiz.title ? quiz._id : ''}/sections/new`)
         }
         sx={{ mb: 2 }}
       >
@@ -235,7 +207,7 @@ export default function AdminQuizEdit() {
                     <IconButton
                       onClick={() =>
                         navigate(
-                          `/admin/quizzes/${toSlug(quiz.title ?? '')}/sections/${toSlug(section.title ?? '')}`,
+                          `/admin/quizzes/${quiz._id}/sections/${section._id}`,
                         )
                       }
                       sx={{ mr: 0.5 }}

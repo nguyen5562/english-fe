@@ -35,7 +35,6 @@ import { courseService } from '../../services/course.service';
 import { useConfirm } from '../../components/ConfirmDialog';
 import { FilePicker } from '../../components/FilePicker';
 import { toast } from '../../utils/toast';
-import { toSlug } from '../../utils/slug';
 import type { Quiz, Course, Section } from '../../types';
 import type { QuestionType, SectionType } from '../../types';
 import type { SectionDto, QuestionDto } from '../../types/dto';
@@ -99,15 +98,13 @@ const QUESTION_TYPE_OPTIONS: { value: QuestionType; label: string }[] = [
 ];
 
 export default function AdminQuizSectionEdit() {
-  const { quizSlug, sectionSlug } = useParams<{
-    quizSlug: string;
-    sectionSlug: string;
+  const { quizId, sectionId } = useParams<{
+    quizId: string;
+    sectionId: string;
   }>();
-  const [quizId, setQuizId] = useState<string | null>(null);
-  const [sectionId, setSectionId] = useState<string | null>(null);
   const navigate = useNavigate();
   const { confirm, ConfirmDialog } = useConfirm();
-  const isNew = sectionSlug === 'new';
+  const isNew = sectionId === 'new';
 
   const [quiz, setQuiz] = useState<Quiz | null>(null);
   const [courses, setCourses] = useState<Course[]>([]);
@@ -195,47 +192,21 @@ export default function AdminQuizSectionEdit() {
     return () => window.removeEventListener('message', onMsg);
   }, []);
 
-  // Lookup Quiz ID
-  useEffect(() => {
-    if (!quizSlug) return;
-    setQuizId(null);
-    setLoading(true);
-    const OBJECT_ID_REGEX = /^[a-f0-9]{24}$/i;
-    if (OBJECT_ID_REGEX.test(quizSlug)) {
-      setQuizId(quizSlug);
-      return;
-    }
-    quizService
-      .getAllQuiz()
-      .then((quizzes) => {
-        const found = quizzes.find((q) => toSlug(q.title) === quizSlug);
-        setQuizId(found?._id ?? null);
-        if (!found) {
-          toast.error('Không tìm thấy bài kiểm tra');
-          setLoading(false);
-        }
-      })
-      .catch(() => {
-        toast.error('Lỗi khi tìm bài kiểm tra');
-        setLoading(false);
-      });
-  }, [quizSlug]);
-
   useEffect(() => {
     if (!quizId) return;
     let cancelled = false;
     setLoading(true);
-    Promise.all([quizService.getQuizById(quizId), courseService.getAllCourse()])
+    // Explicitly cast quizId to string
+    const qId = quizId as string;
+
+    Promise.all([quizService.getQuizById(qId), courseService.getAllCourse()])
       .then(([quizData, coData]) => {
         if (!cancelled) {
           setQuiz(quizData);
           setCourses(coData);
-          if (!isNew && sectionSlug) {
-            const section = quizData.sections?.find(
-              (s) => toSlug(s.title) === sectionSlug,
-            );
+          if (!isNew && sectionId) {
+            const section = quizData.sections?.find((s) => s._id === sectionId);
             if (section) {
-              setSectionId(section._id);
               setSectionForm({
                 sectionType: section.sectionType as SectionType,
                 questionType: section.questionType as QuestionType,
@@ -306,13 +277,9 @@ export default function AdminQuizSectionEdit() {
           updated.sections?.find((s) => s.title === sectionForm.title.trim()) ??
           updated.sections?.slice(-1)[0];
         if (newSection?._id) {
-          navigate(
-            `/admin/quizzes/${toSlug(quiz?.title ?? '')}/sections/${toSlug(
-              newSection.title ?? '',
-            )}`,
-          );
+          navigate(`/admin/quizzes/${quizId}/sections/${newSection._id}`);
         } else {
-          navigate(`/admin/quizzes/${toSlug(quiz?.title ?? '')}`);
+          navigate(`/admin/quizzes/${quizId}`);
         }
       } else if (sectionId) {
         await quizService.updateSection(quizId, sectionId, dto);
@@ -323,16 +290,10 @@ export default function AdminQuizSectionEdit() {
         const updatedSection = updated.sections?.find(
           (s) => s._id === sectionId,
         );
-        if (
-          updatedSection &&
-          toSlug(updatedSection.title ?? '') !== sectionSlug
-        ) {
-          navigate(
-            `/admin/quizzes/${toSlug(quiz?.title ?? '')}/sections/${toSlug(
-              updatedSection.title ?? '',
-            )}`,
-            { replace: true },
-          );
+        if (updatedSection && updatedSection._id !== sectionId) {
+          navigate(`/admin/quizzes/${quizId}/sections/${updatedSection._id}`, {
+            replace: true,
+          });
         }
       }
     } catch (e: unknown) {
@@ -556,7 +517,7 @@ export default function AdminQuizSectionEdit() {
     <Box>
       <Button
         startIcon={<ArrowBackIcon />}
-        onClick={() => navigate(`/admin/quizzes/${toSlug(quiz?.title ?? '')}`)}
+        onClick={() => navigate(`/admin/quizzes/${quiz?._id}`)}
         sx={{ mb: 2 }}
       >
         Quay lại
@@ -793,9 +754,7 @@ export default function AdminQuizSectionEdit() {
         </Button>
         <Button
           variant="outlined"
-          onClick={() =>
-            navigate(`/admin/quizzes/${toSlug(quiz?.title ?? '')}`)
-          }
+          onClick={() => navigate(`/admin/quizzes/${quiz?._id}`)}
         >
           Hủy
         </Button>

@@ -27,7 +27,7 @@ import { courseService } from '../services/course.service';
 import { quizAttemptService } from '../services/quiz-attempt.service';
 import { useAuthStore } from '../store/auth.store';
 import { toast } from '../utils/toast';
-import { toSlug } from '../utils/slug';
+
 import type { Quiz, Course, QuizAttempt } from '../types';
 
 export default function Quizzes() {
@@ -232,9 +232,7 @@ export default function Quizzes() {
                       variant="contained"
                       startIcon={<PlayArrowIcon />}
                       fullWidth
-                      onClick={() =>
-                        navigate(`/quizzes/${toSlug(quiz.title ?? '')}`)
-                      }
+                      onClick={() => navigate(`/quizzes/${quiz._id}`)}
                       color={bestAttempt && hasPassed ? 'success' : 'primary'}
                     >
                       {bestAttempt ? 'Làm lại' : 'Bắt đầu làm'}

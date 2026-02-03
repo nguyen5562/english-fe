@@ -46,43 +46,15 @@ import {
   formatAnswer,
   calculateScore,
 } from '../utils/questionHelpers';
-import { toSlug } from '../utils/slug';
 import { toast } from '../utils/toast';
 import type { SectionAttemptDto } from '../types/dto';
 
 export default function ExerciseDetail() {
-  const { slug } = useParams<{ slug: string }>();
-  const [id, setId] = useState<string | null>(null);
+  const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const user = useAuthStore((s) => s.user);
   const userId = user?._id;
-
-  useEffect(() => {
-    if (!slug) return;
-    setId(null);
-    setLoadingExercise(true);
-    const OBJECT_ID_REGEX = /^[a-f0-9]{24}$/i;
-    if (OBJECT_ID_REGEX.test(slug)) {
-      setId(slug);
-      return;
-    }
-    // Lookup ID from slug
-    exerciseService
-      .getAllExercise()
-      .then((exercises) => {
-        const found = exercises.find((e) => toSlug(e.title) === slug);
-        setId(found?._id ?? null);
-        if (!found) {
-          toast.error('Không tìm thấy bài tập');
-          setLoadingExercise(false);
-        }
-      })
-      .catch(() => {
-        toast.error('Lỗi khi tìm bài tập');
-        setLoadingExercise(false);
-      });
-  }, [slug]);
 
   const [exercise, setExercise] = useState<Exercise | null>(null);
   const [loadingExercise, setLoadingExercise] = useState(true);
@@ -1172,9 +1144,7 @@ export default function ExerciseDetail() {
               disabled={currentSectionIndex === 0}
               onClick={() => {
                 const nextIndex = Math.max(currentSectionIndex - 1, 0);
-                navigate(
-                  `/exercises/${toSlug(exercise.title ?? '')}?section=${nextIndex}`,
-                );
+                navigate(`/exercises/${exercise._id}?section=${nextIndex}`);
                 setCurrentSectionIndex(nextIndex);
                 setCheckedResults({});
                 setShowResult(false);
@@ -1211,9 +1181,7 @@ export default function ExerciseDetail() {
                     currentSectionIndex + 1,
                     exercise.sections.length - 1,
                   );
-                  navigate(
-                    `/exercises/${toSlug(exercise.title ?? '')}?section=${nextIndex}`,
-                  );
+                  navigate(`/exercises/${exercise._id}?section=${nextIndex}`);
                   setCurrentSectionIndex(nextIndex);
                   setCheckedResults({});
                   setShowResult(false);

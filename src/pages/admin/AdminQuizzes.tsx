@@ -31,7 +31,7 @@ import { quizService } from '../../services/quiz.service';
 import { courseService } from '../../services/course.service';
 import { useConfirm } from '../../components/ConfirmDialog';
 import { toast } from '../../utils/toast';
-import { toSlug } from '../../utils/slug';
+
 import type { Quiz, Course } from '../../types';
 import type { CreateQuizDto } from '../../types/dto';
 
@@ -136,7 +136,7 @@ export default function AdminQuizzes() {
       toast.success('Đã thêm quiz');
       setOpenAddQuiz(false);
       fetchData();
-      navigate(`/admin/quizzes/${toSlug(created.title ?? '')}`);
+      navigate(`/admin/quizzes/${created._id}`);
     } catch (e: unknown) {
       if (axios.isAxiosError(e)) {
         const msg =
@@ -153,7 +153,7 @@ export default function AdminQuizzes() {
   };
 
   const handleEdit = (quiz: Quiz) => {
-    navigate(`/admin/quizzes/${toSlug(quiz.title ?? '')}`);
+    navigate(`/admin/quizzes/${quiz._id}`);
   };
 
   return (

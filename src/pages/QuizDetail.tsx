@@ -44,38 +44,10 @@ import {
   renderQuestionWordBank,
 } from '../utils/questionHelpers';
 import { toast } from '../utils/toast';
-import { toSlug } from '../utils/slug';
 
 export default function QuizDetail() {
-  const { slug } = useParams<{ slug: string }>();
-  const [id, setId] = useState<string | null>(null);
+  const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
-
-  useEffect(() => {
-    if (!slug) return;
-    setId(null);
-    setLoading(true);
-    const OBJECT_ID_REGEX = /^[a-f0-9]{24}$/i;
-    if (OBJECT_ID_REGEX.test(slug)) {
-      setId(slug);
-      return;
-    }
-    // Lookup ID from slug
-    quizService
-      .getAllQuiz()
-      .then((quizzes) => {
-        const found = quizzes.find((q) => toSlug(q.title) === slug);
-        setId(found?._id ?? null);
-        if (!found) {
-          toast.error('Không tìm thấy bài kiểm tra');
-          setLoading(false);
-        }
-      })
-      .catch(() => {
-        toast.error('Lỗi khi tìm bài kiểm tra');
-        setLoading(false);
-      });
-  }, [slug]);
   const user = useAuthStore((s) => s.user);
   const userId = user?._id;
 
