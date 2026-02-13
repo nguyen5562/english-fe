@@ -6,9 +6,7 @@ import {
   Card,
   CardContent,
   Button,
-  Grid,
   IconButton,
-  Chip,
   Dialog,
   DialogTitle,
   DialogContent,
@@ -181,74 +179,142 @@ export default function AdminExercises() {
           </CardContent>
         </Card>
       ) : (
-        <Grid container spacing={3}>
+        <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1.5 }}>
           {exercises.map((exercise) => (
-            // @ts-expect-error - MUI v7 Grid item
-            <Grid item xs={12} md={6} key={exercise._id}>
-              <Card>
-                <CardContent>
+            <Card
+              key={exercise._id}
+              sx={{
+                borderRadius: 2,
+                transition: 'all 0.2s',
+                border: '1px solid #edf2f7',
+                boxShadow: 'none',
+                '&:hover': {
+                  borderColor: 'primary.main',
+                  bgcolor: 'rgba(25, 118, 210, 0.02)',
+                  transform: 'translateX(4px)',
+                },
+              }}
+            >
+              <Box
+                sx={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  p: 1.5,
+                  gap: 2,
+                }}
+              >
+                <Box
+                  sx={{
+                    width: 40,
+                    height: 40,
+                    borderRadius: 1.5,
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    bgcolor: 'primary.main',
+                    color: 'white',
+                    flexShrink: 0,
+                  }}
+                >
+                  <AssignmentIcon fontSize="small" />
+                </Box>
+
+                <Box sx={{ flexGrow: 1, minWidth: 0 }}>
+                  <Typography
+                    variant="subtitle1"
+                    noWrap
+                    sx={{ fontWeight: 600, color: '#1a202c', lineHeight: 1.2 }}
+                  >
+                    {exercise.title}
+                  </Typography>
+                  <Typography variant="caption" color="text.secondary" noWrap>
+                    {courses.find((c) => c._id === exercise.courseId)?.name ??
+                      'N/A'}
+                  </Typography>
+                </Box>
+
+                <Box
+                  sx={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: 4,
+                    flexShrink: 0,
+                  }}
+                >
+                  <Box sx={{ display: 'flex', gap: 3 }}>
+                    <Box sx={{ textAlign: 'center' }}>
+                      <Typography
+                        variant="body2"
+                        sx={{ fontWeight: 700, color: 'primary.main' }}
+                      >
+                        {exercise.sections?.length ?? 0}
+                      </Typography>
+                      <Typography
+                        variant="caption"
+                        sx={{
+                          color: 'text.secondary',
+                          display: 'block',
+                          fontSize: '0.65rem',
+                          textTransform: 'uppercase',
+                          mt: -0.5,
+                        }}
+                      >
+                        Phần
+                      </Typography>
+                    </Box>
+                    <Box sx={{ textAlign: 'center' }}>
+                      <Typography
+                        variant="body2"
+                        sx={{ fontWeight: 700, color: '#4a5568' }}
+                      >
+                        {(exercise.sections ?? []).reduce(
+                          (total, s) => total + (s.questions?.length ?? 0),
+                          0,
+                        )}
+                      </Typography>
+                      <Typography
+                        variant="caption"
+                        sx={{
+                          color: 'text.secondary',
+                          display: 'block',
+                          fontSize: '0.65rem',
+                          textTransform: 'uppercase',
+                          mt: -0.5,
+                        }}
+                      >
+                        Câu hỏi
+                      </Typography>
+                    </Box>
+                  </Box>
+
                   <Box
                     sx={{
                       display: 'flex',
-                      justifyContent: 'space-between',
-                      alignItems: 'start',
-                      mb: 2,
+                      gap: 0.5,
+                      borderLeft: '1px solid #edf2f7',
+                      pl: 1,
                     }}
                   >
-                    <Box
-                      sx={{
-                        display: 'flex',
-                        alignItems: 'center',
-                        flexGrow: 1,
-                      }}
-                    >
-                      <AssignmentIcon
-                        sx={{ fontSize: 40, color: 'primary.main', mr: 2 }}
-                      />
-                      <Box>
-                        <Typography variant="h6">{exercise.title}</Typography>
-                        <Typography variant="body2" color="text.secondary">
-                          {courses.find((c) => c._id === exercise.courseId)
-                            ?.name ?? 'N/A'}
-                        </Typography>
-                      </Box>
-                    </Box>
-                    <Box>
-                      <IconButton
-                        size="small"
-                        onClick={() => handleEdit(exercise)}
-                      >
-                        <EditIcon fontSize="small" />
-                      </IconButton>
-                      <IconButton
-                        size="small"
-                        color="error"
-                        onClick={() => handleDelete(exercise._id)}
-                      >
-                        <DeleteIcon fontSize="small" />
-                      </IconButton>
-                    </Box>
-                  </Box>
-                  <Box sx={{ display: 'flex', gap: 1, flexWrap: 'wrap' }}>
-                    <Chip
-                      label={`${exercise.sections?.length ?? 0} phần`}
+                    <IconButton
                       size="small"
                       color="primary"
-                      variant="outlined"
-                    />
-                    <Chip
-                      label={`${(exercise.sections ?? []).reduce(
-                        (total, s) => total + (s.questions?.length ?? 0),
-                        0,
-                      )} câu hỏi`}
+                      onClick={() => handleEdit(exercise)}
+                    >
+                      <EditIcon fontSize="small" />
+                    </IconButton>
+                    <IconButton
                       size="small"
-                    />
+                      color="error"
+                      onClick={() => handleDelete(exercise._id)}
+                    >
+                      <DeleteIcon fontSize="small" />
+                    </IconButton>
                   </Box>
-                </CardContent>
-              </Card>
-            </Grid>
+                </Box>
+              </Box>
+            </Card>
           ))}
-        </Grid>
+        </Box>
       )}
 
       {/* Dialog: Thêm bài tập */}

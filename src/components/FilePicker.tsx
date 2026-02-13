@@ -23,8 +23,18 @@ export function FilePicker({
   useEffect(() => {
     const onMsg = (e: MessageEvent) => {
       if (e.origin !== window.location.origin) return;
-      if (e.data?.type === 'FM_PICK' && typeof e.data.url === 'string') {
+      // Only process message if it comes from the window we opened
+      if (
+        e.source === popupRef.current &&
+        e.data?.type === 'FM_PICK' &&
+        typeof e.data.url === 'string'
+      ) {
         onChange(e.data.url);
+        // Optionally close the popup after picking
+        if (popupRef.current) {
+          popupRef.current.close();
+          popupRef.current = null;
+        }
       }
     };
     window.addEventListener('message', onMsg);

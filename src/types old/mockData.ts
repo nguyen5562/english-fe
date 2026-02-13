@@ -293,7 +293,18 @@ export const initializeMockData = (): void => {
           title: 'Complete the sentences with verbs in the box',
           sectionType: 'vocabulary',
           questionType: 'fill-blank',
-          wordBank: ['go', 'study', 'do', 'go', 'watch', 'listen', 'read', 'speak', 'do', 'have'],
+          wordBank: [
+            'go',
+            'study',
+            'do',
+            'go',
+            'watch',
+            'listen',
+            'read',
+            'speak',
+            'do',
+            'have',
+          ],
           questions: [
             {
               id: 'u1-s4-q1',
@@ -446,7 +457,8 @@ export const initializeMockData = (): void => {
         // 6. Listen and write the words you hear. Remember to write a contraction as one word.
         {
           id: 'unit1-sec-6',
-          title: 'Listen and write the words you hear. Remember to write a contraction as one word.',
+          title:
+            'Listen and write the words you hear. Remember to write a contraction as one word.',
           sectionType: 'listening',
           questionType: 'fill-blank',
           audioUrl: 'https://example.com/audio/unit1-listen-write.mp3',
@@ -504,7 +516,8 @@ export const initializeMockData = (): void => {
         // 7. Read Grammar Bank 2A. Then complete the text with the past simple form of the verbs. Use contractions where you can. Listen and check.
         {
           id: 'unit1-sec-7',
-          title: 'Read Grammar Bank 2A. Then complete the text with the past simple form of the verbs. Use contractions where you can. Listen and check.',
+          title:
+            'Read Grammar Bank 2A. Then complete the text with the past simple form of the verbs. Use contractions where you can. Listen and check.',
           sectionType: 'grammar',
           questionType: 'paragraph-fill',
           audioUrl: 'https://example.com/audio/unit1-grammar-bank-2a.mp3',
@@ -689,7 +702,8 @@ export const initializeMockData = (): void => {
             {
               id: 'u2-s1-q1',
               sectionId: 'unit2-sec-1',
-              question: 'She has curly red hair. (choose the correct picture: 1, 2 or 3)',
+              question:
+                'She has curly red hair. (choose the correct picture: 1, 2 or 3)',
               type: 'picture-choice',
               options: ['picture 1', 'picture 2', 'picture 3'],
               correctAnswer: 'picture 1',
@@ -698,7 +712,8 @@ export const initializeMockData = (): void => {
             {
               id: 'u2-s1-q2',
               sectionId: 'unit2-sec-1',
-              question: 'She has long straight hair. (choose the correct picture: 1, 2 or 3)',
+              question:
+                'She has long straight hair. (choose the correct picture: 1, 2 or 3)',
               type: 'picture-choice',
               options: ['picture 1', 'picture 2', 'picture 3'],
               correctAnswer: 'picture 1',
@@ -712,7 +727,16 @@ export const initializeMockData = (): void => {
           title: 'Write the opposite adjectives',
           sectionType: 'vocabulary',
           questionType: 'fill-sentence',
-          wordBank: ['mean', 'unkind', 'hard-working', 'quiet', 'serious', 'extrovert', 'unfriendly', 'stupid'],
+          wordBank: [
+            'mean',
+            'unkind',
+            'hard-working',
+            'quiet',
+            'serious',
+            'extrovert',
+            'unfriendly',
+            'stupid',
+          ],
           questions: [
             {
               id: 'u2-s2-q1',
@@ -783,7 +807,7 @@ export const initializeMockData = (): void => {
         // 3. Read and listen to the article. Choose the correct answers.
         {
           id: 'unit2-sec-3',
-          title: "Read and listen to the article. Choose the correct answers.",
+          title: 'Read and listen to the article. Choose the correct answers.',
           sectionType: 'reading',
           questionType: 'reading-mcq',
           audioUrl: 'https://example.com/audio/unit2-singles-day.mp3',
@@ -879,17 +903,28 @@ Between 10,000 and 40,000 people attend the event every year. It's held in a dis
         // 6. Listen and write the words you hear. Remember to write a contraction as one word.
         {
           id: 'unit2-sec-6',
-          title: 'Listen and write the words you hear. Remember to write a contraction as one word.',
+          title:
+            'Listen and write the words you hear. Remember to write a contraction as one word.',
           sectionType: 'listening',
           questionType: 'fill-blank',
           questions: [
             {
               id: 'u2-s6-q1',
               sectionId: 'unit2-sec-1',
-              question: 'This is ____ ____ ____ ____ ____ in the ____ ____ ____. We ____ ____ ____.',
+              question:
+                'This is ____ ____ ____ ____ ____ in the ____ ____ ____. We ____ ____ ____.',
               type: 'fill-blank',
               audioUrl: 'https://example.com/audio/unit2-listen-write-q1.mp3',
-              correctAnswer: ['my', 'sister', 'in', 'the', 'kitchen', 'We', "aren't", 'here'],
+              correctAnswer: [
+                'my',
+                'sister',
+                'in',
+                'the',
+                'kitchen',
+                'We',
+                "aren't",
+                'here',
+              ],
               points: 5,
             },
             {
@@ -942,7 +977,8 @@ Between 10,000 and 40,000 people attend the event every year. It's held in a dis
         // 7. Read Grammar Bank 2A. Then complete the text with the past simple form of the verbs. Use contractions where you can. Listen and check.
         {
           id: 'unit2-sec-7',
-          title: 'Read Grammar Bank 2A. Then complete the text with the past simple form of the verbs. Use contractions where you can. Listen and check.',
+          title:
+            'Read Grammar Bank 2A. Then complete the text with the past simple form of the verbs. Use contractions where you can. Listen and check.',
           sectionType: 'grammar',
           questionType: 'paragraph-fill',
           audioUrl: 'https://example.com/audio/unit2-grammar-bank-2a.mp3',
@@ -1120,16 +1156,20 @@ Between 10,000 and 40,000 people attend the event every year. It's held in a dis
         // 1. Watch the Social English phrases. Then record yourself saying them.
         {
           id: 'unit3-sec-1',
-          title: 'Watch the Social English phrases. Then record yourself saying them.',
+          title:
+            'Watch the Social English phrases. Then record yourself saying them.',
           sectionType: 'speaking',
           questionType: 'video-recording',
-          videoUrl: 'https://example.com/video/unit3-episode2-restaurant-problems.mp4',
-          description: 'EPISODE 2 - Practical English - Restaurant problems - Social English phrases',
+          videoUrl:
+            'https://example.com/video/unit3-episode2-restaurant-problems.mp4',
+          description:
+            'EPISODE 2 - Practical English - Restaurant problems - Social English phrases',
           questions: [
             {
               id: 'u3-s1-q1',
               sectionId: 'unit3-sec-1',
-              question: 'Record yourself saying the Social English phrases from the video.',
+              question:
+                'Record yourself saying the Social English phrases from the video.',
               type: 'video-recording',
               correctAnswer: '',
               points: 0, // Không tính điểm, chỉ luyện tập
@@ -1139,16 +1179,19 @@ Between 10,000 and 40,000 people attend the event every year. It's held in a dis
         // 2. Watch the Social English phrases. Then record yourself saying them.
         {
           id: 'unit3-sec-2',
-          title: 'Watch the Social English phrases. Then record yourself saying them.',
+          title:
+            'Watch the Social English phrases. Then record yourself saying them.',
           sectionType: 'speaking',
           questionType: 'video-recording',
-          videoUrl: 'https://example.com/video/unit3-episode3-social-phrases.mp4',
+          videoUrl:
+            'https://example.com/video/unit3-episode3-social-phrases.mp4',
           description: 'EPISODE 3 - Practical English - Social English phrases',
           questions: [
             {
               id: 'u3-s2-q1',
               sectionId: 'unit3-sec-2',
-              question: 'Record yourself saying the Social English phrases from the video.',
+              question:
+                'Record yourself saying the Social English phrases from the video.',
               type: 'video-recording',
               correctAnswer: '',
               points: 0, // Không tính điểm, chỉ luyện tập
@@ -1186,7 +1229,8 @@ Between 10,000 and 40,000 people attend the event every year. It's held in a dis
             {
               id: 'quiz-1-q2',
               sectionId: 'quiz-1-section-1',
-              question: 'Choose the correct form: "She _____ to school every day."',
+              question:
+                'Choose the correct form: "She _____ to school every day."',
               type: 'multiple-choice',
               options: ['go', 'goes', 'going', 'went'],
               correctAnswer: 'goes',
@@ -1201,7 +1245,7 @@ Between 10,000 and 40,000 people attend the event every year. It's held in a dis
                 'I play football.',
                 'I am playing football.',
                 'I played football.',
-                'I will play football.'
+                'I will play football.',
               ],
               correctAnswer: 'I am playing football.',
               points: 10,
@@ -1250,14 +1294,20 @@ Between 10,000 and 40,000 people attend the event every year. It's held in a dis
           description: 'Đọc hiểu đoạn văn và trả lời câu hỏi',
           sectionType: 'reading',
           questionType: 'reading-mcq',
-          passage: 'Tom is a student. He goes to school every day. He likes English very much. In the morning, he reads books. In the afternoon, he does homework. He is a good student.',
+          passage:
+            'Tom is a student. He goes to school every day. He likes English very much. In the morning, he reads books. In the afternoon, he does homework. He is a good student.',
           questions: [
             {
               id: 'quiz-1-q7',
               sectionId: 'quiz-1-section-3',
               question: 'What does Tom do every day?',
               type: 'reading-mcq',
-              options: ['He plays games', 'He goes to school', 'He watches TV', 'He goes shopping'],
+              options: [
+                'He plays games',
+                'He goes to school',
+                'He watches TV',
+                'He goes shopping',
+              ],
               correctAnswer: 'He goes to school',
               points: 15,
             },
@@ -1275,7 +1325,12 @@ Between 10,000 and 40,000 people attend the event every year. It's held in a dis
               sectionId: 'quiz-1-section-3',
               question: 'When does Tom read books?',
               type: 'reading-mcq',
-              options: ['In the morning', 'In the afternoon', 'In the evening', 'At night'],
+              options: [
+                'In the morning',
+                'In the afternoon',
+                'In the evening',
+                'At night',
+              ],
               correctAnswer: 'In the morning',
               points: 15,
             },
@@ -1340,7 +1395,7 @@ Between 10,000 and 40,000 people attend the event every year. It's held in a dis
                 'If I was you, I would go.',
                 'If I were you, I would go.',
                 'If I am you, I will go.',
-                'If I be you, I go.'
+                'If I be you, I go.',
               ],
               correctAnswer: 'If I were you, I would go.',
               points: 15,
@@ -1354,7 +1409,7 @@ Between 10,000 and 40,000 people attend the event every year. It's held in a dis
                 'The book was read by me.',
                 'The book read by me.',
                 'The book is read by me yesterday.',
-                'The book reading by me.'
+                'The book reading by me.',
               ],
               correctAnswer: 'The book was read by me.',
               points: 15,
@@ -1380,7 +1435,8 @@ Between 10,000 and 40,000 people attend the event every year. It's held in a dis
             {
               id: 'quiz-2-q4',
               sectionId: 'quiz-2-section-2',
-              question: 'Complete the sentence: "I _____ to the store yesterday."',
+              question:
+                'Complete the sentence: "I _____ to the store yesterday."',
               type: 'fill-blank',
               correctAnswer: 'went',
               points: 10,
@@ -1396,7 +1452,8 @@ Between 10,000 and 40,000 people attend the event every year. It's held in a dis
             {
               id: 'quiz-2-q6',
               sectionId: 'quiz-2-section-2',
-              question: 'Complete: "They _____ playing football when it started raining."',
+              question:
+                'Complete: "They _____ playing football when it started raining."',
               type: 'fill-blank',
               correctAnswer: 'were',
               points: 10,
@@ -1416,7 +1473,12 @@ Between 10,000 and 40,000 people attend the event every year. It's held in a dis
               sectionId: 'quiz-2-section-3',
               question: 'What did the speaker say about the weather?',
               type: 'listening',
-              options: ['It is sunny', 'It is raining', 'It is cloudy', 'It is snowing'],
+              options: [
+                'It is sunny',
+                'It is raining',
+                'It is cloudy',
+                'It is snowing',
+              ],
               correctAnswer: 'It is raining',
               points: 20,
             },
@@ -1425,7 +1487,12 @@ Between 10,000 and 40,000 people attend the event every year. It's held in a dis
               sectionId: 'quiz-2-section-3',
               question: 'Where did the conversation take place?',
               type: 'listening',
-              options: ['At a restaurant', 'At a school', 'At a park', 'At a library'],
+              options: [
+                'At a restaurant',
+                'At a school',
+                'At a park',
+                'At a library',
+              ],
               correctAnswer: 'At a restaurant',
               points: 20,
             },
@@ -1450,4 +1517,3 @@ Between 10,000 and 40,000 people attend the event every year. It's held in a dis
   saveExercises(exercises);
   saveQuizzes(quizzes);
 };
-

@@ -42,6 +42,7 @@ import {
   calculateScore,
   renderQuestionMedia,
   renderQuestionWordBank,
+  resolveUrl,
 } from '../utils/questionHelpers';
 import { toast } from '../utils/toast';
 
@@ -226,13 +227,59 @@ export default function QuizDetail() {
           <RadioGroup
             value={value}
             onChange={(e) => handleAnswerChange(question._id, e.target.value)}
+            sx={{
+              flexDirection:
+                effectiveType === 'picture-choice' ? 'row' : 'column',
+              flexWrap: 'wrap',
+              gap: effectiveType === 'picture-choice' ? 2 : 0,
+            }}
           >
             {(question.options ?? []).map((option, idx) => (
               <FormControlLabel
                 key={idx}
                 value={option}
-                control={<Radio disabled={disabled} />}
-                label={option}
+                labelPlacement={
+                  effectiveType === 'picture-choice' ? 'top' : 'end'
+                }
+                control={
+                  <Radio
+                    disabled={disabled}
+                    sx={{
+                      mt: effectiveType === 'picture-choice' ? 1 : 0,
+                    }}
+                  />
+                }
+                label={
+                  effectiveType === 'picture-choice' ? (
+                    <Box
+                      component="img"
+                      src={resolveUrl(option)}
+                      alt={`Option ${idx + 1}`}
+                      sx={{
+                        width: '180px',
+                        height: '140px',
+                        objectFit: 'cover',
+                        border:
+                          value === option
+                            ? '3px solid #1976d2'
+                            : '1px solid #ddd',
+                        borderRadius: 2,
+                        transition: 'all 0.2s',
+                        '&:hover': {
+                          transform: 'scale(1.02)',
+                          borderColor: 'primary.main',
+                        },
+                      }}
+                    />
+                  ) : (
+                    option
+                  )
+                }
+                sx={{
+                  ml: effectiveType === 'picture-choice' ? 0 : undefined,
+                  mr: effectiveType === 'picture-choice' ? 0 : 2,
+                  alignItems: 'center',
+                }}
               />
             ))}
           </RadioGroup>

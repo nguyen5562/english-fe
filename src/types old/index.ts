@@ -3,7 +3,7 @@ export interface User {
   id: string;
   name: string;
   email: string;
-  role: "student" | "teacher";
+  role: 'student' | 'teacher';
   studentId?: string;
 }
 
@@ -46,24 +46,24 @@ export interface Reference {
   id: string;
   lessonId: string;
   title: string;
-  type: "pdf" | "link" | "document";
+  type: 'pdf' | 'link' | 'document';
   url: string;
 }
 
 export type QuestionType =
-  | "multiple-choice"
-  | "fill-sentence"
-  | "listening"
-  | "word-order" // sắp xếp lại từ
-  | "word-bank" // chọn từ trong hộp
-  | "picture-choice" // chọn tranh đúng
-  | "reading-mcq" // đọc hiểu – trắc nghiệm
-  | "pronunciation" // luyện âm / ghi âm
-  | "writing" // bài viết dài
-  | "paragraph-fill" // điền vào đoạn văn (nhiều chỗ trống trong 1 đoạn)
-  | "fill-blank" // điền từ vào chỗ trống (mỗi câu nhiều chỗ trống)
-  | "dropdown-choice" // chọn từ dropdown (ví dụ: Choose the correct verbs)
-  | "video-recording"; // xem video rồi ghi âm lại
+  | 'multiple-choice'
+  | 'fill-sentence'
+  | 'listening'
+  | 'word-order' // sắp xếp lại từ
+  | 'word-bank' // chọn từ trong hộp
+  | 'picture-choice' // chọn tranh đúng
+  | 'reading-mcq' // đọc hiểu – trắc nghiệm
+  | 'pronunciation' // luyện âm / ghi âm
+  | 'writing' // bài viết dài
+  | 'paragraph-fill' // điền vào đoạn văn (nhiều chỗ trống trong 1 đoạn)
+  | 'fill-blank' // điền từ vào chỗ trống (mỗi câu nhiều chỗ trống)
+  | 'dropdown-choice' // chọn từ dropdown (ví dụ: Choose the correct verbs)
+  | 'video-recording'; // xem video rồi ghi âm lại
 
 // Section dùng chung cho cả Exercise và Quiz
 export interface Section {
@@ -77,14 +77,14 @@ export interface Section {
   passage?: string; // đoạn văn để đọc (cho reading-mcq, paragraph-fill)
   // Kỹ năng chính của phần (grammar / vocabulary / listening / ...)
   sectionType:
-    | "grammar"
-    | "vocabulary"
-    | "listening"
-    | "reading"
-    | "speaking"
-    | "writing"
-    | "pronunciation"
-    | "mixed";
+    | 'grammar'
+    | 'vocabulary'
+    | 'listening'
+    | 'reading'
+    | 'speaking'
+    | 'writing'
+    | 'pronunciation'
+    | 'mixed';
   // Kiểu câu hỏi hiển thị (tất cả câu trong phần nên cùng 1 kiểu)
   questionType: QuestionType;
   questions: Question[];

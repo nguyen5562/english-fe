@@ -6,9 +6,7 @@ import {
   Card,
   CardContent,
   Button,
-  Grid,
   IconButton,
-  Chip,
   Dialog,
   DialogTitle,
   DialogContent,
@@ -189,75 +187,143 @@ export default function AdminQuizzes() {
           </CardContent>
         </Card>
       ) : (
-        <Grid container spacing={3}>
+        <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1.5 }}>
           {quizzes.map((quiz) => (
-            // @ts-expect-error - MUI v7 Grid item
-            <Grid item xs={12} md={6} key={quiz._id}>
-              <Card>
-                <CardContent>
+            <Card
+              key={quiz._id}
+              sx={{
+                borderRadius: 2,
+                transition: 'all 0.2s',
+                border: '1px solid #edf2f7',
+                boxShadow: 'none',
+                '&:hover': {
+                  borderColor: 'secondary.main',
+                  bgcolor: 'rgba(156, 39, 176, 0.02)',
+                  transform: 'translateX(4px)',
+                },
+              }}
+            >
+              <Box
+                sx={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  p: 1.5,
+                  gap: 2,
+                }}
+              >
+                <Box
+                  sx={{
+                    width: 40,
+                    height: 40,
+                    borderRadius: 1.5,
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    bgcolor: 'secondary.main',
+                    color: 'white',
+                    flexShrink: 0,
+                  }}
+                >
+                  <QuizIcon fontSize="small" />
+                </Box>
+
+                <Box sx={{ flexGrow: 1, minWidth: 0 }}>
+                  <Typography
+                    variant="subtitle1"
+                    noWrap
+                    sx={{ fontWeight: 600, color: '#1a202c', lineHeight: 1.2 }}
+                  >
+                    {quiz.title}
+                  </Typography>
+                  <Typography variant="caption" color="text.secondary" noWrap>
+                    {courses.find((c) => c._id === quiz.courseId)?.name ??
+                      'N/A'}
+                    {quiz.description && ` • ${quiz.description}`}
+                  </Typography>
+                </Box>
+
+                <Box
+                  sx={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: 4,
+                    flexShrink: 0,
+                  }}
+                >
+                  <Box sx={{ display: 'flex', gap: 3 }}>
+                    <Box sx={{ textAlign: 'center' }}>
+                      <Typography
+                        variant="body2"
+                        sx={{ fontWeight: 700, color: 'secondary.main' }}
+                      >
+                        {quiz.timeLimit}
+                      </Typography>
+                      <Typography
+                        variant="caption"
+                        sx={{
+                          color: 'text.secondary',
+                          display: 'block',
+                          fontSize: '0.65rem',
+                          textTransform: 'uppercase',
+                          mt: -0.5,
+                        }}
+                      >
+                        Phút
+                      </Typography>
+                    </Box>
+                    <Box sx={{ textAlign: 'center' }}>
+                      <Typography
+                        variant="body2"
+                        sx={{ fontWeight: 700, color: '#4a5568' }}
+                      >
+                        {(quiz.sections ?? []).reduce(
+                          (total, s) => total + (s.questions?.length ?? 0),
+                          0,
+                        )}
+                      </Typography>
+                      <Typography
+                        variant="caption"
+                        sx={{
+                          color: 'text.secondary',
+                          display: 'block',
+                          fontSize: '0.65rem',
+                          textTransform: 'uppercase',
+                          mt: -0.5,
+                        }}
+                      >
+                        Câu hỏi
+                      </Typography>
+                    </Box>
+                  </Box>
+
                   <Box
                     sx={{
                       display: 'flex',
-                      justifyContent: 'space-between',
-                      alignItems: 'start',
-                      mb: 2,
+                      gap: 0.5,
+                      borderLeft: '1px solid #edf2f7',
+                      pl: 1,
                     }}
                   >
-                    <Box
-                      sx={{
-                        display: 'flex',
-                        alignItems: 'center',
-                        flexGrow: 1,
-                      }}
+                    <IconButton
+                      size="small"
+                      color="secondary"
+                      onClick={() => handleEdit(quiz)}
                     >
-                      <QuizIcon
-                        sx={{ fontSize: 40, color: 'secondary.main', mr: 2 }}
-                      />
-                      <Box>
-                        <Typography variant="h6">{quiz.title}</Typography>
-                        <Typography variant="body2" color="text.secondary">
-                          {courses.find((c) => c._id === quiz.courseId)?.name ??
-                            'N/A'}
-                        </Typography>
-                      </Box>
-                    </Box>
-                    <Box>
-                      <IconButton size="small" onClick={() => handleEdit(quiz)}>
-                        <EditIcon fontSize="small" />
-                      </IconButton>
-                      <IconButton
-                        size="small"
-                        color="error"
-                        onClick={() => handleDelete(quiz._id)}
-                      >
-                        <DeleteIcon fontSize="small" />
-                      </IconButton>
-                    </Box>
-                  </Box>
-                  <Typography variant="body2" paragraph>
-                    {quiz.description ?? ''}
-                  </Typography>
-                  <Box sx={{ display: 'flex', gap: 1, flexWrap: 'wrap' }}>
-                    <Chip
-                      label={`${quiz.sections?.length ?? 0} phần`}
+                      <EditIcon fontSize="small" />
+                    </IconButton>
+                    <IconButton
                       size="small"
-                      color="primary"
-                      variant="outlined"
-                    />
-                    <Chip
-                      label={`${(quiz.sections ?? []).reduce(
-                        (total, s) => total + (s.questions?.length ?? 0),
-                        0,
-                      )} câu hỏi`}
-                      size="small"
-                    />
-                    <Chip label={`${quiz.timeLimit} phút`} size="small" />
+                      color="error"
+                      onClick={() => handleDelete(quiz._id)}
+                    >
+                      <DeleteIcon fontSize="small" />
+                    </IconButton>
                   </Box>
-                </CardContent>
-              </Card>
-            </Grid>
+                </Box>
+              </Box>
+            </Card>
           ))}
-        </Grid>
+        </Box>
       )}
 
       <Dialog

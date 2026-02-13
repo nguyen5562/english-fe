@@ -51,13 +51,14 @@ const TYPES_SINGLE_ANSWER: QuestionType[] = [
   'word-order',
   'word-bank',
   'listening',
-  'pronunciation',
-  'writing',
-  'video-recording',
   'paragraph-fill',
 ];
-const TYPES_NEED_AUDIO: QuestionType[] = ['listening', 'pronunciation'];
-const TYPES_NEED_VIDEO: QuestionType[] = ['video-recording'];
+const TYPES_NEED_AUDIO: QuestionType[] = [
+  'listening',
+  'pronunciation',
+  'picture-choice',
+];
+const TYPES_NEED_VIDEO: QuestionType[] = ['video-recording', 'picture-choice'];
 const TYPES_NEED_IMAGE: QuestionType[] = ['picture-choice'];
 
 // Section fields theo kiểu câu hỏi (gen khác nhau)
@@ -66,9 +67,6 @@ const SECTION_NEED_PASSAGE: QuestionType[] = [
   'paragraph-fill',
   'fill-blank',
 ];
-const SECTION_NEED_AUDIO: QuestionType[] = ['listening', 'pronunciation'];
-const SECTION_NEED_VIDEO: QuestionType[] = ['video-recording'];
-const SECTION_NEED_IMAGE: QuestionType[] = ['picture-choice'];
 const SECTION_NEED_WORD_BANK: QuestionType[] = ['word-bank', 'paragraph-fill'];
 
 const SECTION_TYPE_OPTIONS: { value: SectionType; label: string }[] = [
@@ -83,18 +81,18 @@ const SECTION_TYPE_OPTIONS: { value: SectionType; label: string }[] = [
 
 const QUESTION_TYPE_OPTIONS: { value: QuestionType; label: string }[] = [
   { value: 'multiple-choice', label: 'Trắc nghiệm' },
-  { value: 'dropdown-choice', label: 'Chọn đáp án (dropdown)' },
-  { value: 'fill-sentence', label: 'Điền câu' },
-  { value: 'fill-blank', label: 'Điền từ vào chỗ trống' },
-  { value: 'word-order', label: 'Sắp xếp từ' },
-  { value: 'word-bank', label: 'Từ gợi ý' },
+  { value: 'dropdown-choice', label: 'Chọn đáp án (dropdown)' }, //
+  { value: 'fill-sentence', label: 'Điền câu' }, //
+  { value: 'fill-blank', label: 'Điền từ vào chỗ trống' }, //
+  { value: 'word-order', label: 'Sắp xếp từ' }, //
+  { value: 'word-bank', label: 'Từ gợi ý' }, //
   { value: 'listening', label: 'Nghe' },
   { value: 'reading-mcq', label: 'Đọc hiểu trắc nghiệm' },
-  { value: 'paragraph-fill', label: 'Điền vào đoạn văn' },
-  { value: 'picture-choice', label: 'Chọn tranh' },
-  { value: 'pronunciation', label: 'Phát âm' },
-  { value: 'writing', label: 'Viết' },
-  { value: 'video-recording', label: 'Ghi âm / Video' },
+  { value: 'paragraph-fill', label: 'Điền vào đoạn văn' }, //
+  { value: 'picture-choice', label: 'Chọn tranh' }, //
+  { value: 'pronunciation', label: 'Phát âm' }, //
+  { value: 'writing', label: 'Viết' }, //
+  { value: 'video-recording', label: 'Ghi âm / Video' }, //
 ];
 
 export default function AdminSectionEdit() {
@@ -639,39 +637,29 @@ export default function AdminSectionEdit() {
               sx={{ mb: 2 }}
             />
           )}
-          {(SECTION_NEED_AUDIO.includes(sectionForm.questionType) ||
-            SECTION_NEED_VIDEO.includes(sectionForm.questionType) ||
-            SECTION_NEED_IMAGE.includes(sectionForm.questionType)) && (
-            <Box sx={{ mb: 2 }}>
-              {SECTION_NEED_AUDIO.includes(sectionForm.questionType) && (
-                <FilePicker
-                  label="URL Audio (phần)"
-                  value={sectionForm.audioUrl}
-                  onChange={(url) =>
-                    setSectionForm((f) => ({ ...f, audioUrl: url }))
-                  }
-                />
-              )}
-              {SECTION_NEED_VIDEO.includes(sectionForm.questionType) && (
-                <FilePicker
-                  label="URL Video (phần)"
-                  value={sectionForm.videoUrl}
-                  onChange={(url) =>
-                    setSectionForm((f) => ({ ...f, videoUrl: url }))
-                  }
-                />
-              )}
-              {SECTION_NEED_IMAGE.includes(sectionForm.questionType) && (
-                <FilePicker
-                  label="URL Hình ảnh (phần)"
-                  value={sectionForm.imageUrl}
-                  onChange={(url) =>
-                    setSectionForm((f) => ({ ...f, imageUrl: url }))
-                  }
-                />
-              )}
-            </Box>
-          )}
+          <Box sx={{ mb: 2, display: 'flex', flexDirection: 'column', gap: 2 }}>
+            <FilePicker
+              label="URL Audio (phần)"
+              value={sectionForm.audioUrl}
+              onChange={(url) =>
+                setSectionForm((f) => ({ ...f, audioUrl: url }))
+              }
+            />
+            <FilePicker
+              label="URL Video (phần)"
+              value={sectionForm.videoUrl}
+              onChange={(url) =>
+                setSectionForm((f) => ({ ...f, videoUrl: url }))
+              }
+            />
+            <FilePicker
+              label="URL Hình ảnh (phần)"
+              value={sectionForm.imageUrl}
+              onChange={(url) =>
+                setSectionForm((f) => ({ ...f, imageUrl: url }))
+              }
+            />
+          </Box>
           {SECTION_NEED_WORD_BANK.includes(sectionForm.questionType) && (
             <TextField
               fullWidth
@@ -1060,7 +1048,7 @@ export default function AdminSectionEdit() {
             onClick={handleAddQuestionToSection}
             disabled={saving}
           >
-            Thêm câu hỏi
+            {editingQuestionId ? 'Lưu câu hỏi' : 'Thêm câu hỏi'}
           </Button>
         </DialogActions>
       </Dialog>

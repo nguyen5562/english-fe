@@ -9,6 +9,7 @@ import {
   FormControlLabel,
   TextField,
 } from '@mui/material';
+import { API_ROUTES, API_URL } from '../const/apiConfig';
 import type { Question, Section } from '../types';
 
 // Map sectionType to label and color (used for Chips in detail view)
@@ -29,6 +30,28 @@ export const sectionTypeMap: Record<
   mixed: { label: 'Mixed' },
 };
 
+export const PUBLIC_BASE = (API_URL + API_ROUTES.RESOURCES).replace(/\/$/, '');
+
+export function resolveUrl(url?: string): string | undefined {
+  if (!url || typeof url !== 'string') return undefined;
+  if (
+    url.startsWith('http') ||
+    url.startsWith('//') ||
+    url.startsWith('data:') ||
+    url.startsWith('blob:')
+  ) {
+    return url;
+  }
+  // Remove leading slash if present to avoid double slash if PUBLIC_BASE ends with slash (though we stripped it)
+  // But RESOURCES usually starts with slash. e.g. /resources.
+  // API_URL usually http://domain.
+  // PUBLIC_BASE = http://domain/resources
+  // If url = /foo.png -> http://domain/resources/foo.png
+  // If url = foo.png -> http://domain/resources/foo.png
+  const cleanUrl = url.startsWith('/') ? url : `/${url}`;
+  return `${PUBLIC_BASE}${cleanUrl}`;
+}
+
 // Helper: render media (audio, image, video) for a question
 export const renderQuestionMedia = (question: Question) => (
   <>
@@ -36,7 +59,7 @@ export const renderQuestionMedia = (question: Question) => (
       <Box sx={{ mb: 2 }}>
         <Box
           component="img"
-          src={question.imageUrl}
+          src={resolveUrl(question.imageUrl)}
           alt={question.title}
           sx={{ maxWidth: '100%', borderRadius: 1 }}
         />
@@ -44,7 +67,7 @@ export const renderQuestionMedia = (question: Question) => (
     )}
     {question.audioUrl && (
       <Box sx={{ mb: 2 }}>
-        <audio controls src={question.audioUrl}>
+        <audio controls src={resolveUrl(question.audioUrl)}>
           Trình duyệt của bạn không hỗ trợ audio.
         </audio>
       </Box>
@@ -53,7 +76,7 @@ export const renderQuestionMedia = (question: Question) => (
       <Box sx={{ mb: 2 }}>
         <video
           controls
-          src={question.videoUrl}
+          src={resolveUrl(question.videoUrl)}
           style={{ width: '100%', maxWidth: '800px', borderRadius: '8px' }}
         >
           Trình duyệt của bạn không hỗ trợ video.
@@ -99,7 +122,7 @@ export const renderSectionMedia = (section: Section) => {
     <Box sx={{ mb: 2 }}>
       {section.audioUrl && (
         <Box sx={{ mb: 1 }}>
-          <audio controls src={section.audioUrl}>
+          <audio controls src={resolveUrl(section.audioUrl)}>
             Trình duyệt của bạn không hỗ trợ audio.
           </audio>
         </Box>
@@ -108,7 +131,7 @@ export const renderSectionMedia = (section: Section) => {
         <Box sx={{ mb: 1 }}>
           <video
             controls
-            src={section.videoUrl}
+            src={resolveUrl(section.videoUrl)}
             style={{ width: '100%', maxWidth: '800px', borderRadius: '8px' }}
           >
             Trình duyệt của bạn không hỗ trợ video.
@@ -118,7 +141,7 @@ export const renderSectionMedia = (section: Section) => {
       {section.imageUrl && (
         <Box
           component="img"
-          src={section.imageUrl}
+          src={resolveUrl(section.imageUrl)}
           alt={section.title}
           sx={{ maxWidth: '100%', borderRadius: 1 }}
         />
@@ -197,36 +220,76 @@ export const renderMultipleChoice = (
   onChange: (value: string) => void,
   disabled?: boolean,
   retryKey?: number,
-) => (
-  <FormControl component="fieldset" fullWidth>
-    <FormLabel component="legend">{question.title}</FormLabel>
-    <RadioGroup
-      key={
-        retryKey !== undefined ? `${question._id}-rg-${retryKey}` : undefined
-      }
-      value={Array.isArray(value) ? '' : value || ''}
-      onChange={(e) => onChange(e.target.value)}
-    >
-      {question.options?.map((option, index) => (
-        <FormControlLabel
-          key={index}
-          value={option}
-          control={
-            <Radio
-              key={
-                retryKey !== undefined
-                  ? `${question._id}-${index}-${retryKey}`
-                  : undefined
-              }
-              disabled={disabled}
-            />
-          }
-          label={option}
-        />
-      ))}
-    </RadioGroup>
-  </FormControl>
-);
+) => {
+  const qType = (question as any).type;
+  return (
+    <FormControl component="fieldset" fullWidth>
+      <FormLabel component="legend">{question.title}</FormLabel>
+      <RadioGroup
+        key={
+          retryKey !== undefined ? `${question._id}-rg-${retryKey}` : undefined
+        }
+        value={Array.isArray(value) ? '' : value || ''}
+        onChange={(e) => onChange(e.target.value)}
+        sx={{
+          flexDirection: qType === 'picture-choice' ? 'row' : 'column',
+          flexWrap: 'wrap',
+          gap: qType === 'picture-choice' ? 2 : 0,
+        }}
+      >
+        {question.options?.map((option, index) => (
+          <FormControlLabel
+            key={index}
+            value={option}
+            labelPlacement={qType === 'picture-choice' ? 'top' : 'end'}
+            control={
+              <Radio
+                key={
+                  retryKey !== undefined
+                    ? `${question._id}-${index}-${retryKey}`
+                    : undefined
+                }
+                disabled={disabled}
+                sx={{
+                  mt: qType === 'picture-choice' ? 1 : 0,
+                }}
+              />
+            }
+            label={
+              qType === 'picture-choice' ? (
+                <Box
+                  component="img"
+                  src={resolveUrl(option)}
+                  alt={`Option ${index + 1}`}
+                  sx={{
+                    width: '180px',
+                    height: '140px',
+                    objectFit: 'cover',
+                    border:
+                      value === option ? '3px solid #1976d2' : '1px solid #ddd',
+                    borderRadius: 2,
+                    transition: 'all 0.2s',
+                    '&:hover': {
+                      transform: 'scale(1.02)',
+                      borderColor: 'primary.main',
+                    },
+                  }}
+                />
+              ) : (
+                option
+              )
+            }
+            sx={{
+              ml: qType === 'picture-choice' ? 0 : undefined,
+              mr: qType === 'picture-choice' ? 0 : 2,
+              alignItems: 'center',
+            }}
+          />
+        ))}
+      </RadioGroup>
+    </FormControl>
+  );
+};
 
 // Helper: render text input question
 export const renderTextInput = (

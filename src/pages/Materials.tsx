@@ -29,6 +29,7 @@ import { courseService } from '../services/course.service';
 import { lessonService } from '../services/lesson.service';
 import { toast } from '../utils/toast';
 import type { Course, Lesson } from '../types';
+import { resolveUrl } from '../utils/questionHelpers';
 
 interface TabPanelProps {
   children?: React.ReactNode;
@@ -171,7 +172,7 @@ export default function Materials() {
                     </Box>
                     <Button
                       variant="outlined"
-                      href={slide.url}
+                      href={resolveUrl(slide.url) ?? ''}
                       target="_blank"
                       rel="noopener noreferrer"
                       sx={{ mt: 1 }}
@@ -202,7 +203,7 @@ export default function Materials() {
                     <Button
                       variant="outlined"
                       startIcon={<PlayArrowIcon />}
-                      href={video.url}
+                      href={resolveUrl(video.url) ?? ''}
                       target="_blank"
                       rel="noopener noreferrer"
                       sx={{ mt: 1 }}
@@ -243,7 +244,7 @@ export default function Materials() {
                       </Box>
                       <Button
                         variant="outlined"
-                        href={ref.url}
+                        href={resolveUrl(ref.url) ?? ''}
                         target="_blank"
                         rel="noopener noreferrer"
                         sx={{ mt: 1 }}

@@ -110,7 +110,7 @@ export default function Quizzes() {
           mb: 3,
         }}
       >
-        <Typography variant="h4">Quiz & Kiểm tra</Typography>
+        <Typography variant="h4">Quiz</Typography>
         <FormControl sx={{ minWidth: 200 }}>
           <InputLabel>Lọc theo khóa học</InputLabel>
           <Select

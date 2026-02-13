@@ -147,7 +147,7 @@ export default function Dashboard() {
               <CardContent>
                 <QuizIcon sx={{ fontSize: 48, mb: 2 }} />
                 <Typography variant="h6" gutterBottom>
-                  Quiz & Kiểm tra
+                  Quiz
                 </Typography>
                 <Typography variant="body2" paragraph>
                   Làm bài kiểm tra và đánh giá kiến thức

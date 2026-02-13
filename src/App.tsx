@@ -54,7 +54,14 @@ function App() {
         <Routes>
           <Route path="/login" element={<Login />} />
           <Route path="/register" element={<Register />} />
-          <Route path="/file-manager-popup" element={<FileManagerPopup />} />
+          <Route
+            path="/file-manager-popup"
+            element={
+              <ProtectedRoute>
+                <FileManagerPopup />
+              </ProtectedRoute>
+            }
+          />
           <Route
             path="/"
             element={

@@ -15,3 +15,15 @@ api.interceptors.request.use((config) => {
   }
   return config;
 });
+
+api.interceptors.response.use(
+  (response) => response,
+  (error) => {
+    if (error.response?.status === 401) {
+      useAuthStore.getState().logout();
+      // Optional: Redirect to login if the store update doesn't trigger it fast enough or if we're not in a React context that reacts to it.
+      // But typically Reactive updates should handle it.
+    }
+    return Promise.reject(error);
+  },
+);

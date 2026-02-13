@@ -83,7 +83,7 @@ function parseDrive(info: unknown): { used: number; total: number } {
 
 export default function FileManagerPopup() {
   const API_BASE = API_URL + API_ROUTES.FILE_MANAGER;
-  const PUBLIC_BASE = (API_URL + API_ROUTES.RESOURCES).replace(/\/$/, '');
+  /* PUBLIC_BASE removed */
 
   const restProvider = useMemo(
     () => new RestDataProvider(API_BASE),
@@ -113,7 +113,8 @@ export default function FileManagerPopup() {
   }, [restProvider]);
 
   const sendToOpener = (id: string) => {
-    const url = `${PUBLIC_BASE}${encodePathPreserveSlash(id)}`;
+    // Chỉ gửi phần path (đã encode segment) để lưu vào DB
+    const url = encodePathPreserveSlash(id);
     window.opener?.postMessage(
       { type: 'FM_PICK', url, id },
       window.location.origin,
@@ -144,9 +145,17 @@ export default function FileManagerPopup() {
   };
 
   return (
-    <div style={{ position: 'fixed', inset: 0 }}>
+    <div
+      style={{
+        position: 'fixed',
+        inset: 0,
+        overflow: 'auto',
+        display: 'flex',
+        flexDirection: 'column',
+      }}
+    >
       <Willow>
-        <div style={{ width: '100%', height: '100%' }}>
+        <div style={{ flex: 1, height: '100%', minHeight: 0 }}>
           <Filemanager
             init={init}
             data={data}

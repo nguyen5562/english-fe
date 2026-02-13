@@ -30,6 +30,7 @@ import {
 import axios from 'axios';
 import { exerciseService } from '../services/exercise.service';
 import { exerciseAttemptService } from '../services/exercise-attempt.service';
+import { uploadService } from '../services/upload.service';
 import { useAuthStore } from '../store/auth.store';
 import type {
   Exercise,
@@ -45,6 +46,7 @@ import {
   renderSectionWordBank,
   formatAnswer,
   calculateScore,
+  resolveUrl,
 } from '../utils/questionHelpers';
 import { toast } from '../utils/toast';
 import type { SectionAttemptDto } from '../types/dto';
@@ -171,7 +173,8 @@ export default function ExerciseDetail() {
   const isSectionGraded = useCallback(
     (section: Exercise['sections'][number]) =>
       section.questionType !== 'pronunciation' &&
-      section.questionType !== 'video-recording',
+      section.questionType !== 'video-recording' &&
+      section.questionType !== 'writing',
     [],
   );
 
@@ -316,15 +319,33 @@ export default function ExerciseDetail() {
     );
   }
 
-  const startRecording = async (questionId: string) => {
+  const startRecording = async (questionId: string, isVideo = false) => {
     try {
       if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
-        toast.error('Trình duyệt không hỗ trợ ghi âm.');
+        toast.error('Trình duyệt không hỗ trợ ghi âm/quay phim.');
         return;
       }
 
-      const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-      const mediaRecorder = new MediaRecorder(stream);
+      const constraints = isVideo
+        ? { audio: true, video: true }
+        : { audio: true };
+      const stream = await navigator.mediaDevices.getUserMedia(constraints);
+
+      // For video recording, we want to show a live preview
+      if (isVideo) {
+        const previewEl = document.getElementById(
+          `preview-${questionId}`,
+        ) as HTMLVideoElement;
+        if (previewEl) {
+          previewEl.srcObject = stream;
+          previewEl.muted = true; // Avoid feedback loop
+          previewEl.play().catch(() => {});
+        }
+      }
+
+      const mediaRecorder = new MediaRecorder(stream, {
+        mimeType: isVideo ? 'video/webm;codecs=vp8,opus' : 'audio/webm',
+      });
       mediaRecordersRef.current[questionId] = mediaRecorder;
 
       const chunks: BlobPart[] = [];
@@ -335,8 +356,22 @@ export default function ExerciseDetail() {
       };
 
       mediaRecorder.onstop = () => {
-        const blob = new Blob(chunks, { type: 'audio/webm' });
+        const blob = new Blob(chunks, {
+          type: isVideo ? 'video/webm' : 'audio/webm',
+        });
         const url = URL.createObjectURL(blob);
+
+        // Stop all tracks to release camera/mic
+        stream.getTracks().forEach((track) => track.stop());
+
+        // Clear preview srcObject
+        if (isVideo) {
+          const previewEl = document.getElementById(
+            `preview-${questionId}`,
+          ) as HTMLVideoElement;
+          if (previewEl) previewEl.srcObject = null;
+        }
+
         setRecordings((prev) => ({ ...prev, [questionId]: url }));
         setRecordingStatus((prev) => ({ ...prev, [questionId]: 'recorded' }));
       };
@@ -345,7 +380,9 @@ export default function ExerciseDetail() {
       setRecordingStatus((prev) => ({ ...prev, [questionId]: 'recording' }));
     } catch (error) {
       console.error(error);
-      toast.error('Không thể bắt đầu ghi âm. Vui lòng kiểm tra quyền micro.');
+      toast.error(
+        'Không thể bắt đầu ghi. Vui lòng kiểm tra quyền truy cập micro/camera.',
+      );
     }
   };
 
@@ -353,7 +390,6 @@ export default function ExerciseDetail() {
     const recorder = mediaRecordersRef.current[questionId];
     if (recorder && recorder.state === 'recording') {
       recorder.stop();
-      recorder.stream.getTracks().forEach((track) => track.stop());
     }
   };
 
@@ -364,13 +400,74 @@ export default function ExerciseDetail() {
   const handleCheckSection = async () => {
     if (!currentSection) return;
     const section = currentSection;
+
+    // Upload pending recordings
+    const uploadedAnswers = { ...answers };
+    let hasUploadError = false;
+
+    // Identify questions that might have recordings
+    const mediaQuestions = (section.questions ?? []).filter((q) => {
+      // cast q to any to access potentially existing 'type' property override
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const qType = (q as any).type as QuestionType | undefined;
+      return (
+        qType === 'pronunciation' ||
+        qType === 'video-recording' ||
+        section.questionType === 'pronunciation' ||
+        section.questionType === 'video-recording'
+      );
+    });
+
+    for (const q of mediaQuestions) {
+      const recordingUrl = recordings[q._id];
+      if (recordingUrl && recordingUrl.startsWith('blob:')) {
+        try {
+          // Fetch blob from URL
+          const blobResponse = await fetch(recordingUrl);
+          const blob = await blobResponse.blob();
+
+          // Construct path: /submissions/[audio|video]/YYYY-MM/studentId
+          const isVideo = blob.type.startsWith('video/');
+          const mediaTypeFolder = isVideo ? 'video' : 'audio';
+          const now = new Date();
+          const folderDate = `${now.getFullYear()}-${String(
+            now.getMonth() + 1,
+          ).padStart(2, '0')}`;
+          const studentFolder = userId || 'guest';
+          const targetPath = `/submissions/${mediaTypeFolder}/${folderDate}/${studentFolder}`;
+
+          const filename = `${q._id}_${Date.now()}.${isVideo ? 'webm' : 'webm'}`;
+
+          const { id: uploadedPath } = await uploadService.uploadFile(
+            blob,
+            targetPath,
+            filename,
+          );
+
+          uploadedAnswers[q._id] = uploadedPath;
+        } catch (error) {
+          console.error('Upload failed for question', q._id, error);
+          hasUploadError = true;
+        }
+      }
+    }
+
+    if (hasUploadError) {
+      toast.error('Có lỗi khi tải lên file ghi âm. Vui lòng thử lại.');
+      return;
+    }
+
+    // Update local answers state to reflect uploaded URLs (optional, but good for UI consistency)
+    setAnswers(uploadedAnswers);
+
     const results: Record<
       string,
       { graded: boolean; correct?: boolean; correctAnswer: string | string[] }
     > = {};
     const sectionIsGraded =
       section.questionType !== 'pronunciation' &&
-      section.questionType !== 'video-recording';
+      section.questionType !== 'video-recording' &&
+      section.questionType !== 'writing';
 
     (section.questions ?? []).forEach((question) => {
       if (!sectionIsGraded) {
@@ -380,7 +477,7 @@ export default function ExerciseDetail() {
         };
         return;
       }
-      const userAnswer = answers[question._id];
+      const userAnswer = uploadedAnswers[question._id];
       const correctAnswer = question.correctAnswer ?? [];
       const userArr = Array.isArray(userAnswer)
         ? userAnswer
@@ -395,7 +492,7 @@ export default function ExerciseDetail() {
     });
 
     const { score: totalScore, maxScore } = sectionIsGraded
-      ? calculateScore(section.questions ?? [], answers)
+      ? calculateScore(section.questions ?? [], uploadedAnswers)
       : { score: 0, maxScore: 0 };
 
     setCheckedResults(results);
@@ -406,7 +503,7 @@ export default function ExerciseDetail() {
       const sectionAnswers: SectionAttemptDto['answers'] = (
         section.questions ?? []
       ).map((q) => {
-        const a = answers[q._id];
+        const a = uploadedAnswers[q._id];
         const arr = Array.isArray(a) ? a : a != null ? [String(a)] : [];
         return { questionId: q._id, answer: arr };
       });
@@ -512,6 +609,10 @@ export default function ExerciseDetail() {
   ) => {
     const value = (answers[question._id] ?? '') as string;
 
+    const questionType: QuestionType | undefined =
+      (question as Question & { type?: QuestionType }).type ??
+      sectionQuestionType;
+
     const renderQuestionWordBankWithHandler = () => {
       return renderQuestionWordBank(question, (word) => {
         setAnswers((prev) => {
@@ -532,28 +633,66 @@ export default function ExerciseDetail() {
             key={`${question._id}-rg-${retryKey}`}
             value={value}
             onChange={(e) => handleAnswerChange(question._id, e.target.value)}
+            sx={{
+              flexDirection:
+                questionType === 'picture-choice' ? 'row' : 'column',
+              flexWrap: 'wrap',
+              gap: questionType === 'picture-choice' ? 2 : 0,
+            }}
           >
             {question.options?.map((option, index) => (
               <FormControlLabel
                 key={index}
                 value={option}
+                labelPlacement={
+                  questionType === 'picture-choice' ? 'top' : 'end'
+                }
                 control={
                   <Radio
                     key={`${question._id}-${index}-${retryKey}`}
                     disabled={viewingSaved}
+                    sx={{
+                      mt: questionType === 'picture-choice' ? 1 : 0,
+                    }}
                   />
                 }
-                label={option}
+                label={
+                  questionType === 'picture-choice' ? (
+                    <Box
+                      component="img"
+                      src={resolveUrl(option)}
+                      alt={`Option ${index + 1}`}
+                      sx={{
+                        width: '180px',
+                        height: '140px',
+                        objectFit: 'cover',
+                        border:
+                          value === option
+                            ? '3px solid #1976d2'
+                            : '1px solid #ddd',
+                        borderRadius: 2,
+                        transition: 'all 0.2s',
+                        '&:hover': {
+                          transform: 'scale(1.02)',
+                          borderColor: 'primary.main',
+                        },
+                      }}
+                    />
+                  ) : (
+                    option
+                  )
+                }
+                sx={{
+                  ml: questionType === 'picture-choice' ? 0 : undefined,
+                  mr: questionType === 'picture-choice' ? 0 : 2,
+                  alignItems: 'center',
+                }}
               />
             ))}
           </RadioGroup>
         </FormControl>
       </Box>
     );
-
-    const questionType: QuestionType | undefined =
-      (question as Question & { type?: QuestionType }).type ??
-      sectionQuestionType;
 
     switch (questionType) {
       case 'multiple-choice':
@@ -667,7 +806,25 @@ export default function ExerciseDetail() {
 
       case 'pronunciation': {
         const status = recordingStatus[question._id] ?? 'idle';
-        const hasRecording = !!recordings[question._id];
+        const savedUrl = answers[question._id] as string | undefined;
+        // Check if we have a fresh recording OR a saved answer URL
+        const displayUrl =
+          recordings[question._id] ?? (savedUrl ? resolveUrl(savedUrl) : null);
+
+        const handlePlayRecording = () => {
+          if (!displayUrl) return;
+          const audioEl = document.getElementById(
+            `audio-${question._id}`,
+          ) as HTMLAudioElement;
+          if (audioEl) {
+            audioEl.currentTime = 0;
+            audioEl.play().catch((e) => console.error('Play error:', e));
+          } else {
+            // Fallback if audio element is hidden or not found
+            const audio = new Audio(displayUrl);
+            audio.play().catch((e) => console.error('Play error:', e));
+          }
+        };
 
         return (
           <Box>
@@ -691,20 +848,137 @@ export default function ExerciseDetail() {
               <Button
                 variant="outlined"
                 size="small"
+                color="error"
                 disabled={status !== 'recording' || viewingSaved}
                 onClick={() => stopRecording(question._id)}
               >
                 Dừng
               </Button>
+              <Button
+                variant="outlined"
+                size="small"
+                color="info"
+                disabled={!displayUrl || status === 'recording'}
+                onClick={handlePlayRecording}
+              >
+                Nghe lại
+              </Button>
             </Box>
-            {hasRecording && (
+            {displayUrl && (
               <Box sx={{ mt: 1 }}>
                 <Typography variant="body2" sx={{ mb: 0.5 }}>
                   Bản ghi của bạn:
                 </Typography>
-                <audio controls src={recordings[question._id] ?? undefined} />
+                <audio
+                  id={`audio-${question._id}`}
+                  controls
+                  src={displayUrl}
+                  style={{ width: '100%', maxWidth: '300px' }}
+                />
               </Box>
             )}
+          </Box>
+        );
+      }
+
+      case 'video-recording': {
+        const status = recordingStatus[question._id] ?? 'idle';
+        const savedUrl = answers[question._id] as string | undefined;
+        const displayUrl =
+          recordings[question._id] ?? (savedUrl ? resolveUrl(savedUrl) : null);
+
+        const handlePlayVideo = () => {
+          if (!displayUrl) return;
+          const videoEl = document.getElementById(
+            `video-${question._id}`,
+          ) as HTMLVideoElement;
+          if (videoEl) {
+            videoEl.currentTime = 0;
+            videoEl.play().catch((e) => console.error('Play error:', e));
+          }
+        };
+
+        return (
+          <Box>
+            {renderQuestionMedia(question)}
+            {renderQuestionWordBankWithHandler()}
+            <Typography variant="body1" gutterBottom>
+              {question.title}
+            </Typography>
+            <Typography variant="body2" color="text.secondary" sx={{ mb: 1 }}>
+              Hãy quay video trả lời của bạn.
+            </Typography>
+
+            {/* Video Preview / Playback */}
+            <Box
+              sx={{
+                width: '100%',
+                maxWidth: '500px',
+                aspectRatio: '16/9',
+                bgcolor: 'black',
+                borderRadius: 2,
+                overflow: 'hidden',
+                mb: 2,
+                position: 'relative',
+              }}
+            >
+              {status === 'recording' ? (
+                <video
+                  id={`preview-${question._id}`}
+                  autoPlay
+                  muted
+                  style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+                />
+              ) : displayUrl ? (
+                <video
+                  id={`video-${question._id}`}
+                  src={displayUrl}
+                  controls={!viewingSaved}
+                  style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+                />
+              ) : (
+                <Box
+                  sx={{
+                    height: '100%',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    color: 'white',
+                  }}
+                >
+                  <Typography variant="body2">Chưa có video</Typography>
+                </Box>
+              )}
+            </Box>
+
+            <Box sx={{ display: 'flex', gap: 1, flexWrap: 'wrap', mb: 1 }}>
+              <Button
+                variant="contained"
+                size="small"
+                disabled={status === 'recording' || viewingSaved}
+                onClick={() => startRecording(question._id, true)}
+              >
+                {status === 'recording' ? 'Đang quay...' : 'Bắt đầu quay'}
+              </Button>
+              <Button
+                variant="outlined"
+                size="small"
+                color="error"
+                disabled={status !== 'recording' || viewingSaved}
+                onClick={() => stopRecording(question._id)}
+              >
+                Dừng
+              </Button>
+              <Button
+                variant="outlined"
+                size="small"
+                color="info"
+                disabled={!displayUrl || status === 'recording'}
+                onClick={handlePlayVideo}
+              >
+                Xem lại
+              </Button>
+            </Box>
           </Box>
         );
       }
@@ -1171,7 +1445,7 @@ export default function ExerciseDetail() {
                 color="secondary"
                 onClick={handleCheckSection}
               >
-                Kiểm tra
+                {!isSectionGraded(currentSection) ? 'Lưu' : 'Kiểm tra'}
               </Button>
               <Button
                 variant="contained"

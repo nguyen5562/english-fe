@@ -319,7 +319,6 @@ export default function Exercises() {
                           >
                             <ListItemText
                               primary={section.title}
-                              secondary={section.description}
                               sx={{ mr: 2 }}
                             />
                             <Chip
