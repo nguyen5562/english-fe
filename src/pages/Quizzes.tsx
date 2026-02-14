@@ -36,8 +36,16 @@ export default function Quizzes() {
   const [quizAttempts, setQuizAttempts] = useState<QuizAttempt[]>([]);
   const [loading, setLoading] = useState(false);
   const [selectedCourse, setSelectedCourse] = useState<string>('all');
+  const [selectedStatus, setSelectedStatus] = useState<string>('all');
   const navigate = useNavigate();
   const user = useAuthStore((s) => s.user);
+
+  const getAttempt = (quizId: string): QuizAttempt | null => {
+    const attempt = quizAttempts.find(
+      (a) => a.quizId === quizId && a.submittedAt != null,
+    );
+    return attempt ?? null;
+  };
 
   useEffect(() => {
     const fetchData = async () => {
@@ -77,27 +85,30 @@ export default function Quizzes() {
     fetchData();
   }, [user?._id]);
 
-  const filteredQuizzes =
-    selectedCourse === 'all'
-      ? quizzes
-      : quizzes.filter((q) => q.courseId === selectedCourse);
+  const filteredQuizzes = quizzes.filter((q) => {
+    const matchesCourse =
+      selectedCourse === 'all' || q.courseId === selectedCourse;
+    const isCompleted = getAttempt(q._id) !== null;
+    const matchesStatus =
+      selectedStatus === 'all' ||
+      (selectedStatus === 'completed' && isCompleted) ||
+      (selectedStatus === 'todo' && !isCompleted);
 
-  const getBestAttempt = (quizId: string): QuizAttempt | null => {
-    const attempts = quizAttempts.filter(
-      (a) => a.quizId === quizId && a.submittedAt != null,
-    );
-    if (attempts.length === 0) return null;
-    return attempts.reduce((best, current) =>
-      (current.totalScore ?? 0) > (best.totalScore ?? 0) ? current : best,
-    );
-  };
+    return matchesCourse && matchesStatus;
+  });
 
   const getMaxScore = (quiz: Quiz): number => {
-    return (quiz.sections ?? []).reduce(
-      (sum, section) =>
-        sum + (section.questions ?? []).reduce((s, q) => s + (q.point ?? 0), 0),
-      0,
-    );
+    return (quiz.sections ?? []).reduce((sum, section) => {
+      if (
+        ['pronunciation', 'video-recording', 'writing'].includes(
+          section.questionType,
+        )
+      )
+        return sum;
+      return (
+        sum + (section.questions ?? []).reduce((s, q) => s + (q.point ?? 0), 0)
+      );
+    }, 0);
   };
 
   return (
@@ -111,21 +122,36 @@ export default function Quizzes() {
         }}
       >
         <Typography variant="h4">Quiz</Typography>
-        <FormControl sx={{ minWidth: 200 }}>
-          <InputLabel>Lọc theo khóa học</InputLabel>
-          <Select
-            value={selectedCourse}
-            label="Lọc theo khóa học"
-            onChange={(e) => setSelectedCourse(e.target.value)}
-          >
-            <MenuItem value="all">Tất cả</MenuItem>
-            {courses.map((course) => (
-              <MenuItem key={course._id} value={course._id}>
-                {course.name}
-              </MenuItem>
-            ))}
-          </Select>
-        </FormControl>
+        <Box sx={{ display: 'flex', gap: 2 }}>
+          <FormControl sx={{ minWidth: 200 }} size="small">
+            <InputLabel>Khóa học</InputLabel>
+            <Select
+              value={selectedCourse}
+              label="Khóa học"
+              onChange={(e) => setSelectedCourse(e.target.value)}
+            >
+              <MenuItem value="all">Tất cả khóa học</MenuItem>
+              {courses.map((course) => (
+                <MenuItem key={course._id} value={course._id}>
+                  {course.name}
+                </MenuItem>
+              ))}
+            </Select>
+          </FormControl>
+
+          <FormControl sx={{ minWidth: 150 }} size="small">
+            <InputLabel>Trạng thái</InputLabel>
+            <Select
+              value={selectedStatus}
+              label="Trạng thái"
+              onChange={(e) => setSelectedStatus(e.target.value)}
+            >
+              <MenuItem value="all">Tất cả</MenuItem>
+              <MenuItem value="completed">Đã làm</MenuItem>
+              <MenuItem value="todo">Chưa làm</MenuItem>
+            </Select>
+          </FormControl>
+        </Box>
       </Box>
 
       {loading ? (
@@ -143,14 +169,8 @@ export default function Quizzes() {
       ) : (
         <Grid container spacing={3}>
           {filteredQuizzes.map((quiz) => {
-            const bestAttempt = getBestAttempt(quiz._id);
+            const attempt = getAttempt(quiz._id);
             const maxScore = getMaxScore(quiz);
-            const bestPercent =
-              bestAttempt != null && maxScore > 0
-                ? Math.round(((bestAttempt.totalScore ?? 0) / maxScore) * 100)
-                : null;
-            const hasPassed = bestPercent != null && bestPercent >= 60;
-
             return (
               <Grid size={{ xs: 12, sm: 6, md: 4 }} key={quiz._id}>
                 <Card
@@ -273,7 +293,7 @@ export default function Quizzes() {
                   <Divider sx={{ opacity: 0.6 }} />
 
                   <Box sx={{ p: 2, px: 3, bgcolor: 'background.default' }}>
-                    {bestPercent != null ? (
+                    {attempt != null ? (
                       <Box
                         sx={{
                           display: 'flex',
@@ -287,23 +307,23 @@ export default function Quizzes() {
                         >
                           <CheckCircleIcon
                             sx={{
-                              color: hasPassed
-                                ? 'success.main'
-                                : 'warning.main',
+                              color: 'success.main',
                               fontSize: 18,
                             }}
                           />
                           <Typography variant="body2" sx={{ fontWeight: 600 }}>
-                            {hasPassed ? 'Đã đạt' : 'Chưa đạt 60%'}
+                            Đã hoàn thành
                           </Typography>
                         </Box>
-                        <Typography
-                          variant="h6"
-                          color={hasPassed ? 'success.main' : 'warning.main'}
-                          sx={{ fontWeight: 800 }}
-                        >
-                          {bestPercent}%
-                        </Typography>
+                        {maxScore > 0 && (
+                          <Typography
+                            variant="h6"
+                            color="primary.main"
+                            sx={{ fontWeight: 800 }}
+                          >
+                            {attempt.totalScore ?? 0} / {maxScore}
+                          </Typography>
+                        )}
                       </Box>
                     ) : (
                       <Box sx={{ mb: 2 }}>
@@ -322,7 +342,7 @@ export default function Quizzes() {
                       startIcon={<PlayArrowIcon />}
                       fullWidth
                       onClick={() => navigate(`/quizzes/${quiz._id}`)}
-                      color={bestAttempt && hasPassed ? 'success' : 'primary'}
+                      disabled={attempt != null}
                       sx={{
                         borderRadius: 2,
                         py: 1,
@@ -330,9 +350,13 @@ export default function Quizzes() {
                         fontWeight: 700,
                         boxShadow: 'none',
                         '&:hover': { boxShadow: 'none' },
+                        '&.Mui-disabled': {
+                          bgcolor: 'action.disabledBackground',
+                          color: 'action.disabled',
+                        },
                       }}
                     >
-                      {bestAttempt ? 'Làm lại' : 'Bắt đầu làm'}
+                      {attempt ? 'Đã nộp bài' : 'Bắt đầu làm'}
                     </Button>
                   </Box>
                 </Card>

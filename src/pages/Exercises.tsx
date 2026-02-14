@@ -5,7 +5,6 @@ import {
   Typography,
   Card,
   CardContent,
-  Chip,
   FormControl,
   InputLabel,
   Select,
@@ -202,27 +201,11 @@ export default function Exercises() {
             ).length;
             const totalSectionsCount = (exercise.sections ?? []).length;
 
-            let totalWeightedPercent = 0;
-            let gradedSectionsCount = 0;
-            sectionAttemptInfo.forEach((info, idx) => {
-              const qType = exercise.sections[idx].questionType;
-              const isGraded = ![
-                'pronunciation',
-                'video-recording',
-                'writing',
-              ].includes(qType);
-
-              if (isGraded) {
-                gradedSectionsCount++;
-                if (info && info.maxScore > 0) {
-                  totalWeightedPercent += (info.score / info.maxScore) * 100;
-                }
-              }
-            });
-
             const overallPercent =
-              gradedSectionsCount > 0
-                ? Math.round(totalWeightedPercent / gradedSectionsCount)
+              totalSectionsCount > 0
+                ? Math.round(
+                    (sectionsCompletedCount / totalSectionsCount) * 100,
+                  )
                 : 0;
 
             const progressColor =
@@ -432,19 +415,36 @@ export default function Exercises() {
                                   color="text.secondary"
                                   sx={{ display: 'block' }}
                                 >
-                                  Điểm lần cuối
+                                  {[
+                                    'pronunciation',
+                                    'video-recording',
+                                    'writing',
+                                  ].includes(section.questionType)
+                                    ? 'Trạng thái'
+                                    : 'Điểm lần cuối'}
                                 </Typography>
                                 <Typography
                                   variant="body2"
                                   sx={{
                                     fontWeight: 700,
-                                    color:
-                                      (scorePercent ?? 0) >= 60
+                                    color: [
+                                      'pronunciation',
+                                      'video-recording',
+                                      'writing',
+                                    ].includes(section.questionType)
+                                      ? 'success.main'
+                                      : (scorePercent ?? 0) >= 60
                                         ? 'success.main'
                                         : 'warning.main',
                                   }}
                                 >
-                                  {scorePercent}%
+                                  {[
+                                    'pronunciation',
+                                    'video-recording',
+                                    'writing',
+                                  ].includes(section.questionType)
+                                    ? 'Đã hoàn thành'
+                                    : `${scorePercent}%`}
                                 </Typography>
                               </Box>
                             )}

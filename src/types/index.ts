@@ -105,6 +105,8 @@ export type Quiz = {
 export type Answer = {
   questionId: string;
   answer: string[];
+  createdAt: Date;
+  updatedAt: Date;
 };
 
 export type SectionAttempt = {
@@ -112,6 +114,7 @@ export type SectionAttempt = {
   tries: number;
   score: number;
   answers: Answer[];
+  submittedAt: Date;
 };
 
 export type ExerciseAttempt = {
