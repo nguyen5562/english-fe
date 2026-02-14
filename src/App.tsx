@@ -76,8 +76,8 @@ function App() {
             <Route path="exercises/:id" element={<ExerciseDetail />} />
             <Route path="quizzes" element={<Quizzes />} />
             <Route path="quizzes/:id" element={<QuizDetail />} />
-            <Route path="progress" element={<Progress />} />
-            <Route path="statistics" element={<Statistics />} />
+            {/* <Route path="progress" element={<Progress />} /> */}
+            {/* <Route path="statistics" element={<Statistics />} /> */}
           </Route>
           <Route
             path="/admin"
@@ -102,7 +102,7 @@ function App() {
               element={<AdminQuizSectionEdit />}
             />
             <Route path="students" element={<AdminStudents />} />
-            <Route path="statistics" element={<Statistics />} />
+            {/* <Route path="statistics" element={<Statistics />} /> */}
           </Route>
         </Routes>
       </BrowserRouter>

@@ -111,7 +111,13 @@ export default function Exercises() {
 
   // Helper function to get attempts for an exercise
   const getAttemptsForExercise = (exerciseId: string): ExerciseAttempt[] => {
-    return exerciseAttempts.filter((a) => a.exerciseId === exerciseId);
+    return (exerciseAttempts || []).filter((a) => {
+      const aId =
+        typeof a.exerciseId === 'object'
+          ? (a.exerciseId as any)._id
+          : a.exerciseId;
+      return String(aId) === String(exerciseId);
+    });
   };
 
   // Helper function to get last attempt for a section
@@ -122,28 +128,44 @@ export default function Exercises() {
     const attempts = getAttemptsForExercise(exerciseId);
     if (attempts.length === 0) return null;
 
-    // Find the section attempt with most tries for this section
-    let maxTries = 0;
     let bestAttempt: { tries: number; score: number; maxScore: number } | null =
       null;
+    let maxTries = -1;
 
     attempts.forEach((attempt) => {
-      const sectionAttempt = attempt.sectionAttempts?.find(
-        (sa) => sa.sectionId === sectionId,
-      );
-      if (sectionAttempt && sectionAttempt.tries > maxTries) {
-        maxTries = sectionAttempt.tries;
-        // Calculate maxScore from section (we'll need to find the section)
-        const exercise = exercises.find((e) => e._id === exerciseId);
-        const section = exercise?.sections.find((s) => s._id === sectionId);
-        const maxScore = section
-          ? section.questions.reduce((sum, q) => sum + q.point, 0)
-          : sectionAttempt.score;
-        bestAttempt = {
-          tries: sectionAttempt.tries,
-          score: sectionAttempt.score,
-          maxScore,
-        };
+      const sectionAttempt = attempt.sectionAttempts?.find((sa) => {
+        const saId =
+          typeof sa.sectionId === 'object'
+            ? (sa.sectionId as any)._id
+            : sa.sectionId;
+        return String(saId) === String(sectionId);
+      });
+
+      if (sectionAttempt) {
+        const currentTries = sectionAttempt.tries ?? 0;
+        // Since backend overwrites, we just take the one we found (or the one with most tries if multiple)
+        if (currentTries >= maxTries) {
+          maxTries = currentTries;
+          const section = exercises
+            .find((e) => {
+              const eId = typeof e._id === 'object' ? (e as any)._id : e._id;
+              return String(eId) === String(exerciseId);
+            })
+            ?.sections.find((s) => String(s._id) === String(sectionId));
+
+          const maxScore = section
+            ? (section.questions ?? []).reduce(
+                (sum, q) => sum + (q.point ?? 0),
+                0,
+              )
+            : sectionAttempt.score || 0;
+
+          bestAttempt = {
+            tries: Math.max(currentTries, 1),
+            score: sectionAttempt.score || 0,
+            maxScore: maxScore || 1,
+          };
+        }
       }
     });
 
@@ -194,29 +216,37 @@ export default function Exercises() {
         <Box>
           {filteredExercises.map((exercise) => {
             // Calculate sections completed and overall percent
-            const attempts = getAttemptsForExercise(exercise._id);
-            const sectionsCompleted = new Set(
-              attempts.flatMap((a) =>
-                a.sectionAttempts?.map((sa) => sa.sectionId),
-              ),
-            ).size;
+            const sectionAttemptInfo = (exercise.sections ?? []).map(
+              (section) => getLastAttemptForSection(exercise._id, section._id),
+            );
 
-            const totalSections = exercise.sections.length;
-            let totalPercent = 0;
+            const sectionsCompletedCount = sectionAttemptInfo.filter(
+              (info) => info !== null,
+            ).length;
+            const totalSectionsCount = (exercise.sections ?? []).length;
 
-            exercise.sections.forEach((section) => {
-              const lastAttempt = getLastAttemptForSection(
-                exercise._id,
-                section._id,
-              );
-              if (lastAttempt) {
-                totalPercent +=
-                  (lastAttempt.score / lastAttempt.maxScore) * 100;
+            let totalWeightedPercent = 0;
+            let gradedSectionsCount = 0;
+            sectionAttemptInfo.forEach((info, idx) => {
+              const qType = exercise.sections[idx].questionType;
+              const isGraded = ![
+                'pronunciation',
+                'video-recording',
+                'writing',
+              ].includes(qType);
+
+              if (isGraded) {
+                gradedSectionsCount++;
+                if (info && info.maxScore > 0) {
+                  totalWeightedPercent += (info.score / info.maxScore) * 100;
+                }
               }
             });
 
             const overallPercent =
-              totalSections > 0 ? Math.round(totalPercent / totalSections) : 0;
+              gradedSectionsCount > 0
+                ? Math.round(totalWeightedPercent / gradedSectionsCount)
+                : 0;
 
             return (
               <Accordion
@@ -243,15 +273,14 @@ export default function Exercises() {
                         sx={{ display: 'flex', gap: 1, alignItems: 'center' }}
                       >
                         <span>
-                          {
-                            courses.find((c) => c._id === exercise.courseId)
-                              ?.name
-                          }
+                          {courses.find(
+                            (c) => String(c._id) === String(exercise.courseId),
+                          )?.name || 'Course'}
                         </span>
                         <span>·</span>
                         <span>
-                          {sectionsCompleted}/{(exercise.sections ?? []).length}{' '}
-                          phần đã làm
+                          {sectionsCompletedCount}/{totalSectionsCount} phần đã
+                          làm
                         </span>
                         <span>·</span>
                         <span>Điểm tổng: {overallPercent}%</span>
@@ -364,7 +393,16 @@ export default function Exercises() {
                             </Box>
                             <Box sx={{ textAlign: 'center' }}>
                               <Typography variant="body2">
-                                {lastPercent !== null ? `${lastPercent}%` : '-'}
+                                {(() => {
+                                  if (!lastAttempt) return '-';
+                                  const isGraded = ![
+                                    'pronunciation',
+                                    'video-recording',
+                                    'writing',
+                                  ].includes(section.questionType);
+                                  if (!isGraded) return 'Done';
+                                  return `${lastPercent}%`;
+                                })()}
                               </Typography>
                               <Typography
                                 variant="caption"

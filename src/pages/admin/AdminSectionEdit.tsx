@@ -287,7 +287,7 @@ export default function AdminSectionEdit() {
         toast.success('Đã cập nhật phần');
         const updated = await exerciseService.getExerciseById(exerciseId);
         setExercise(updated);
-        // Navigate if title changed (slug changed)
+        // Navigate if ID changed (safety check)
         const updatedSection = updated.sections?.find(
           (s) => s._id === sectionId,
         );

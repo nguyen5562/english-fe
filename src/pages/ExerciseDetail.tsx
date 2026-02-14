@@ -138,14 +138,31 @@ export default function ExerciseDetail() {
       .getExerciseAttemptByUserId(userId)
       .then((list) => {
         if (cancelled) return;
-        const exAttempt = list.find((a) => a.exerciseId === id);
+        const exAttempt = list.find((a) => {
+          const aExId =
+            typeof a.exerciseId === 'object'
+              ? (a.exerciseId as any)._id
+              : a.exerciseId;
+
+          if (
+            String(aExId) === String(id) ||
+            (exercise?._id && String(aExId) === String(exercise._id))
+          )
+            return true;
+
+          // Fallback: match by title
+          if (exercise?.title && (a as any).exerciseTitle === exercise.title)
+            return true;
+
+          return false;
+        });
         setAttempt(exAttempt ?? null);
       })
       .catch(() => {});
     return () => {
       cancelled = true;
     };
-  }, [userId, id]);
+  }, [userId, id, exercise?._id]);
 
   useEffect(() => {
     if (!exercise) return;
@@ -187,25 +204,44 @@ export default function ExerciseDetail() {
     if (!section) return;
 
     const sectionAttempts =
-      attempt.sectionAttempts?.filter((sa) => sa.sectionId === section._id) ??
-      [];
+      attempt.sectionAttempts?.filter((sa) => {
+        const saId =
+          typeof sa.sectionId === 'object'
+            ? (sa.sectionId as any)._id
+            : sa.sectionId;
+        return String(saId) === String(section._id);
+      }) ?? [];
     if (sectionAttempts.length === 0) {
       clearLoadedState();
       return;
     }
-    const last = sectionAttempts.slice().sort((a, b) => b.tries - a.tries)[0];
+    const last = sectionAttempts
+      .slice()
+      .sort((a, b) => (b.tries || 0) - (a.tries || 0))[0];
 
     window.setTimeout(() => {
       setLastAttempt({
         sectionId: section._id,
-        tries: last.tries,
-        score: last.score,
+        tries: last.tries || 0,
+        score: last.score || 0,
         answers: last.answers ?? [],
       });
       setAnswers((prev) => {
         const next = { ...prev };
         (last.answers ?? []).forEach((a) => {
-          next[a.questionId] = a.answer;
+          // Robustly handle answer format. If it's a single item array and the question
+          // usually takes a string (not multi-choice or special), map it back to a string
+          // so that Controlled components like Select or Radio work correctly.
+          const val = a.answer;
+          if (
+            Array.isArray(val) &&
+            val.length === 1 &&
+            !['fill-blank', 'listening'].includes(section.questionType)
+          ) {
+            next[a.questionId] = val[0];
+          } else {
+            next[a.questionId] = val;
+          }
         });
         return next;
       });
@@ -255,7 +291,7 @@ export default function ExerciseDetail() {
         });
         setCheckedResults(results);
         setScore(null);
-        setViewingSaved(false);
+        setViewingSaved(true);
       }
     }, 0);
   }, [
@@ -933,7 +969,7 @@ export default function ExerciseDetail() {
                 <video
                   id={`video-${question._id}`}
                   src={displayUrl}
-                  controls={!viewingSaved}
+                  controls
                   style={{ width: '100%', height: '100%', objectFit: 'cover' }}
                 />
               ) : (
@@ -1132,53 +1168,6 @@ export default function ExerciseDetail() {
         // Chọn tranh đúng - có thể có image ở question level hoặc section level
         return renderMultipleChoice();
 
-      case 'video-recording': {
-        // Xem video rồi ghi âm lại
-        // Video có thể ở section level hoặc question level
-        const status = recordingStatus[question._id] ?? 'idle';
-        const hasRecording = !!recordings[question._id];
-
-        return (
-          <Box>
-            {renderQuestionMedia(question)}
-            {renderQuestionWordBankWithHandler()}
-            <Typography variant="body1" gutterBottom>
-              {question.title}
-            </Typography>
-            <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
-              Hãy xem video ở trên, sau đó ghi âm lại nội dung bạn đã xem.
-            </Typography>
-            <Box sx={{ display: 'flex', gap: 1, flexWrap: 'wrap', mb: 1 }}>
-              <Button
-                variant="contained"
-                size="small"
-                disabled={status === 'recording' || viewingSaved}
-                onClick={() => startRecording(question._id)}
-                sx={{ bgcolor: 'pink', '&:hover': { bgcolor: '#e91e63' } }}
-              >
-                {status === 'recording' ? 'Đang ghi...' : 'Ghi âm'}
-              </Button>
-              <Button
-                variant="outlined"
-                size="small"
-                disabled={status !== 'recording' || viewingSaved}
-                onClick={() => stopRecording(question._id)}
-              >
-                Dừng
-              </Button>
-            </Box>
-            {hasRecording && (
-              <Box sx={{ mt: 1 }}>
-                <Typography variant="body2" sx={{ mb: 0.5 }}>
-                  Bản ghi của bạn:
-                </Typography>
-                <audio controls src={recordings[question._id] ?? undefined} />
-              </Box>
-            )}
-          </Box>
-        );
-      }
-
       case 'writing':
         // Bài viết dài (ví dụ: viết profile, viết đoạn văn)
         return (
@@ -1196,7 +1185,7 @@ export default function ExerciseDetail() {
               variant="outlined"
               value={value}
               onChange={(e) => handleAnswerChange(question._id, e.target.value)}
-              placeholder="Nhập bài viết của bạn"
+              disabled={viewingSaved || showResult}
             />
           </Box>
         );
@@ -1218,7 +1207,7 @@ export default function ExerciseDetail() {
               value={value}
               onChange={(e) => handleAnswerChange(question._id, e.target.value)}
               placeholder="Nhập câu trả lời của bạn"
-              disabled={viewingSaved}
+              disabled={viewingSaved || showResult}
             />
           </Box>
         );
@@ -1346,16 +1335,18 @@ export default function ExerciseDetail() {
               <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
                 {currentSection.questions.map((question, index) => {
                   const result = checkedResults[question._id];
-                  const bg = result
-                    ? result.correct
-                      ? 'rgba(56, 142, 60, 0.06)'
-                      : 'rgba(211, 47, 47, 0.04)'
-                    : 'transparent';
-                  const borderColorToken = result
-                    ? result.correct
-                      ? 'success.main'
-                      : 'error.main'
-                    : 'transparent';
+                  const bg =
+                    result && result.graded
+                      ? result.correct
+                        ? 'rgba(56, 142, 60, 0.06)'
+                        : 'rgba(211, 47, 47, 0.04)'
+                      : 'transparent';
+                  const borderColorToken =
+                    result && result.graded
+                      ? result.correct
+                        ? 'success.main'
+                        : 'error.main'
+                      : 'transparent';
 
                   return (
                     <Box
@@ -1398,7 +1389,7 @@ export default function ExerciseDetail() {
                             )
                           ) : (
                             <Typography variant="body2" color="text.secondary">
-                              Đã lưu (không chấm tự động)
+                              Đã lưu
                             </Typography>
                           )}
                         </Box>
@@ -1427,26 +1418,24 @@ export default function ExerciseDetail() {
               Phần trước
             </Button>
             <Box sx={{ display: 'flex', gap: 2 }}>
-              {lastAttempt &&
-                !ignoringSaved &&
-                currentSection.questionType !== 'pronunciation' &&
-                currentSection.questionType !== 'video-recording' &&
-                viewingSaved && (
-                  <Button
-                    variant="outlined"
-                    color="inherit"
-                    onClick={handleRetrySection}
-                  >
-                    Thử lại
-                  </Button>
-                )}
-              <Button
-                variant="contained"
-                color="secondary"
-                onClick={handleCheckSection}
-              >
-                {!isSectionGraded(currentSection) ? 'Lưu' : 'Kiểm tra'}
-              </Button>
+              {(viewingSaved || Object.keys(checkedResults).length > 0) &&
+              !ignoringSaved ? (
+                <Button
+                  variant="outlined"
+                  color="inherit"
+                  onClick={handleRetrySection}
+                >
+                  Làm lại
+                </Button>
+              ) : (
+                <Button
+                  variant="contained"
+                  color="secondary"
+                  onClick={handleCheckSection}
+                >
+                  {!isSectionGraded(currentSection) ? 'Lưu' : 'Kiểm tra'}
+                </Button>
+              )}
               <Button
                 variant="contained"
                 disabled={currentSectionIndex >= exercise.sections.length - 1}
@@ -1491,8 +1480,7 @@ export default function ExerciseDetail() {
           ) : (
             <Box>
               <Typography variant="body1" align="center" color="text.secondary">
-                Phần này không có câu hỏi được chấm tự động — kết quả đã được
-                lưu (lần làm gần nhất).
+                Kết quả bài làm đã được lưu.
               </Typography>
               <Alert severity="info" sx={{ mt: 2 }}>
                 Kết quả (ghi âm, video, ...) sẽ được lưu và có thể được đánh giá
