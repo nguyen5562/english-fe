@@ -59,6 +59,7 @@ export default function QuizDetail() {
   const [currentSectionIndex, setCurrentSectionIndex] = useState(0);
   const [answers, setAnswers] = useState<Record<string, string | string[]>>({});
   const [showResult, setShowResult] = useState(false);
+  const [resultDialogOpen, setResultDialogOpen] = useState(false);
   const [result, setResult] = useState<{
     score: number;
     maxScore: number;
@@ -89,7 +90,8 @@ export default function QuizDetail() {
           (a) =>
             (typeof a.quizId === 'object'
               ? (a.quizId as any)._id
-              : a.quizId) === id && a.status === 'completed',
+              : a.quizId) === id &&
+            (a.status === 'completed' || a.submittedAt != null),
         );
 
         if (pastAttempt) {
@@ -97,16 +99,21 @@ export default function QuizDetail() {
           const allQuestions = (quizData.sections ?? []).flatMap(
             (s) => s.questions ?? [],
           );
+
+          const userAnswers = pastAttempt.answers.reduce(
+            (acc, curr) => ({ ...acc, [curr.questionId]: curr.answer }),
+            {} as Record<string, string | string[]>,
+          );
+          setAnswers(userAnswers);
+
           const { score: totalScore, maxScore } = calculateScore(
             allQuestions,
-            pastAttempt.answers.reduce(
-              (acc, curr) => ({ ...acc, [curr.questionId]: curr.answer }),
-              {},
-            ),
+            userAnswers,
           );
           const percentage = maxScore > 0 ? (totalScore / maxScore) * 100 : 0;
           setResult({ score: totalScore, maxScore, percentage });
           setShowResult(true);
+          setResultDialogOpen(false);
           setQuizLocked(false);
           toast.info('Bạn đã hoàn thành bài quiz này trước đó.');
         } else {
@@ -204,7 +211,12 @@ export default function QuizDetail() {
     const answersPayload = allQuestions.map((q) => {
       const a = answers[q._id];
       const arr = Array.isArray(a) ? a : a != null ? [String(a)] : [];
-      return { questionId: q._id, answer: arr };
+      return {
+        questionId: q._id,
+        answer: arr,
+        createdAt: new Date(),
+        updatedAt: new Date(),
+      };
     });
 
     const { score: totalScore, maxScore } = calculateScore(
@@ -224,6 +236,7 @@ export default function QuizDetail() {
       setQuizLocked(false);
       setResult({ score: totalScore, maxScore, percentage });
       setShowResult(true);
+      setResultDialogOpen(true);
     } catch (e: unknown) {
       if (axios.isAxiosError(e)) {
         const msg =
@@ -246,7 +259,11 @@ export default function QuizDetail() {
     if (currentSectionIndex < (quiz.sections?.length ?? 1) - 1) {
       setCurrentSectionIndex((prev) => prev + 1);
     } else {
-      handleSubmit();
+      if (showResult) {
+        navigate('/quizzes');
+      } else {
+        handleSubmit();
+      }
     }
   };
 
@@ -263,7 +280,7 @@ export default function QuizDetail() {
     handleSubmit();
   };
 
-  const renderQuestion = (
+  const renderQuestionInner = (
     question: Question,
     section: Section,
     index: number,
@@ -272,7 +289,9 @@ export default function QuizDetail() {
       (question as Question & { type?: QuestionType }).type ??
       section.questionType;
     const answerValue = answers[question._id] ?? '';
-    const value = Array.isArray(answerValue) ? '' : (answerValue as string);
+    const value = Array.isArray(answerValue)
+      ? answerValue[0] || ''
+      : (answerValue as string);
     const disabled = showResult || submitting;
 
     const questionNumber = (
@@ -610,6 +629,132 @@ export default function QuizDetail() {
     }
   };
 
+  const renderQuestion = (
+    question: Question,
+    section: Section,
+    index: number,
+  ) => {
+    const content = renderQuestionInner(question, section, index);
+
+    if (!showResult) return content;
+
+    const effectiveType =
+      (question as Question & { type?: QuestionType }).type ??
+      section.questionType;
+
+    // Skip feedback for subjective types
+    if (
+      ['pronunciation', 'video-recording', 'writing'].includes(
+        effectiveType || '',
+      )
+    ) {
+      return content;
+    }
+
+    // Validation Logic
+    const isCorrect = (() => {
+      const correctArr = question.correctAnswer || [];
+      if (correctArr.length === 0) return null;
+
+      const val = answers[question._id];
+      const userArr = Array.isArray(val)
+        ? val
+        : val != null && val !== ''
+          ? [String(val)]
+          : [];
+
+      // Sort both arrays for checking set equality (ignoring order)
+      const sortedUser = [...userArr].sort();
+      const sortedCorrect = [...correctArr].sort();
+
+      return JSON.stringify(sortedUser) === JSON.stringify(sortedCorrect);
+    })();
+
+    if (isCorrect === null) return content;
+
+    return (
+      <Box sx={{ position: 'relative', mb: 3 }}>
+        <Box
+          sx={{
+            p: 2,
+            border: '1px solid',
+            borderColor:
+              isCorrect === true
+                ? 'success.main'
+                : isCorrect === false
+                  ? 'error.main'
+                  : 'divider',
+            borderRadius: 2,
+            bgcolor:
+              isCorrect === true
+                ? 'rgba(46, 125, 50, 0.04)'
+                : isCorrect === false
+                  ? 'rgba(211, 47, 47, 0.04)'
+                  : 'transparent',
+            // Neutralize the mb:3 of the inner component
+            '& > div': { mb: 0 },
+          }}
+        >
+          {content}
+
+          <Box
+            sx={{
+              mt: 2,
+              pt: 2,
+              borderTop: '1px dashed',
+              borderColor: 'divider',
+            }}
+          >
+            <Typography
+              variant="body1"
+              sx={{
+                fontWeight: 'bold',
+                color: isCorrect ? 'success.main' : 'error.main',
+                mb: 0.5,
+              }}
+            >
+              {isCorrect ? 'Chính xác' : 'Chưa chính xác'}
+            </Typography>
+            {!isCorrect && (
+              <Box>
+                <Typography
+                  variant="caption"
+                  color="text.secondary"
+                  sx={{ fontWeight: 'bold', textTransform: 'uppercase' }}
+                >
+                  Đáp án đúng:
+                </Typography>
+                {effectiveType === 'picture-choice' ? (
+                  <Box sx={{ display: 'flex', gap: 1, mt: 1 }}>
+                    {(question.correctAnswer || []).map((url, i) => (
+                      <Box
+                        key={i}
+                        component="img"
+                        src={resolveUrl(url)}
+                        alt={`Đáp án đúng ${i + 1}`}
+                        sx={{
+                          width: 100,
+                          height: 80,
+                          objectFit: 'cover',
+                          borderRadius: 1,
+                          border: '1px solid #ddd',
+                        }}
+                      />
+                    ))}
+                  </Box>
+                ) : (
+                  <Typography variant="body1" sx={{ color: 'text.primary' }}>
+                    {(question.correctAnswer || []).join('; ')}
+                  </Typography>
+                )}
+              </Box>
+            )}
+          </Box>
+        </Box>
+      </Box>
+    );
+  };
+
   if (loading || !id) {
     return (
       <Box
@@ -668,16 +813,18 @@ export default function QuizDetail() {
             }}
           >
             <Typography variant="h5">{quiz.title}</Typography>
-            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-              <TimerIcon />
-              <Typography
-                variant="h6"
-                color={timeRemaining < 60 ? 'error.main' : 'inherit'}
-              >
-                {String(minutes).padStart(2, '0')}:
-                {String(seconds).padStart(2, '0')}
-              </Typography>
-            </Box>
+            {!showResult && (
+              <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                <TimerIcon />
+                <Typography
+                  variant="h6"
+                  color={timeRemaining < 60 ? 'error.main' : 'inherit'}
+                >
+                  {String(minutes).padStart(2, '0')}:
+                  {String(seconds).padStart(2, '0')}
+                </Typography>
+              </Box>
+            )}
           </Box>
 
           {currentSection && (
@@ -770,7 +917,11 @@ export default function QuizDetail() {
                   onClick={handleNext}
                   disabled={submitting}
                 >
-                  {isLastSection ? 'Nộp bài' : 'Phần tiếp'}
+                  {isLastSection
+                    ? showResult
+                      ? 'Về danh sách'
+                      : 'Nộp bài'
+                    : 'Phần tiếp'}
                 </Button>
               </Box>
             </>
@@ -778,7 +929,12 @@ export default function QuizDetail() {
         </CardContent>
       </Card>
 
-      <Dialog open={showResult} onClose={() => {}} maxWidth="sm" fullWidth>
+      <Dialog
+        open={resultDialogOpen}
+        onClose={() => setResultDialogOpen(false)}
+        maxWidth="sm"
+        fullWidth
+      >
         <DialogTitle>
           <Box sx={{ display: 'flex', alignItems: 'center' }}>
             <CheckCircleIcon
@@ -826,6 +982,9 @@ export default function QuizDetail() {
           )}
         </DialogContent>
         <DialogActions>
+          <Button onClick={() => setResultDialogOpen(false)} color="inherit">
+            Xem lại bài làm
+          </Button>
           <Button onClick={() => navigate('/quizzes')} variant="contained">
             Quay lại danh sách quiz
           </Button>

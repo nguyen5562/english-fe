@@ -33,7 +33,6 @@ import {
   Assignment as AssignmentIcon,
   Quiz as QuizIcon,
   People as PeopleIcon,
-  BarChart as BarChartIcon,
   Settings as SettingsIcon,
   ArrowBack as ArrowBackIcon,
   AccountCircle as AccountCircleIcon,
@@ -60,11 +59,6 @@ const adminMenuItems = [
   },
   { text: 'Quản lý quiz', icon: <QuizIcon />, path: '/admin/quizzes' },
   { text: 'Quản lý người dùng', icon: <PeopleIcon />, path: '/admin/students' },
-  {
-    text: 'Báo cáo thống kê',
-    icon: <BarChartIcon />,
-    path: '/admin/statistics',
-  },
 ];
 
 export default function AdminLayout() {

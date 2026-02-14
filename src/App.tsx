@@ -14,6 +14,7 @@ import Quizzes from './pages/Quizzes';
 import QuizDetail from './pages/QuizDetail';
 import Progress from './pages/Progress';
 import Statistics from './pages/Statistics';
+import StudentAttemptDetail from './pages/StudentAttemptDetail';
 import AdminLayout from './components/Layout/AdminLayout';
 import AdminDashboard from './pages/admin/AdminDashboard';
 import AdminContent from './pages/admin/AdminContent';
@@ -77,7 +78,11 @@ function App() {
             <Route path="quizzes" element={<Quizzes />} />
             <Route path="quizzes/:id" element={<QuizDetail />} />
             <Route path="progress" element={<Progress />} />
-            {/* <Route path="statistics" element={<Statistics />} /> */}
+            <Route path="statistics" element={<Statistics />} />
+            <Route
+              path="attempt/:type/:id"
+              element={<StudentAttemptDetail />}
+            />
           </Route>
           <Route
             path="/admin"
@@ -102,7 +107,6 @@ function App() {
               element={<AdminQuizSectionEdit />}
             />
             <Route path="students" element={<AdminStudents />} />
-            {/* <Route path="statistics" element={<Statistics />} /> */}
           </Route>
         </Routes>
       </BrowserRouter>

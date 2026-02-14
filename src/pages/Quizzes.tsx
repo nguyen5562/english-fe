@@ -342,7 +342,7 @@ export default function Quizzes() {
                       startIcon={<PlayArrowIcon />}
                       fullWidth
                       onClick={() => navigate(`/quizzes/${quiz._id}`)}
-                      disabled={attempt != null}
+                      // disabled={attempt != null}
                       sx={{
                         borderRadius: 2,
                         py: 1,
@@ -356,7 +356,7 @@ export default function Quizzes() {
                         },
                       }}
                     >
-                      {attempt ? 'Đã nộp bài' : 'Bắt đầu làm'}
+                      {attempt ? 'Xem lại' : 'Bắt đầu làm'}
                     </Button>
                   </Box>
                 </Card>

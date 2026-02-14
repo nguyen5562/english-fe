@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useRef, useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import {
   Box,
@@ -16,6 +16,7 @@ import {
   People as PeopleIcon,
   BarChart as BarChartIcon,
   Settings as SettingsIcon,
+  FolderOpen as FolderOpenIcon,
 } from '@mui/icons-material';
 import axios from 'axios';
 import { useAuthStore } from '../../store/auth.store';
@@ -42,6 +43,19 @@ export default function AdminDashboard() {
     users: 0,
   });
   const [loading, setLoading] = useState(false);
+  const popupRef = useRef<Window | null>(null);
+
+  const openFileManager = () => {
+    if (popupRef.current && !popupRef.current.closed) {
+      popupRef.current.focus();
+      return;
+    }
+    popupRef.current = window.open(
+      '/file-manager-popup',
+      'FileManager',
+      'width=1200,height=800',
+    );
+  };
 
   useEffect(() => {
     const fetchStats = async () => {
@@ -154,7 +168,9 @@ export default function AdminDashboard() {
               }}
             >
               <CardContent sx={{ p: 3 }}>
-                <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
+                <Box
+                  sx={{ display: 'flex', alignItems: 'center', mb: 2, gap: 2 }}
+                >
                   {stat.icon}
                   <Box sx={{ flexGrow: 1 }}>
                     <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
@@ -196,11 +212,14 @@ export default function AdminDashboard() {
             </Card>
           </Grid>
         ))}
+      </Grid>
 
+      <Grid container spacing={3} sx={{ mt: 3 }}>
         {/* @ts-expect-error - MUI v7 Grid still works with item prop */}
         <Grid item xs={12} md={6}>
           <Card
             sx={{
+              height: '100%',
               borderRadius: 3,
               transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
               border: '1px solid',
@@ -212,28 +231,36 @@ export default function AdminDashboard() {
               },
             }}
           >
-            <CardContent sx={{ p: 3 }}>
+            <CardContent
+              sx={{
+                p: 3,
+                height: '100%',
+                display: 'flex',
+                flexDirection: 'column',
+              }}
+            >
               <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
                 <BarChartIcon
                   sx={{ fontSize: 40, color: 'secondary.main', mr: 2 }}
                 />
                 <Box>
                   <Typography variant="h6" sx={{ fontWeight: 700 }}>
-                    Thống kê & Báo cáo
+                    Thống kê
                   </Typography>
                   <Typography variant="body2" color="text.secondary">
-                    Xem thống kê chi tiết về hệ thống học tập
+                    Xem báo cáo hệ thống
                   </Typography>
                 </Box>
               </Box>
+              <Box sx={{ flexGrow: 1 }} />
               <Button
                 variant="contained"
                 color="secondary"
                 fullWidth
-                onClick={() => navigate('/admin/statistics')}
+                onClick={() => navigate('/statistics')}
                 sx={{ borderRadius: 2, textTransform: 'none', fontWeight: 700 }}
               >
-                Xem tất cả thống kê
+                Xem chi tiết
               </Button>
             </CardContent>
           </Card>
@@ -243,6 +270,7 @@ export default function AdminDashboard() {
         <Grid item xs={12} md={6}>
           <Card
             sx={{
+              height: '100%',
               borderRadius: 3,
               transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
               border: '1px solid',
@@ -250,31 +278,40 @@ export default function AdminDashboard() {
               '&:hover': {
                 transform: 'translateY(-8px)',
                 boxShadow: '0 12px 24px rgba(0,0,0,0.1)',
-                borderColor: 'primary.main',
+                borderColor: 'info.main',
               },
             }}
           >
-            <CardContent sx={{ p: 3 }}>
+            <CardContent
+              sx={{
+                p: 3,
+                height: '100%',
+                display: 'flex',
+                flexDirection: 'column',
+              }}
+            >
               <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
-                <SettingsIcon
-                  sx={{ fontSize: 40, color: 'primary.main', mr: 2 }}
+                <FolderOpenIcon
+                  sx={{ fontSize: 40, color: 'info.main', mr: 2 }}
                 />
                 <Box>
                   <Typography variant="h6" sx={{ fontWeight: 700 }}>
-                    Cài đặt hệ thống
+                    Tài nguyên
                   </Typography>
                   <Typography variant="body2" color="text.secondary">
-                    Cấu hình và quản lý tham số hệ thống
+                    Quản lý file & media
                   </Typography>
                 </Box>
               </Box>
+              <Box sx={{ flexGrow: 1 }} />
               <Button
-                variant="outlined"
+                variant="contained"
+                color="info"
                 fullWidth
-                disabled
+                onClick={openFileManager}
                 sx={{ borderRadius: 2, textTransform: 'none', fontWeight: 700 }}
               >
-                Sắp ra mắt
+                Mở quản lý file
               </Button>
             </CardContent>
           </Card>
