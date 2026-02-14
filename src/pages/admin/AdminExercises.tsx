@@ -154,17 +154,45 @@ export default function AdminExercises() {
         sx={{
           display: 'flex',
           justifyContent: 'space-between',
-          alignItems: 'center',
-          mb: 3,
+          alignItems: 'flex-start',
+          mb: 4,
         }}
       >
-        <Typography variant="h4">Quản lý Bài tập</Typography>
+        <Box sx={{ display: 'flex', alignItems: 'center' }}>
+          <AssignmentIcon
+            sx={{ fontSize: 40, color: 'primary.main', mr: 2.5 }}
+          />
+          <Box>
+            <Typography
+              variant="h4"
+              sx={{ fontWeight: 600, color: 'text.primary', mb: 0.5 }}
+            >
+              Quản lý Bài tập
+            </Typography>
+            <Typography
+              variant="body2"
+              color="text.secondary"
+              sx={{ fontWeight: 500 }}
+            >
+              Tạo và quản lý các bài tập rèn luyện kỹ năng cho sinh viên
+            </Typography>
+          </Box>
+        </Box>
         <Button
           variant="contained"
           startIcon={<AddIcon />}
           onClick={handleAddExercise}
+          sx={{
+            borderRadius: 2.5,
+            px: 3,
+            py: 1.2,
+            textTransform: 'none',
+            // fontWeight: 700,
+            boxShadow: '0 4px 12px rgba(25, 118, 210, 0.3)',
+            '&:hover': { boxShadow: '0 6px 16px rgba(25, 118, 210, 0.4)' },
+          }}
         >
-          Thêm Bài tập
+          Thêm Bài tập mới
         </Button>
       </Box>
 
@@ -189,10 +217,13 @@ export default function AdminExercises() {
                   height: '100%',
                   display: 'flex',
                   flexDirection: 'column',
-                  transition: 'transform 0.2s, box-shadow 0.2s',
+                  transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+                  border: '1px solid',
+                  borderColor: 'divider',
                   '&:hover': {
-                    transform: 'translateY(-4px)',
-                    boxShadow: 6,
+                    transform: 'translateY(-8px)',
+                    boxShadow: '0 12px 24px rgba(0,0,0,0.1)',
+                    borderColor: 'primary.main',
                   },
                   borderRadius: 3,
                   overflow: 'hidden',
@@ -216,15 +247,13 @@ export default function AdminExercises() {
                   >
                     <Box
                       sx={{
-                        bgcolor: 'primary.light',
                         color: 'primary.main',
-                        p: 1.5,
-                        borderRadius: 2,
                         display: 'flex',
+                        alignItems: 'center',
                         mr: 2,
                       }}
                     >
-                      <AssignmentIcon sx={{ fontSize: 24 }} />
+                      <AssignmentIcon sx={{ fontSize: 32 }} />
                     </Box>
                     <Box sx={{ flexGrow: 1, minWidth: 0 }}>
                       <Typography

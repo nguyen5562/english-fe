@@ -158,10 +158,13 @@ export default function Quizzes() {
                     height: '100%',
                     display: 'flex',
                     flexDirection: 'column',
-                    transition: 'transform 0.2s, box-shadow 0.2s',
+                    transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+                    border: '1px solid',
+                    borderColor: 'divider',
                     '&:hover': {
-                      transform: 'translateY(-4px)',
-                      boxShadow: 6,
+                      transform: 'translateY(-8px)',
+                      boxShadow: '0 12px 24px rgba(0,0,0,0.1)',
+                      borderColor: 'secondary.main',
                     },
                     borderRadius: 3,
                     overflow: 'hidden',
@@ -185,11 +188,9 @@ export default function Quizzes() {
                     >
                       <Box
                         sx={{
-                          bgcolor: 'secondary.light',
                           color: 'secondary.main',
-                          p: 1.5,
-                          borderRadius: 2,
                           display: 'flex',
+                          alignItems: 'center',
                           mr: 2,
                         }}
                       >

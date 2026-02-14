@@ -654,18 +654,44 @@ export default function AdminContent() {
         sx={{
           display: 'flex',
           justifyContent: 'space-between',
-          alignItems: 'center',
-          mb: 3,
+          alignItems: 'flex-start',
+          mb: 4,
         }}
       >
-        <Typography variant="h4">Quản lý nội dung học phần</Typography>
+        <Box sx={{ display: 'flex', alignItems: 'center' }}>
+          <MenuBookIcon sx={{ fontSize: 40, color: 'primary.main', mr: 2.5 }} />
+          <Box>
+            <Typography
+              variant="h4"
+              sx={{ fontWeight: 600, color: 'text.primary', mb: 0.5 }}
+            >
+              Nội dung học tập
+            </Typography>
+            <Typography
+              variant="body2"
+              color="text.secondary"
+              sx={{ fontWeight: 500 }}
+            >
+              Quản lý danh sách khóa học, bài dạy và tài liệu đính kèm
+            </Typography>
+          </Box>
+        </Box>
         <Button
           variant="contained"
           startIcon={<AddIcon />}
           onClick={handleAddCourse}
           disabled={loading}
+          sx={{
+            borderRadius: 2.5,
+            px: 3,
+            py: 1.2,
+            textTransform: 'none',
+            // fontWeight: 700,
+            boxShadow: '0 4px 12px rgba(25, 118, 210, 0.3)',
+            '&:hover': { boxShadow: '0 6px 16px rgba(25, 118, 210, 0.4)' },
+          }}
         >
-          Thêm Học phần
+          Thêm Học phần mới
         </Button>
       </Box>
 

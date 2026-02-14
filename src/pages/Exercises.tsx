@@ -248,9 +248,12 @@ export default function Exercises() {
                     borderColor: 'primary.light',
                     mb: 2,
                   },
-                  transition: 'all 0.2s',
+                  transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
                   '&:hover': {
+                    transform: 'translateY(-4px)',
+                    boxShadow: '0 8px 16px rgba(0,0,0,0.08)',
                     borderColor: 'primary.main',
+                    zIndex: 1,
                   },
                 }}
               >
@@ -268,15 +271,13 @@ export default function Exercises() {
                 >
                   <Box
                     sx={{
-                      bgcolor: 'primary.light',
                       color: 'primary.main',
-                      p: 1.5,
-                      borderRadius: 2,
                       display: 'flex',
+                      alignItems: 'center',
                       flexShrink: 0,
                     }}
                   >
-                    <AssignmentIcon sx={{ fontSize: 28 }} />
+                    <AssignmentIcon sx={{ fontSize: 32 }} />
                   </Box>
 
                   <Box sx={{ flexGrow: 1, minWidth: 0 }}>

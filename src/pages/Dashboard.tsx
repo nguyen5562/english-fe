@@ -65,109 +65,219 @@ export default function Dashboard() {
         <Box sx={{ display: 'flex', justifyContent: 'center', p: 4 }}>
           <CircularProgress />
         </Box>
-      ) : courses.length === 0 ? (
-        <Card>
-          <CardContent>
-            <Typography color="text.secondary" align="center">
-              Chưa có khóa học nào
-            </Typography>
-          </CardContent>
-        </Card>
       ) : (
-        <Grid container spacing={3} sx={{ mt: 2 }}>
-          {courses.map((course) => {
-            return (
-              // @ts-expect-error - MUI v7 Grid still works with item prop
-              <Grid item xs={12} md={6} key={course._id}>
-                <Card>
-                  <CardContent>
-                    <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
-                      <MenuBookIcon
-                        sx={{ fontSize: 40, color: 'primary.main', mr: 2 }}
-                      />
-                      <Box>
-                        <Typography variant="h5">{course.name}</Typography>
-                        <Typography variant="body2" color="text.secondary">
-                          {course.code}
-                        </Typography>
+        <Box>
+          {/* Courses Section */}
+          <Typography
+            variant="h5"
+            sx={{ fontWeight: 600, mb: 2, color: 'text.primary' }}
+          >
+            Khóa học của bạn
+          </Typography>
+          {courses.length === 0 ? (
+            <Card
+              sx={{
+                mb: 4,
+                borderRadius: 3,
+                border: '1px solid',
+                borderColor: 'divider',
+              }}
+            >
+              <CardContent sx={{ p: 4 }}>
+                <Typography color="text.secondary" align="center">
+                  Chưa có khóa học nào
+                </Typography>
+              </CardContent>
+            </Card>
+          ) : (
+            <Grid container spacing={3} sx={{ mb: 5 }}>
+              {courses.map((course) => (
+                <Grid size={{ xs: 12, sm: 6, md: 4 }} key={course._id}>
+                  <Card
+                    sx={{
+                      height: '100%',
+                      display: 'flex',
+                      flexDirection: 'column',
+                      transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+                      border: '1px solid',
+                      borderColor: 'divider',
+                      borderRadius: 3,
+                      overflow: 'hidden',
+                      '&:hover': {
+                        transform: 'translateY(-8px)',
+                        boxShadow: '0 12px 24px rgba(0,0,0,0.05)',
+                        borderColor: 'primary.main',
+                      },
+                    }}
+                  >
+                    <CardContent sx={{ flexGrow: 1, p: 3 }}>
+                      <Box
+                        sx={{ display: 'flex', alignItems: 'center', mb: 2 }}
+                      >
+                        <MenuBookIcon
+                          sx={{ fontSize: 32, color: 'primary.main', mr: 2 }}
+                        />
+                        <Box>
+                          <Typography
+                            variant="subtitle1"
+                            sx={{ fontWeight: 600 }}
+                          >
+                            {course.name}
+                          </Typography>
+                          <Typography
+                            variant="caption"
+                            color="text.secondary"
+                            sx={{ fontWeight: 500 }}
+                          >
+                            {course.code}
+                          </Typography>
+                        </Box>
                       </Box>
-                    </Box>
-                    <Typography variant="body2" paragraph>
-                      {course.description}
+                      <Typography
+                        variant="body2"
+                        color="text.secondary"
+                        sx={{
+                          mb: 3,
+                          display: '-webkit-box',
+                          WebkitLineClamp: 2,
+                          WebkitBoxOrient: 'vertical',
+                          overflow: 'hidden',
+                          height: '2.8rem',
+                          lineHeight: 1.6,
+                        }}
+                      >
+                        {course.description}
+                      </Typography>
+                      <Button
+                        variant="contained"
+                        fullWidth
+                        onClick={() =>
+                          navigate(`/materials?course=${course._id}`)
+                        }
+                        sx={{
+                          borderRadius: 2,
+                          textTransform: 'none',
+                          fontWeight: 600,
+                          boxShadow: 'none',
+                        }}
+                      >
+                        Xem chi tiết
+                      </Button>
+                    </CardContent>
+                  </Card>
+                </Grid>
+              ))}
+            </Grid>
+          )}
+
+          {/* Quick Actions Section */}
+          <Typography
+            variant="h5"
+            sx={{ fontWeight: 600, mb: 2, color: 'text.primary' }}
+          >
+            Luyện tập & Kiểm tra
+          </Typography>
+          <Grid container spacing={3}>
+            <Grid size={{ xs: 12, md: 6 }}>
+              <Card
+                sx={{
+                  height: '100%',
+                  borderRadius: 3,
+                  border: '1px solid',
+                  borderColor: 'divider',
+                  transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+                  '&:hover': {
+                    transform: 'translateY(-8px)',
+                    boxShadow: '0 12px 24px rgba(0,0,0,0.05)',
+                    borderColor: 'primary.main',
+                  },
+                }}
+              >
+                <CardContent sx={{ p: 4 }}>
+                  <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
+                    <AssignmentIcon
+                      sx={{ fontSize: 40, color: 'primary.main', mr: 2 }}
+                    />
+                    <Typography variant="h6" sx={{ fontWeight: 600 }}>
+                      Bài tập
                     </Typography>
-                    <Button
-                      variant="contained"
-                      fullWidth
-                      onClick={() =>
-                        navigate(`/materials?course=${course._id}`)
-                      }
-                    >
-                      Xem chi tiết
-                    </Button>
-                  </CardContent>
-                </Card>
-              </Grid>
-            );
-          })}
+                  </Box>
+                  <Typography
+                    variant="body2"
+                    color="text.secondary"
+                    sx={{ mb: 3, lineHeight: 1.6 }}
+                  >
+                    Luyện tập với các bài tập tương tác hàng ngày để cải thiện
+                    kỹ năng ngôn ngữ của bạn một cách nhanh chóng.
+                  </Typography>
+                  <Button
+                    variant="outlined"
+                    fullWidth
+                    onClick={() => navigate('/exercises')}
+                    sx={{
+                      borderRadius: 2,
+                      textTransform: 'none',
+                      fontWeight: 600,
+                      py: 1,
+                    }}
+                  >
+                    Làm bài tập ngay
+                  </Button>
+                </CardContent>
+              </Card>
+            </Grid>
 
-          {/* @ts-expect-error - MUI v7 Grid still works with item prop */}
-          <Grid item xs={12} md={4}>
-            <Card
-              sx={{ height: '100%', bgcolor: 'primary.main', color: 'white' }}
-            >
-              <CardContent>
-                <AssignmentIcon sx={{ fontSize: 48, mb: 2 }} />
-                <Typography variant="h6" gutterBottom>
-                  Bài tập
-                </Typography>
-                <Typography variant="body2" paragraph>
-                  Luyện tập với các bài tập tương tác
-                </Typography>
-                <Button
-                  variant="contained"
-                  sx={{
-                    bgcolor: 'white',
-                    color: 'primary.main',
-                    '&:hover': { bgcolor: 'grey.100' },
-                  }}
-                  fullWidth
-                  onClick={() => navigate('/exercises')}
-                >
-                  Làm bài tập
-                </Button>
-              </CardContent>
-            </Card>
+            <Grid size={{ xs: 12, md: 6 }}>
+              <Card
+                sx={{
+                  height: '100%',
+                  borderRadius: 3,
+                  border: '1px solid',
+                  borderColor: 'divider',
+                  transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+                  '&:hover': {
+                    transform: 'translateY(-8px)',
+                    boxShadow: '0 12px 24px rgba(0,0,0,0.05)',
+                    borderColor: 'secondary.main',
+                  },
+                }}
+              >
+                <CardContent sx={{ p: 4 }}>
+                  <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
+                    <QuizIcon
+                      sx={{ fontSize: 40, color: 'secondary.main', mr: 2 }}
+                    />
+                    <Typography variant="h6" sx={{ fontWeight: 600 }}>
+                      Quiz
+                    </Typography>
+                  </Box>
+                  <Typography
+                    variant="body2"
+                    color="text.secondary"
+                    sx={{ mb: 3, lineHeight: 1.6 }}
+                  >
+                    Thực hiện các bài kiểm tra đánh giá kiến thức sau mỗi chương
+                    học để theo dõi sự tiến bộ của bản thân.
+                  </Typography>
+                  <Button
+                    variant="outlined"
+                    color="secondary"
+                    fullWidth
+                    onClick={() => navigate('/quizzes')}
+                    sx={{
+                      borderRadius: 2,
+                      textTransform: 'none',
+                      fontWeight: 600,
+                      py: 1,
+                    }}
+                  >
+                    Bắt đầu Quiz
+                  </Button>
+                </CardContent>
+              </Card>
+            </Grid>
           </Grid>
-
-          {/* @ts-expect-error - MUI v7 Grid still works with item prop */}
-          <Grid item xs={12} md={4}>
-            <Card
-              sx={{ height: '100%', bgcolor: 'secondary.main', color: 'white' }}
-            >
-              <CardContent>
-                <QuizIcon sx={{ fontSize: 48, mb: 2 }} />
-                <Typography variant="h6" gutterBottom>
-                  Quiz
-                </Typography>
-                <Typography variant="body2" paragraph>
-                  Làm bài kiểm tra và đánh giá kiến thức
-                </Typography>
-                <Button
-                  variant="contained"
-                  sx={{
-                    bgcolor: 'white',
-                    color: 'secondary.main',
-                    '&:hover': { bgcolor: 'grey.100' },
-                  }}
-                  fullWidth
-                  onClick={() => navigate('/quizzes')}
-                >
-                  Làm quiz
-                </Button>
-              </CardContent>
-            </Card>
-          </Grid>
-        </Grid>
+        </Box>
       )}
     </Box>
   );

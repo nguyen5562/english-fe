@@ -78,7 +78,7 @@ export default function MainLayout() {
 
   const menuItems = () => [
     { text: 'Trang chủ', icon: <DashboardIcon />, path: '/' },
-    { text: 'Tài liệu học tập', icon: <MenuBookIcon />, path: '/materials' },
+    { text: 'Khóa học', icon: <MenuBookIcon />, path: '/materials' },
     { text: 'Bài tập', icon: <AssignmentIcon />, path: '/exercises' },
     { text: 'Quiz', icon: <QuizIcon />, path: '/quizzes' },
     ...(user?.role === 'teacher'

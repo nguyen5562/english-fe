@@ -162,17 +162,44 @@ export default function AdminQuizzes() {
         sx={{
           display: 'flex',
           justifyContent: 'space-between',
-          alignItems: 'center',
-          mb: 3,
+          alignItems: 'flex-start',
+          mb: 4,
         }}
       >
-        <Typography variant="h4">Quản lý Quiz</Typography>
+        <Box sx={{ display: 'flex', alignItems: 'center' }}>
+          <QuizIcon sx={{ fontSize: 40, color: 'secondary.main', mr: 2.5 }} />
+          <Box>
+            <Typography
+              variant="h4"
+              sx={{ fontWeight: 600, color: 'text.primary', mb: 0.5 }}
+            >
+              Quản lý Quiz
+            </Typography>
+            <Typography
+              variant="body2"
+              color="text.secondary"
+              sx={{ fontWeight: 500 }}
+            >
+              Thiết lập các bài kiểm tra đánh giá trình độ tổng hợp
+            </Typography>
+          </Box>
+        </Box>
         <Button
           variant="contained"
+          color="secondary"
           startIcon={<AddIcon />}
           onClick={handleAddQuiz}
+          sx={{
+            borderRadius: 2.5,
+            px: 3,
+            py: 1.2,
+            textTransform: 'none',
+            // fontWeight: 700,
+            boxShadow: '0 4px 12px rgba(156, 39, 176, 0.3)',
+            '&:hover': { boxShadow: '0 6px 16px rgba(156, 39, 176, 0.4)' },
+          }}
         >
-          Thêm Quiz
+          Thêm Quiz mới
         </Button>
       </Box>
 
@@ -197,10 +224,13 @@ export default function AdminQuizzes() {
                   height: '100%',
                   display: 'flex',
                   flexDirection: 'column',
-                  transition: 'transform 0.2s, box-shadow 0.2s',
+                  transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+                  border: '1px solid',
+                  borderColor: 'divider',
                   '&:hover': {
-                    transform: 'translateY(-4px)',
-                    boxShadow: 6,
+                    transform: 'translateY(-8px)',
+                    boxShadow: '0 12px 24px rgba(0,0,0,0.1)',
+                    borderColor: 'secondary.main',
                   },
                   borderRadius: 3,
                   overflow: 'hidden',
@@ -224,15 +254,13 @@ export default function AdminQuizzes() {
                   >
                     <Box
                       sx={{
-                        bgcolor: 'secondary.light',
                         color: 'secondary.main',
-                        p: 1.5,
-                        borderRadius: 2,
                         display: 'flex',
+                        alignItems: 'center',
                         mr: 2,
                       }}
                     >
-                      <QuizIcon sx={{ fontSize: 24 }} />
+                      <QuizIcon sx={{ fontSize: 32 }} />
                     </Box>
                     <Box sx={{ flexGrow: 1, minWidth: 0 }}>
                       <Typography

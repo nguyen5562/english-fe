@@ -6,7 +6,6 @@ import {
   Grid,
   Card,
   CardContent,
-  CardActions,
   Button,
   CircularProgress,
 } from '@mui/material';
@@ -112,69 +111,129 @@ export default function AdminDashboard() {
 
   return (
     <Box>
-      <Typography variant="h4" gutterBottom>
-        Chào mừng, {user?.username ?? 'Admin'}!
-      </Typography>
-      <Typography variant="body1" color="text.secondary" paragraph>
-        Trang quản trị hệ thống học tiếng Anh
-      </Typography>
+      <Box
+        sx={{
+          display: 'flex',
+          alignItems: 'center',
+          mb: 4,
+        }}
+      >
+        <SettingsIcon sx={{ fontSize: 40, color: 'primary.main', mr: 2.5 }} />
+        <Box>
+          <Typography
+            variant="h4"
+            sx={{ fontWeight: 600, color: 'text.primary', mb: 0.5 }}
+          >
+            Chào mừng, {user?.username ?? 'Admin'}!
+          </Typography>
+          <Typography
+            variant="body2"
+            color="text.secondary"
+            sx={{ fontWeight: 500 }}
+          >
+            Hệ thống quản trị đào tạo tiếng Anh trực tuyến
+          </Typography>
+        </Box>
+      </Box>
 
       <Grid container spacing={3} sx={{ mt: 2 }}>
         {cards.map((stat) => (
           // @ts-expect-error - MUI v7 Grid still works with item prop
           <Grid item xs={12} sm={6} md={3} key={stat.title}>
-            <Card sx={{ height: '100%', bgcolor: stat.color, color: 'white' }}>
-              <CardContent>
+            <Card
+              sx={{
+                height: '100%',
+                bgcolor: stat.color,
+                color: 'white',
+                borderRadius: 4,
+                transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+                '&:hover': {
+                  transform: 'translateY(-8px)',
+                  boxShadow: `0 12px 24px ${stat.color.includes('primary') ? 'rgba(25, 118, 210, 0.4)' : 'rgba(0,0,0,0.2)'}`,
+                },
+              }}
+            >
+              <CardContent sx={{ p: 3 }}>
                 <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
                   {stat.icon}
-                  <Box sx={{ ml: 2, flexGrow: 1 }}>
+                  <Box sx={{ flexGrow: 1 }}>
                     <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
                       {loading ? (
                         <CircularProgress size={32} sx={{ color: 'white' }} />
                       ) : (
-                        <Typography variant="h4">{stat.count}</Typography>
+                        <Typography variant="h4" sx={{ fontWeight: 800 }}>
+                          {stat.count}
+                        </Typography>
                       )}
                     </Box>
-                    <Typography variant="body2">{stat.title}</Typography>
+                    <Typography
+                      variant="body2"
+                      sx={{ fontWeight: 600, opacity: 0.9 }}
+                    >
+                      {stat.title}
+                    </Typography>
                   </Box>
                 </Box>
-              </CardContent>
-              <CardActions>
                 <Button
                   size="small"
-                  sx={{ color: 'white', borderColor: 'white' }}
+                  sx={{
+                    color: 'white',
+                    borderColor: 'rgba(255,255,255,0.5)',
+                    '&:hover': {
+                      borderColor: 'white',
+                      bgcolor: 'rgba(255,255,255,0.1)',
+                    },
+                    textTransform: 'none',
+                    fontWeight: 700,
+                  }}
                   variant="outlined"
                   fullWidth
                   onClick={() => navigate(stat.path)}
                 >
-                  Quản lý
+                  Quản lý {stat.title}
                 </Button>
-              </CardActions>
+              </CardContent>
             </Card>
           </Grid>
         ))}
 
         {/* @ts-expect-error - MUI v7 Grid still works with item prop */}
         <Grid item xs={12} md={6}>
-          <Card>
-            <CardContent>
+          <Card
+            sx={{
+              borderRadius: 3,
+              transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+              border: '1px solid',
+              borderColor: 'divider',
+              '&:hover': {
+                transform: 'translateY(-8px)',
+                boxShadow: '0 12px 24px rgba(0,0,0,0.1)',
+                borderColor: 'secondary.main',
+              },
+            }}
+          >
+            <CardContent sx={{ p: 3 }}>
               <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
                 <BarChartIcon
                   sx={{ fontSize: 40, color: 'secondary.main', mr: 2 }}
                 />
                 <Box>
-                  <Typography variant="h6">Thống kê & Báo cáo</Typography>
+                  <Typography variant="h6" sx={{ fontWeight: 700 }}>
+                    Thống kê & Báo cáo
+                  </Typography>
                   <Typography variant="body2" color="text.secondary">
-                    Xem thống kê chi tiết về hệ thống
+                    Xem thống kê chi tiết về hệ thống học tập
                   </Typography>
                 </Box>
               </Box>
               <Button
                 variant="contained"
+                color="secondary"
                 fullWidth
                 onClick={() => navigate('/admin/statistics')}
+                sx={{ borderRadius: 2, textTransform: 'none', fontWeight: 700 }}
               >
-                Xem thống kê
+                Xem tất cả thống kê
               </Button>
             </CardContent>
           </Card>
@@ -182,21 +241,40 @@ export default function AdminDashboard() {
 
         {/* @ts-expect-error - MUI v7 Grid still works with item prop */}
         <Grid item xs={12} md={6}>
-          <Card>
-            <CardContent>
+          <Card
+            sx={{
+              borderRadius: 3,
+              transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+              border: '1px solid',
+              borderColor: 'divider',
+              '&:hover': {
+                transform: 'translateY(-8px)',
+                boxShadow: '0 12px 24px rgba(0,0,0,0.1)',
+                borderColor: 'primary.main',
+              },
+            }}
+          >
+            <CardContent sx={{ p: 3 }}>
               <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
                 <SettingsIcon
                   sx={{ fontSize: 40, color: 'primary.main', mr: 2 }}
                 />
                 <Box>
-                  <Typography variant="h6">Cài đặt hệ thống</Typography>
+                  <Typography variant="h6" sx={{ fontWeight: 700 }}>
+                    Cài đặt hệ thống
+                  </Typography>
                   <Typography variant="body2" color="text.secondary">
-                    Cấu hình và quản lý hệ thống
+                    Cấu hình và quản lý tham số hệ thống
                   </Typography>
                 </Box>
               </Box>
-              <Button variant="outlined" fullWidth disabled>
-                Sắp có
+              <Button
+                variant="outlined"
+                fullWidth
+                disabled
+                sx={{ borderRadius: 2, textTransform: 'none', fontWeight: 700 }}
+              >
+                Sắp ra mắt
               </Button>
             </CardContent>
           </Card>
