@@ -45,12 +45,14 @@ import {
   resolveUrl,
 } from '../utils/questionHelpers';
 import { toast } from '../utils/toast';
+import { useUIStore } from '../store/ui.store';
 
 export default function QuizDetail() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const user = useAuthStore((s) => s.user);
   const userId = user?._id;
+  const setQuizLocked = useUIStore((s) => s.setQuizLocked);
 
   const [quiz, setQuiz] = useState<Quiz | null>(null);
   const [loading, setLoading] = useState(true);
@@ -65,29 +67,62 @@ export default function QuizDetail() {
   const [timeRemaining, setTimeRemaining] = useState<number>(0);
   const [, setStartTime] = useState<Date | null>(null);
   const [submitting, setSubmitting] = useState(false);
+  const [exitDialogOpen, setExitDialogOpen] = useState(false);
   const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
   useEffect(() => {
-    if (!id) return;
+    if (!id || !userId) return;
     let cancelled = false;
     setLoading(true);
-    quizService
-      .getQuizById(id)
-      .then((data) => {
-        if (!cancelled) {
-          setQuiz(data);
-          setTimeRemaining((data.timeLimit ?? 60) * 60);
+
+    const fetchData = async () => {
+      try {
+        const [quizData, attempts] = await Promise.all([
+          quizService.getQuizById(id),
+          quizAttemptService.getQuizAttemptByUserId(userId),
+        ]);
+
+        if (cancelled) return;
+
+        // Check for existing completed attempt for this quiz
+        const pastAttempt = attempts.find(
+          (a) =>
+            (typeof a.quizId === 'object'
+              ? (a.quizId as any)._id
+              : a.quizId) === id && a.status === 'completed',
+        );
+
+        if (pastAttempt) {
+          setQuiz(quizData);
+          const allQuestions = (quizData.sections ?? []).flatMap(
+            (s) => s.questions ?? [],
+          );
+          const { score: totalScore, maxScore } = calculateScore(
+            allQuestions,
+            pastAttempt.answers.reduce(
+              (acc, curr) => ({ ...acc, [curr.questionId]: curr.answer }),
+              {},
+            ),
+          );
+          const percentage = maxScore > 0 ? (totalScore / maxScore) * 100 : 0;
+          setResult({ score: totalScore, maxScore, percentage });
+          setShowResult(true);
+          setQuizLocked(false);
+          toast.info('Bạn đã hoàn thành bài quiz này trước đó.');
+        } else {
+          setQuiz(quizData);
+          setTimeRemaining((quizData.timeLimit ?? 60) * 60);
           setStartTime(new Date());
           const initial: Record<string, string | string[]> = {};
-          (data.sections ?? []).forEach((section) => {
+          (quizData.sections ?? []).forEach((section) => {
             (section.questions ?? []).forEach((q) => {
               initial[q._id] = (q.correctAnswer?.length ?? 0) > 0 ? [] : '';
             });
           });
           setAnswers(initial);
+          setQuizLocked(true);
         }
-      })
-      .catch((e: unknown) => {
+      } catch (e: unknown) {
         if (!cancelled && axios.isAxiosError(e)) {
           const msg =
             (e.response?.data as { message?: string })?.message ??
@@ -95,14 +130,18 @@ export default function QuizDetail() {
             'Không thể tải quiz';
           toast.error(String(msg));
         }
-      })
-      .finally(() => {
+      } finally {
         if (!cancelled) setLoading(false);
-      });
+      }
+    };
+
+    fetchData();
+
     return () => {
       cancelled = true;
+      setQuizLocked(false);
     };
-  }, [id]);
+  }, [id, userId]);
 
   useEffect(() => {
     if (!quiz || showResult || timeRemaining <= 0) return;
@@ -119,13 +158,24 @@ export default function QuizDetail() {
         return prev - 1;
       });
     }, 1000);
+
+    // Prevent closing/refreshing tab
+    const handleBeforeUnload = (e: BeforeUnloadEvent) => {
+      if (!showResult) {
+        e.preventDefault();
+        e.returnValue = '';
+      }
+    };
+    window.addEventListener('beforeunload', handleBeforeUnload);
+
     return () => {
       if (timerRef.current) {
         clearInterval(timerRef.current);
         timerRef.current = null;
       }
+      window.removeEventListener('beforeunload', handleBeforeUnload);
     };
-  }, [quiz, showResult]);
+  }, [quiz, showResult, timeRemaining]);
 
   const handleSubmitRef = useRef<() => void>(() => {});
 
@@ -171,6 +221,7 @@ export default function QuizDetail() {
       await quizAttemptService.submitQuiz(attempt._id, {
         answers: answersPayload,
       });
+      setQuizLocked(false);
       setResult({ score: totalScore, maxScore, percentage });
       setShowResult(true);
     } catch (e: unknown) {
@@ -197,6 +248,19 @@ export default function QuizDetail() {
     } else {
       handleSubmit();
     }
+  };
+
+  const handleBackNavigation = () => {
+    if (!showResult && quiz) {
+      setExitDialogOpen(true);
+    } else {
+      navigate('/quizzes');
+    }
+  };
+
+  const handleConfirmExit = () => {
+    setExitDialogOpen(false);
+    handleSubmit();
   };
 
   const renderQuestion = (
@@ -587,7 +651,7 @@ export default function QuizDetail() {
     <Box>
       <Button
         startIcon={<ArrowBackIcon />}
-        onClick={() => navigate('/quizzes')}
+        onClick={handleBackNavigation}
         sx={{ mb: 2 }}
       >
         Quay lại
@@ -764,6 +828,30 @@ export default function QuizDetail() {
         <DialogActions>
           <Button onClick={() => navigate('/quizzes')} variant="contained">
             Quay lại danh sách quiz
+          </Button>
+        </DialogActions>
+      </Dialog>
+
+      {/* Exit Confirmation Dialog */}
+      <Dialog open={exitDialogOpen} onClose={() => setExitDialogOpen(false)}>
+        <DialogTitle>Xác nhận thoát</DialogTitle>
+        <DialogContent>
+          <Typography>
+            Bạn đang trong quá trình làm bài quiz. Nếu thoát ra bây giờ, hệ
+            thống sẽ tự động nộp bài với những câu bạn đã làm. Bạn có chắc chắn
+            muốn nộp bài và thoát?
+          </Typography>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={() => setExitDialogOpen(false)} color="inherit">
+            Tiếp tục làm bài
+          </Button>
+          <Button
+            onClick={handleConfirmExit}
+            color="primary"
+            variant="contained"
+          >
+            Nộp bài và thoát
           </Button>
         </DialogActions>
       </Dialog>

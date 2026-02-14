@@ -10,16 +10,21 @@ import {
   InputLabel,
   Select,
   MenuItem,
-  Accordion,
-  AccordionSummary,
-  AccordionDetails,
   List,
   ListItemButton,
   ListItemText,
   CircularProgress,
+  Divider,
+  Button,
+  Accordion,
+  AccordionSummary,
+  AccordionDetails,
 } from '@mui/material';
-import { Assignment as AssignmentIcon } from '@mui/icons-material';
-import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
+import {
+  Assignment as AssignmentIcon,
+  CheckCircle as CheckCircleIcon,
+  ExpandMore as ExpandMoreIcon,
+} from '@mui/icons-material';
 import axios from 'axios';
 import { useAuthStore } from '../store/auth.store';
 import { exerciseService } from '../services/exercise.service';
@@ -80,36 +85,11 @@ export default function Exercises() {
     fetchData();
   }, [user?._id]);
 
-  // Mapping từ sectionType sang label hiển thị và màu cho Chip
-  const sectionTypeMap: Record<
-    string,
-    {
-      label: string;
-      color?:
-        | 'primary'
-        | 'secondary'
-        | 'error'
-        | 'info'
-        | 'success'
-        | 'warning';
-    }
-  > = {
-    grammar: { label: 'Grammar', color: 'primary' },
-    vocabulary: { label: 'Vocabulary', color: 'success' },
-    listening: { label: 'Listening', color: 'info' },
-    reading: { label: 'Reading', color: 'warning' },
-    pronunciation: { label: 'Pronunciation', color: 'secondary' },
-    speaking: { label: 'Speaking', color: 'error' },
-    writing: { label: 'Writing', color: 'warning' },
-    mixed: { label: 'Mixed' },
-  };
-
   const filteredExercises =
     selectedCourse === 'all'
       ? exercises
       : exercises.filter((e) => e.courseId === selectedCourse);
 
-  // Helper function to get attempts for an exercise
   const getAttemptsForExercise = (exerciseId: string): ExerciseAttempt[] => {
     return (exerciseAttempts || []).filter((a) => {
       const aId =
@@ -120,7 +100,6 @@ export default function Exercises() {
     });
   };
 
-  // Helper function to get last attempt for a section
   const getLastAttemptForSection = (
     exerciseId: string,
     sectionId: string,
@@ -143,7 +122,6 @@ export default function Exercises() {
 
       if (sectionAttempt) {
         const currentTries = sectionAttempt.tries ?? 0;
-        // Since backend overwrites, we just take the one we found (or the one with most tries if multiple)
         if (currentTries >= maxTries) {
           maxTries = currentTries;
           const section = exercises
@@ -213,9 +191,8 @@ export default function Exercises() {
           </CardContent>
         </Card>
       ) : (
-        <Box>
+        <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
           {filteredExercises.map((exercise) => {
-            // Calculate sections completed and overall percent
             const sectionAttemptInfo = (exercise.sections ?? []).map(
               (section) => getLastAttemptForSection(exercise._id, section._id),
             );
@@ -248,78 +225,167 @@ export default function Exercises() {
                 ? Math.round(totalWeightedPercent / gradedSectionsCount)
                 : 0;
 
+            const progressColor =
+              overallPercent >= 80
+                ? 'success.main'
+                : overallPercent >= 40
+                  ? 'warning.main'
+                  : 'error.main';
+
             return (
               <Accordion
                 key={exercise._id}
                 disableGutters
-                sx={{ mb: 2, borderRadius: 1, boxShadow: 1 }}
+                sx={{
+                  borderRadius: 3,
+                  overflow: 'hidden',
+                  border: '1px solid',
+                  borderColor: 'divider',
+                  boxShadow: 'none',
+                  '&:before': { display: 'none' },
+                  '&.Mui-expanded': {
+                    boxShadow: 4,
+                    borderColor: 'primary.light',
+                    mb: 2,
+                  },
+                  transition: 'all 0.2s',
+                  '&:hover': {
+                    borderColor: 'primary.main',
+                  },
+                }}
               >
-                <AccordionSummary expandIcon={<ExpandMoreIcon />}>
-                  <Box
-                    sx={{
+                <AccordionSummary
+                  expandIcon={<ExpandMoreIcon color="primary" />}
+                  sx={{
+                    px: 3,
+                    py: 1,
+                    '& .MuiAccordionSummary-content': {
                       display: 'flex',
                       alignItems: 'center',
-                      width: '100%',
+                      gap: 3,
+                    },
+                  }}
+                >
+                  <Box
+                    sx={{
+                      bgcolor: 'primary.light',
+                      color: 'primary.main',
+                      p: 1.5,
+                      borderRadius: 2,
+                      display: 'flex',
+                      flexShrink: 0,
                     }}
                   >
-                    <AssignmentIcon
-                      sx={{ fontSize: 36, color: 'primary.main', mr: 2 }}
-                    />
-                    <Box sx={{ flexGrow: 1 }}>
-                      <Typography variant="h6">{exercise.title}</Typography>
-                      <Typography
-                        variant="body2"
-                        color="text.secondary"
-                        sx={{ display: 'flex', gap: 1, alignItems: 'center' }}
-                      >
-                        <span>
-                          {courses.find(
-                            (c) => String(c._id) === String(exercise.courseId),
-                          )?.name || 'Course'}
-                        </span>
-                        <span>·</span>
-                        <span>
-                          {sectionsCompletedCount}/{totalSectionsCount} phần đã
-                          làm
-                        </span>
-                        <span>·</span>
-                        <span>Điểm tổng: {overallPercent}%</span>
+                    <AssignmentIcon sx={{ fontSize: 28 }} />
+                  </Box>
+
+                  <Box sx={{ flexGrow: 1, minWidth: 0 }}>
+                    <Typography
+                      variant="h6"
+                      sx={{ fontWeight: 700, lineHeight: 1.2 }}
+                    >
+                      {exercise.title}
+                    </Typography>
+                    <Typography
+                      variant="caption"
+                      color="text.secondary"
+                      sx={{ fontWeight: 600, display: 'block' }}
+                    >
+                      {courses.find(
+                        (c) => String(c._id) === String(exercise.courseId),
+                      )?.name || 'Course'}
+                    </Typography>
+                  </Box>
+
+                  <Box
+                    sx={{
+                      width: 200,
+                      display: { xs: 'none', md: 'block' },
+                      flexShrink: 0,
+                    }}
+                  >
+                    <Box
+                      sx={{
+                        display: 'flex',
+                        justifyContent: 'space-between',
+                        mb: 0.5,
+                      }}
+                    >
+                      <Typography variant="caption" sx={{ fontWeight: 700 }}>
+                        Tiến độ
                       </Typography>
-                      <Box sx={{ display: 'flex', gap: 1, mt: 1 }}>
-                        <Chip
-                          label={`${(exercise.sections ?? []).length} phần`}
-                          size="small"
-                          color="primary"
-                          variant="outlined"
-                        />
-                        <Chip
-                          label={`${(exercise.sections ?? []).reduce(
-                            (total, section) =>
-                              total + (section.questions?.length ?? 0),
-                            0,
-                          )} câu hỏi`}
-                          size="small"
-                        />
-                      </Box>
+                      <Typography
+                        variant="caption"
+                        sx={{ fontWeight: 700, color: progressColor }}
+                      >
+                        {overallPercent}%
+                      </Typography>
                     </Box>
+                    <Box
+                      sx={{
+                        width: '100%',
+                        height: 6,
+                        bgcolor: 'action.hover',
+                        borderRadius: 3,
+                        overflow: 'hidden',
+                      }}
+                    >
+                      <Box
+                        sx={{
+                          width: `${overallPercent}%`,
+                          height: '100%',
+                          bgcolor: progressColor,
+                          transition: 'width 0.5s',
+                        }}
+                      />
+                    </Box>
+                  </Box>
+
+                  <Box
+                    sx={{
+                      textAlign: 'right',
+                      display: { xs: 'none', lg: 'block' },
+                      minWidth: 100,
+                    }}
+                  >
+                    <Typography
+                      variant="caption"
+                      color="text.secondary"
+                      sx={{
+                        fontWeight: 700,
+                        textTransform: 'uppercase',
+                        display: 'block',
+                      }}
+                    >
+                      Trạng thái
+                    </Typography>
                     <Typography
                       variant="body2"
-                      color="success.main"
-                      sx={{ ml: 2 }}
+                      sx={{
+                        fontWeight: 700,
+                        color:
+                          sectionsCompletedCount === totalSectionsCount
+                            ? 'success.main'
+                            : 'text.primary',
+                      }}
                     >
-                      {overallPercent}%
+                      {sectionsCompletedCount}/{totalSectionsCount} Phần
                     </Typography>
                   </Box>
                 </AccordionSummary>
-                <AccordionDetails>
-                  <List>
+
+                <AccordionDetails
+                  sx={{ p: 0, bgcolor: 'rgba(25, 118, 210, 0.02)' }}
+                >
+                  <Divider />
+                  <List disablePadding>
                     {(exercise.sections ?? []).map((section, idx) => {
                       const lastAttempt = getLastAttemptForSection(
                         exercise._id,
                         section._id,
                       );
-                      const tries = lastAttempt ? lastAttempt.tries : 0;
-                      const lastPercent = lastAttempt
+                      const isDone = lastAttempt !== null;
+                      const scorePercent = lastAttempt
                         ? Math.round(
                             (lastAttempt.score / lastAttempt.maxScore) * 100,
                           )
@@ -334,82 +400,81 @@ export default function Exercises() {
                             )
                           }
                           sx={{
-                            display: 'flex',
-                            justifyContent: 'space-between',
-                            alignItems: 'center',
+                            px: 4,
+                            py: 2,
+                            borderBottom: '1px solid',
+                            borderColor: 'divider',
+                            '&:last-child': { borderBottom: 'none' },
+                            '&:hover': { bgcolor: 'action.hover' },
                           }}
                         >
-                          <Box
-                            sx={{
-                              display: 'flex',
-                              alignItems: 'center',
-                              gap: 1,
+                          <ListItemText
+                            primary={section.title}
+                            primaryTypographyProps={{
+                              variant: 'body1',
+                              sx: { fontWeight: 600 },
                             }}
-                          >
-                            <ListItemText
-                              primary={section.title}
-                              sx={{ mr: 2 }}
-                            />
-                            <Chip
-                              label={
-                                sectionTypeMap[section.sectionType]?.label ??
-                                section.sectionType
-                              }
-                              size="small"
-                              color={
-                                // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                                sectionTypeMap[section.sectionType]
-                                  ?.color as any
-                              }
-                              variant={
-                                sectionTypeMap[section.sectionType]?.color
-                                  ? 'filled'
-                                  : 'outlined'
-                              }
-                              sx={{ textTransform: 'capitalize', ml: 1 }}
-                            />
-                          </Box>
+                            secondary={section.sectionType.toUpperCase()}
+                          />
 
                           <Box
                             sx={{
                               display: 'flex',
-                              gap: 2,
                               alignItems: 'center',
+                              gap: 4,
                             }}
                           >
-                            <Box sx={{ textAlign: 'center' }}>
-                              <Typography
-                                variant="body2"
-                                color="text.secondary"
+                            {isDone && (
+                              <Box sx={{ textAlign: 'center' }}>
+                                <Typography
+                                  variant="caption"
+                                  color="text.secondary"
+                                  sx={{ display: 'block' }}
+                                >
+                                  Điểm lần cuối
+                                </Typography>
+                                <Typography
+                                  variant="body2"
+                                  sx={{
+                                    fontWeight: 700,
+                                    color:
+                                      (scorePercent ?? 0) >= 60
+                                        ? 'success.main'
+                                        : 'warning.main',
+                                  }}
+                                >
+                                  {scorePercent}%
+                                </Typography>
+                              </Box>
+                            )}
+                            <Box
+                              sx={{
+                                display: 'flex',
+                                alignItems: 'center',
+                                gap: 1,
+                              }}
+                            >
+                              {isDone ? (
+                                <CheckCircleIcon color="success" />
+                              ) : (
+                                <Typography
+                                  variant="caption"
+                                  color="text.secondary"
+                                >
+                                  Chưa làm
+                                </Typography>
+                              )}
+                              <Button
+                                size="small"
+                                variant="outlined"
+                                sx={{
+                                  borderRadius: 2,
+                                  textTransform: 'none',
+                                  fontWeight: 700,
+                                }}
                               >
-                                {tries}
-                              </Typography>
-                              <Typography
-                                variant="body2"
-                                color="text.secondary"
-                              >
-                                {tries === 1 ? 'try' : 'tries'}
-                              </Typography>
-                            </Box>
-                            <Box sx={{ textAlign: 'center' }}>
-                              <Typography variant="body2">
-                                {(() => {
-                                  if (!lastAttempt) return '-';
-                                  const isGraded = ![
-                                    'pronunciation',
-                                    'video-recording',
-                                    'writing',
-                                  ].includes(section.questionType);
-                                  if (!isGraded) return 'Done';
-                                  return `${lastPercent}%`;
-                                })()}
-                              </Typography>
-                              <Typography
-                                variant="caption"
-                                color="text.secondary"
-                              >
-                                last
-                              </Typography>
+                                {isDone ? 'Làm lại' : 'Bắt đầu'}
+                              </Button>
                             </Box>
                           </Box>
                         </ListItemButton>

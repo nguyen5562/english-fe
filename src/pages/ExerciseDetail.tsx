@@ -1381,10 +1381,7 @@ export default function ExerciseDetail() {
                                 variant="body2"
                                 sx={{ color: 'error.main' }}
                               >
-                                Sai — Đáp án đúng:{' '}
-                                <strong>
-                                  {formatAnswer(result.correctAnswer)}
-                                </strong>
+                                Sai
                               </Typography>
                             )
                           ) : (

@@ -47,6 +47,7 @@ import { useAuthStore } from '../../store/auth.store';
 import { userService } from '../../services/user.service';
 import { authService } from '../../services/auth.service';
 import { toast } from '../../utils/toast';
+import { useUIStore } from '../../store/ui.store';
 import type { User } from '../../types';
 
 const drawerWidth = 240;
@@ -73,6 +74,7 @@ export default function MainLayout() {
   const user = useAuthStore((s) => s.user);
   const logout = useAuthStore((s) => s.logout);
   const updateUserInStore = useAuthStore((s) => s.updateUser);
+  const isQuizLocked = useUIStore((s) => s.isQuizLocked);
 
   const menuItems = () => [
     { text: 'Trang chủ', icon: <DashboardIcon />, path: '/' },
@@ -101,6 +103,12 @@ export default function MainLayout() {
   };
 
   const handleNavigation = (path: string) => {
+    if (isQuizLocked) {
+      toast.warning(
+        'Bạn đang trong quá trình làm quiz. Vui lòng hoàn thành hoặc hủy sát hạch trước khi chuyển trang.',
+      );
+      return;
+    }
     navigate(path);
     if (isMobile) {
       setMobileOpen(false);
@@ -236,11 +244,23 @@ export default function MainLayout() {
   };
 
   const handleAdminClick = () => {
+    if (isQuizLocked) {
+      toast.warning(
+        'Bạn đang trong quá trình làm quiz. Vui lòng hoàn thành hoặc hủy sát hạch trước khi chuyển trang.',
+      );
+      return;
+    }
     handleMenuClose();
     navigate('/admin');
   };
 
   const handleLogout = () => {
+    if (isQuizLocked) {
+      toast.warning(
+        'Bạn đang trong quá trình làm quiz. Vui lòng hoàn thành bài trước khi đăng xuất.',
+      );
+      return;
+    }
     handleMenuClose();
     logout();
     toast.success('Đăng xuất thành công!');

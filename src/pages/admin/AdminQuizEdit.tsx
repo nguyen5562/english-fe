@@ -12,6 +12,15 @@ import {
   IconButton,
   Chip,
   CircularProgress,
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  DialogActions,
+  TextField,
+  FormControl,
+  InputLabel,
+  Select,
+  MenuItem,
 } from '@mui/material';
 import {
   ArrowBack as ArrowBackIcon,
@@ -35,6 +44,14 @@ export default function AdminQuizEdit() {
   const [courses, setCourses] = useState<Course[]>([]);
   const [loading, setLoading] = useState(true);
   const [deleting, setDeleting] = useState(false);
+  const [editDialogOpen, setEditDialogOpen] = useState(false);
+  const [editData, setEditData] = useState({
+    title: '',
+    description: '',
+    courseId: '',
+    timeLimit: 60,
+  });
+  const [saving, setSaving] = useState(false);
 
   useEffect(() => {
     if (!id) return;
@@ -45,6 +62,12 @@ export default function AdminQuizEdit() {
         if (!cancelled) {
           setQuiz(quizData);
           setCourses(coData);
+          setEditData({
+            title: quizData.title,
+            description: quizData.description || '',
+            courseId: quizData.courseId,
+            timeLimit: quizData.timeLimit,
+          });
         }
       })
       .catch((e: unknown) => {
@@ -93,6 +116,27 @@ export default function AdminQuizEdit() {
     }
   };
 
+  const handleSaveInfo = async () => {
+    if (!id || !quiz) return;
+    try {
+      setSaving(true);
+      const updated = await quizService.updateQuiz(id, editData);
+      setQuiz(updated);
+      setEditDialogOpen(false);
+      toast.success('Đã cập nhật thông tin quiz');
+    } catch (e: unknown) {
+      if (axios.isAxiosError(e)) {
+        const msg =
+          (e.response?.data as { message?: string })?.message ??
+          e.response?.statusText ??
+          'Không thể cập nhật';
+        toast.error(String(msg));
+      }
+    } finally {
+      setSaving(false);
+    }
+  };
+
   if (loading || !id) {
     return (
       <Box sx={{ display: 'flex', justifyContent: 'center', p: 4 }}>
@@ -133,13 +177,21 @@ export default function AdminQuizEdit() {
         <CardContent>
           <Box sx={{ display: 'flex', alignItems: 'center', mb: 1 }}>
             <QuizIcon sx={{ fontSize: 40, color: 'secondary.main', mr: 2 }} />
-            <Box>
+            <Box sx={{ flexGrow: 1 }}>
               <Typography variant="h5">{quiz.title}</Typography>
               <Typography variant="body2" color="text.secondary">
                 {courseName} · {quiz.timeLimit} phút ·{' '}
                 {quiz.sections?.length ?? 0} phần
               </Typography>
             </Box>
+            <Button
+              startIcon={<EditIcon />}
+              variant="outlined"
+              size="small"
+              onClick={() => setEditDialogOpen(true)}
+            >
+              Sửa thông tin
+            </Button>
           </Box>
           {quiz.description && (
             <Typography variant="body2" color="text.secondary" sx={{ mt: 1 }}>
@@ -230,6 +282,82 @@ export default function AdminQuizEdit() {
       )}
 
       {ConfirmDialog}
+
+      {/* Edit Info Dialog */}
+      <Dialog
+        open={editDialogOpen}
+        onClose={() => !saving && setEditDialogOpen(false)}
+        maxWidth="sm"
+        fullWidth
+      >
+        <DialogTitle>Sửa thông tin quiz</DialogTitle>
+        <DialogContent dividers>
+          <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2, pt: 1 }}>
+            <TextField
+              label="Tiêu đề"
+              fullWidth
+              value={editData.title}
+              onChange={(e) =>
+                setEditData({ ...editData, title: e.target.value })
+              }
+            />
+            <TextField
+              label="Mô tả"
+              fullWidth
+              multiline
+              rows={3}
+              value={editData.description}
+              onChange={(e) =>
+                setEditData({ ...editData, description: e.target.value })
+              }
+            />
+            <Box
+              sx={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 2 }}
+            >
+              <FormControl fullWidth>
+                <InputLabel>Khóa học</InputLabel>
+                <Select
+                  value={editData.courseId}
+                  label="Khóa học"
+                  onChange={(e) =>
+                    setEditData({ ...editData, courseId: e.target.value })
+                  }
+                >
+                  {courses.map((c) => (
+                    <MenuItem key={c._id} value={c._id}>
+                      {c.name}
+                    </MenuItem>
+                  ))}
+                </Select>
+              </FormControl>
+              <TextField
+                label="Thời gian (phút)"
+                type="number"
+                fullWidth
+                value={editData.timeLimit}
+                onChange={(e) =>
+                  setEditData({
+                    ...editData,
+                    timeLimit: parseInt(e.target.value) || 0,
+                  })
+                }
+              />
+            </Box>
+          </Box>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={() => setEditDialogOpen(false)} disabled={saving}>
+            Hủy
+          </Button>
+          <Button
+            onClick={handleSaveInfo}
+            variant="contained"
+            disabled={saving || !editData.title || !editData.courseId}
+          >
+            {saving ? 'Đang lưu...' : 'Lưu thay đổi'}
+          </Button>
+        </DialogActions>
+      </Dialog>
     </Box>
   );
 }

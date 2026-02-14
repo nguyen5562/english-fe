@@ -17,6 +17,8 @@ import {
   Select,
   MenuItem,
   CircularProgress,
+  Grid,
+  Divider,
 } from '@mui/material';
 import {
   Add as AddIcon,
@@ -187,143 +189,209 @@ export default function AdminQuizzes() {
           </CardContent>
         </Card>
       ) : (
-        <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1.5 }}>
+        <Grid container spacing={3}>
           {quizzes.map((quiz) => (
-            <Card
-              key={quiz._id}
-              sx={{
-                borderRadius: 2,
-                transition: 'all 0.2s',
-                border: '1px solid #edf2f7',
-                boxShadow: 'none',
-                '&:hover': {
-                  borderColor: 'secondary.main',
-                  bgcolor: 'rgba(156, 39, 176, 0.02)',
-                  transform: 'translateX(4px)',
-                },
-              }}
-            >
-              <Box
+            <Grid size={{ xs: 12, sm: 6, md: 4 }} key={quiz._id}>
+              <Card
                 sx={{
+                  height: '100%',
                   display: 'flex',
-                  alignItems: 'center',
-                  p: 1.5,
-                  gap: 2,
+                  flexDirection: 'column',
+                  transition: 'transform 0.2s, box-shadow 0.2s',
+                  '&:hover': {
+                    transform: 'translateY(-4px)',
+                    boxShadow: 6,
+                  },
+                  borderRadius: 3,
+                  overflow: 'hidden',
                 }}
               >
-                <Box
+                <CardContent
                   sx={{
-                    width: 40,
-                    height: 40,
-                    borderRadius: 1.5,
+                    flexGrow: 1,
+                    p: 3,
                     display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    bgcolor: 'secondary.main',
-                    color: 'white',
-                    flexShrink: 0,
+                    flexDirection: 'column',
                   }}
                 >
-                  <QuizIcon fontSize="small" />
-                </Box>
-
-                <Box sx={{ flexGrow: 1, minWidth: 0 }}>
-                  <Typography
-                    variant="subtitle1"
-                    noWrap
-                    sx={{ fontWeight: 600, color: '#1a202c', lineHeight: 1.2 }}
+                  <Box
+                    sx={{
+                      display: 'flex',
+                      alignItems: 'flex-start',
+                      mb: 2,
+                      height: '3.2rem', // Fixed header area height
+                    }}
                   >
-                    {quiz.title}
-                  </Typography>
-                  <Typography variant="caption" color="text.secondary" noWrap>
-                    {courses.find((c) => c._id === quiz.courseId)?.name ??
-                      'N/A'}
-                    {quiz.description && ` • ${quiz.description}`}
-                  </Typography>
-                </Box>
-
-                <Box
-                  sx={{
-                    display: 'flex',
-                    alignItems: 'center',
-                    gap: 4,
-                    flexShrink: 0,
-                  }}
-                >
-                  <Box sx={{ display: 'flex', gap: 3 }}>
-                    <Box sx={{ textAlign: 'center' }}>
+                    <Box
+                      sx={{
+                        bgcolor: 'secondary.light',
+                        color: 'secondary.main',
+                        p: 1.5,
+                        borderRadius: 2,
+                        display: 'flex',
+                        mr: 2,
+                      }}
+                    >
+                      <QuizIcon sx={{ fontSize: 24 }} />
+                    </Box>
+                    <Box sx={{ flexGrow: 1, minWidth: 0 }}>
                       <Typography
-                        variant="body2"
-                        sx={{ fontWeight: 700, color: 'secondary.main' }}
+                        variant="subtitle1"
+                        sx={{
+                          fontWeight: 700,
+                          lineHeight: 1.2,
+                          mb: 0.5,
+                          display: '-webkit-box',
+                          WebkitLineClamp: 2,
+                          WebkitBoxOrient: 'vertical',
+                          overflow: 'hidden',
+                          height: '2.4rem', // Height for 2 lines
+                        }}
+                      >
+                        {quiz.title}
+                      </Typography>
+                      <Typography
+                        variant="caption"
+                        color="text.secondary"
+                        noWrap
+                        sx={{ fontWeight: 500, display: 'block' }}
+                      >
+                        {courses.find((c) => c._id === quiz.courseId)?.name ??
+                          'N/A'}
+                      </Typography>
+                    </Box>
+                  </Box>
+
+                  <Typography
+                    variant="body2"
+                    color="text.secondary"
+                    sx={{
+                      mb: 2,
+                      display: '-webkit-box',
+                      WebkitLineClamp: 2,
+                      WebkitBoxOrient: 'vertical',
+                      overflow: 'hidden',
+                      height: '2.8rem', // Fixed height for description
+                      lineHeight: 1.4,
+                    }}
+                  >
+                    {quiz.description || 'Không có mô tả.'}
+                  </Typography>
+
+                  <Box sx={{ display: 'flex', gap: 1.5, mt: 'auto' }}>
+                    <Box
+                      sx={{
+                        flex: 1,
+                        p: 1,
+                        bgcolor: 'action.hover',
+                        borderRadius: 2,
+                        textAlign: 'center',
+                        minWidth: 0,
+                      }}
+                    >
+                      <Typography
+                        variant="h6"
+                        sx={{
+                          fontWeight: 800,
+                          color: 'secondary.main',
+                          lineHeight: 1,
+                        }}
                       >
                         {quiz.timeLimit}
                       </Typography>
                       <Typography
                         variant="caption"
                         sx={{
+                          fontSize: '0.65rem',
+                          fontWeight: 700,
+                          textTransform: 'uppercase',
                           color: 'text.secondary',
                           display: 'block',
-                          fontSize: '0.65rem',
-                          textTransform: 'uppercase',
-                          mt: -0.5,
                         }}
                       >
                         Phút
                       </Typography>
                     </Box>
-                    <Box sx={{ textAlign: 'center' }}>
+                    <Box
+                      sx={{
+                        flex: 1,
+                        p: 1,
+                        bgcolor: 'action.hover',
+                        borderRadius: 2,
+                        textAlign: 'center',
+                        minWidth: 0,
+                      }}
+                    >
                       <Typography
-                        variant="body2"
-                        sx={{ fontWeight: 700, color: '#4a5568' }}
+                        variant="h6"
+                        sx={{
+                          fontWeight: 800,
+                          color: 'text.primary',
+                          lineHeight: 1,
+                        }}
                       >
                         {(quiz.sections ?? []).reduce(
-                          (total, s) => total + (s.questions?.length ?? 0),
+                          (t, s) => t + (s.questions?.length ?? 0),
                           0,
                         )}
                       </Typography>
                       <Typography
                         variant="caption"
                         sx={{
+                          fontSize: '0.65rem',
+                          fontWeight: 700,
+                          textTransform: 'uppercase',
                           color: 'text.secondary',
                           display: 'block',
-                          fontSize: '0.65rem',
-                          textTransform: 'uppercase',
-                          mt: -0.5,
                         }}
                       >
                         Câu hỏi
                       </Typography>
                     </Box>
                   </Box>
+                </CardContent>
 
-                  <Box
+                <Divider sx={{ opacity: 0.6 }} />
+
+                <Box
+                  sx={{
+                    p: 1.5,
+                    px: 2,
+                    bgcolor: 'background.default',
+                    display: 'flex',
+                    justifyContent: 'flex-end',
+                    gap: 1,
+                  }}
+                >
+                  <IconButton
+                    size="small"
+                    color="secondary"
                     sx={{
-                      display: 'flex',
-                      gap: 0.5,
-                      borderLeft: '1px solid #edf2f7',
-                      pl: 1,
+                      bgcolor: 'white',
+                      border: '1px solid #edf2f7',
+                      '&:hover': { bgcolor: 'secondary.light' },
                     }}
+                    onClick={() => handleEdit(quiz)}
                   >
-                    <IconButton
-                      size="small"
-                      color="secondary"
-                      onClick={() => handleEdit(quiz)}
-                    >
-                      <EditIcon fontSize="small" />
-                    </IconButton>
-                    <IconButton
-                      size="small"
-                      color="error"
-                      onClick={() => handleDelete(quiz._id)}
-                    >
-                      <DeleteIcon fontSize="small" />
-                    </IconButton>
-                  </Box>
+                    <EditIcon fontSize="small" />
+                  </IconButton>
+                  <IconButton
+                    size="small"
+                    color="error"
+                    sx={{
+                      bgcolor: 'white',
+                      border: '1px solid #edf2f7',
+                      '&:hover': { bgcolor: 'error.light' },
+                    }}
+                    onClick={() => handleDelete(quiz._id)}
+                  >
+                    <DeleteIcon fontSize="small" />
+                  </IconButton>
                 </Box>
-              </Box>
-            </Card>
+              </Card>
+            </Grid>
           ))}
-        </Box>
+        </Grid>
       )}
 
       <Dialog

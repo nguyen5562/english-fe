@@ -12,6 +12,15 @@ import {
   IconButton,
   Chip,
   CircularProgress,
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  DialogActions,
+  TextField,
+  FormControl,
+  InputLabel,
+  Select,
+  MenuItem,
 } from '@mui/material';
 import {
   ArrowBack as ArrowBackIcon,
@@ -35,6 +44,13 @@ export default function AdminExerciseEdit() {
   const [courses, setCourses] = useState<Course[]>([]);
   const [loading, setLoading] = useState(true);
   const [deleting, setDeleting] = useState(false);
+  const [editDialogOpen, setEditDialogOpen] = useState(false);
+  const [editData, setEditData] = useState({
+    title: '',
+    description: '',
+    courseId: '',
+  });
+  const [saving, setSaving] = useState(false);
 
   useEffect(() => {
     if (!id) return;
@@ -48,6 +64,11 @@ export default function AdminExerciseEdit() {
         if (!cancelled) {
           setExercise(exData);
           setCourses(coData);
+          setEditData({
+            title: exData.title,
+            description: exData.description || '',
+            courseId: exData.courseId,
+          });
         }
       })
       .catch((e: unknown) => {
@@ -96,6 +117,27 @@ export default function AdminExerciseEdit() {
     }
   };
 
+  const handleSaveInfo = async () => {
+    if (!id || !exercise) return;
+    try {
+      setSaving(true);
+      const updated = await exerciseService.updateExercise(id, editData);
+      setExercise(updated);
+      setEditDialogOpen(false);
+      toast.success('Đã cập nhật thông tin bài tập');
+    } catch (e: unknown) {
+      if (axios.isAxiosError(e)) {
+        const msg =
+          (e.response?.data as { message?: string })?.message ??
+          e.response?.statusText ??
+          'Không thể cập nhật';
+        toast.error(String(msg));
+      }
+    } finally {
+      setSaving(false);
+    }
+  };
+
   if (loading || !id) {
     return (
       <Box sx={{ display: 'flex', justifyContent: 'center', p: 4 }}>
@@ -138,12 +180,20 @@ export default function AdminExerciseEdit() {
             <AssignmentIcon
               sx={{ fontSize: 40, color: 'primary.main', mr: 2 }}
             />
-            <Box>
+            <Box sx={{ flexGrow: 1 }}>
               <Typography variant="h5">{exercise.title}</Typography>
               <Typography variant="body2" color="text.secondary">
                 {courseName} · {exercise.sections?.length ?? 0} phần
               </Typography>
             </Box>
+            <Button
+              startIcon={<EditIcon />}
+              variant="outlined"
+              size="small"
+              onClick={() => setEditDialogOpen(true)}
+            >
+              Sửa thông tin
+            </Button>
           </Box>
           {exercise.description && (
             <Typography variant="body2" color="text.secondary" sx={{ mt: 1 }}>
@@ -236,6 +286,66 @@ export default function AdminExerciseEdit() {
       )}
 
       {ConfirmDialog}
+
+      {/* Edit Info Dialog */}
+      <Dialog
+        open={editDialogOpen}
+        onClose={() => !saving && setEditDialogOpen(false)}
+        maxWidth="sm"
+        fullWidth
+      >
+        <DialogTitle>Sửa thông tin bài tập</DialogTitle>
+        <DialogContent dividers>
+          <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2, pt: 1 }}>
+            <TextField
+              label="Tiêu đề"
+              fullWidth
+              value={editData.title}
+              onChange={(e) =>
+                setEditData({ ...editData, title: e.target.value })
+              }
+            />
+            <TextField
+              label="Mô tả"
+              fullWidth
+              multiline
+              rows={3}
+              value={editData.description}
+              onChange={(e) =>
+                setEditData({ ...editData, description: e.target.value })
+              }
+            />
+            <FormControl fullWidth>
+              <InputLabel>Khóa học</InputLabel>
+              <Select
+                value={editData.courseId}
+                label="Khóa học"
+                onChange={(e) =>
+                  setEditData({ ...editData, courseId: e.target.value })
+                }
+              >
+                {courses.map((c) => (
+                  <MenuItem key={c._id} value={c._id}>
+                    {c.name}
+                  </MenuItem>
+                ))}
+              </Select>
+            </FormControl>
+          </Box>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={() => setEditDialogOpen(false)} disabled={saving}>
+            Hủy
+          </Button>
+          <Button
+            onClick={handleSaveInfo}
+            variant="contained"
+            disabled={saving || !editData.title || !editData.courseId}
+          >
+            {saving ? 'Đang lưu...' : 'Lưu thay đổi'}
+          </Button>
+        </DialogActions>
+      </Dialog>
     </Box>
   );
 }

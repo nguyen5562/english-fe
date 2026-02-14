@@ -5,7 +5,6 @@ import {
   Typography,
   Card,
   CardContent,
-  CardActions,
   Button,
   Chip,
   Grid,
@@ -14,6 +13,7 @@ import {
   Select,
   MenuItem,
   CircularProgress,
+  Divider,
 } from '@mui/material';
 import {
   Quiz as QuizIcon,
@@ -152,36 +152,99 @@ export default function Quizzes() {
             const hasPassed = bestPercent != null && bestPercent >= 60;
 
             return (
-              // @ts-expect-error - MUI v7 Grid still works with item prop
-              <Grid item xs={12} md={6} key={quiz._id}>
-                <Card>
-                  <CardContent>
+              <Grid size={{ xs: 12, sm: 6, md: 4 }} key={quiz._id}>
+                <Card
+                  sx={{
+                    height: '100%',
+                    display: 'flex',
+                    flexDirection: 'column',
+                    transition: 'transform 0.2s, box-shadow 0.2s',
+                    '&:hover': {
+                      transform: 'translateY(-4px)',
+                      boxShadow: 6,
+                    },
+                    borderRadius: 3,
+                    overflow: 'hidden',
+                  }}
+                >
+                  <CardContent
+                    sx={{
+                      flexGrow: 1,
+                      p: 3,
+                      display: 'flex',
+                      flexDirection: 'column',
+                    }}
+                  >
                     <Box
                       sx={{
                         display: 'flex',
-                        alignItems: 'center',
+                        alignItems: 'flex-start',
                         mb: 2,
+                        height: '3.6rem', // Fixed header area height
                       }}
                     >
-                      <QuizIcon
-                        sx={{ fontSize: 40, color: 'secondary.main', mr: 2 }}
-                      />
-                      <Box sx={{ flexGrow: 1 }}>
-                        <Typography variant="h6">{quiz.title}</Typography>
-                        <Typography variant="body2" color="text.secondary">
+                      <Box
+                        sx={{
+                          bgcolor: 'secondary.light',
+                          color: 'secondary.main',
+                          p: 1.5,
+                          borderRadius: 2,
+                          display: 'flex',
+                          mr: 2,
+                        }}
+                      >
+                        <QuizIcon sx={{ fontSize: 32 }} />
+                      </Box>
+                      <Box sx={{ flexGrow: 1, minWidth: 0 }}>
+                        <Typography
+                          variant="h6"
+                          sx={{
+                            fontWeight: 700,
+                            lineHeight: 1.1,
+                            mb: 0.5,
+                            display: '-webkit-box',
+                            WebkitLineClamp: 2,
+                            WebkitBoxOrient: 'vertical',
+                            overflow: 'hidden',
+                            height: '2.2rem', // Height for 2 lines
+                          }}
+                        >
+                          {quiz.title}
+                        </Typography>
+                        <Typography
+                          variant="caption"
+                          color="text.secondary"
+                          noWrap
+                          sx={{ fontWeight: 600, display: 'block' }}
+                        >
                           {courses.find((c) => c._id === quiz.courseId)?.name}
                         </Typography>
                       </Box>
                     </Box>
-                    <Typography variant="body2" paragraph>
-                      {quiz.description ?? ''}
+
+                    <Typography
+                      variant="body2"
+                      color="text.secondary"
+                      sx={{
+                        mb: 3,
+                        display: '-webkit-box',
+                        WebkitLineClamp: 2,
+                        WebkitBoxOrient: 'vertical',
+                        overflow: 'hidden',
+                        height: '2.8rem', // Fixed height for description area
+                        lineHeight: 1.4,
+                      }}
+                    >
+                      {quiz.description ||
+                        'Không có mô tả cho bài kiểm tra này.'}
                     </Typography>
+
                     <Box
                       sx={{
                         display: 'flex',
-                        gap: 1,
-                        mb: 2,
+                        gap: 1.5,
                         flexWrap: 'wrap',
+                        mt: 'auto', // Push chips to bottom of body
                       }}
                     >
                       <Chip
@@ -191,53 +254,86 @@ export default function Quizzes() {
                           0,
                         )} câu hỏi`}
                         size="small"
+                        sx={{ fontWeight: 600, bgcolor: 'action.hover' }}
                       />
                       <Chip
-                        icon={<AccessTimeIcon />}
+                        icon={
+                          <AccessTimeIcon
+                            sx={{ fontSize: '1rem !important' }}
+                          />
+                        }
                         label={`${quiz.timeLimit} phút`}
                         size="small"
+                        sx={{ fontWeight: 600, bgcolor: 'action.hover' }}
                       />
-                      {bestPercent != null && (
-                        <Chip
-                          label={`Điểm cao nhất: ${bestPercent}%`}
-                          size="small"
-                          color={hasPassed ? 'success' : 'default'}
-                        />
-                      )}
                     </Box>
-                    {bestAttempt != null && (
+                  </CardContent>
+
+                  <Divider sx={{ opacity: 0.6 }} />
+
+                  <Box sx={{ p: 2, px: 3, bgcolor: 'background.default' }}>
+                    {bestPercent != null ? (
                       <Box
                         sx={{
                           display: 'flex',
                           alignItems: 'center',
-                          gap: 1,
-                          mb: 1,
+                          justifyContent: 'space-between',
+                          mb: 2,
                         }}
                       >
-                        <CheckCircleIcon
-                          sx={{
-                            color: hasPassed ? 'success.main' : 'warning.main',
-                            fontSize: 20,
-                          }}
-                        />
-                        <Typography variant="body2">
-                          Điểm cao nhất: {bestPercent}%
-                          {hasPassed ? ' (Đạt)' : ' (Chưa đạt 60%)'}
+                        <Box
+                          sx={{ display: 'flex', alignItems: 'center', gap: 1 }}
+                        >
+                          <CheckCircleIcon
+                            sx={{
+                              color: hasPassed
+                                ? 'success.main'
+                                : 'warning.main',
+                              fontSize: 18,
+                            }}
+                          />
+                          <Typography variant="body2" sx={{ fontWeight: 600 }}>
+                            {hasPassed ? 'Đã đạt' : 'Chưa đạt 60%'}
+                          </Typography>
+                        </Box>
+                        <Typography
+                          variant="h6"
+                          color={hasPassed ? 'success.main' : 'warning.main'}
+                          sx={{ fontWeight: 800 }}
+                        >
+                          {bestPercent}%
+                        </Typography>
+                      </Box>
+                    ) : (
+                      <Box sx={{ mb: 2 }}>
+                        <Typography
+                          variant="body2"
+                          color="text.secondary"
+                          sx={{ fontStyle: 'italic' }}
+                        >
+                          Chưa có lượt làm bài nào
                         </Typography>
                       </Box>
                     )}
-                  </CardContent>
-                  <CardActions>
+
                     <Button
                       variant="contained"
                       startIcon={<PlayArrowIcon />}
                       fullWidth
                       onClick={() => navigate(`/quizzes/${quiz._id}`)}
                       color={bestAttempt && hasPassed ? 'success' : 'primary'}
+                      sx={{
+                        borderRadius: 2,
+                        py: 1,
+                        textTransform: 'none',
+                        fontWeight: 700,
+                        boxShadow: 'none',
+                        '&:hover': { boxShadow: 'none' },
+                      }}
                     >
                       {bestAttempt ? 'Làm lại' : 'Bắt đầu làm'}
                     </Button>
-                  </CardActions>
+                  </Box>
                 </Card>
               </Grid>
             );
