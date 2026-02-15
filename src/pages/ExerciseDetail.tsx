@@ -44,7 +44,6 @@ import {
   renderQuestionWordBank,
   renderSectionMedia,
   renderSectionWordBank,
-  formatAnswer,
   calculateScore,
   resolveUrl,
 } from '../utils/questionHelpers';
@@ -85,12 +84,6 @@ export default function ExerciseDetail() {
   );
   const mediaRecordersRef = useRef<Record<string, MediaRecorder | null>>({});
 
-  const [lastAttempt, setLastAttempt] = useState<{
-    sectionId: string;
-    tries: number;
-    score: number;
-    answers: { questionId: string; answer: string[] }[];
-  } | null>(null);
   const [viewingSaved, setViewingSaved] = useState(false);
   const [ignoringSaved, setIgnoringSaved] = useState(false);
   const [retryKey, setRetryKey] = useState<number>(0);
@@ -180,7 +173,6 @@ export default function ExerciseDetail() {
 
   const clearLoadedState = () => {
     window.setTimeout(() => {
-      setLastAttempt(null);
       setViewingSaved(false);
       setCheckedResults({});
       setScore(null);
@@ -220,12 +212,6 @@ export default function ExerciseDetail() {
       .sort((a, b) => (b.tries || 0) - (a.tries || 0))[0];
 
     window.setTimeout(() => {
-      setLastAttempt({
-        sectionId: section._id,
-        tries: last.tries || 0,
-        score: last.score || 0,
-        answers: last.answers ?? [],
-      });
       setAnswers((prev) => {
         const next = { ...prev };
         (last.answers ?? []).forEach((a) => {
@@ -628,7 +614,7 @@ export default function ExerciseDetail() {
     setScore(null);
     setShowResult(false);
     setViewingSaved(false);
-    setLastAttempt(null);
+
     // ignore saved attempts until user either submits a new attempt or navigates away
     setIgnoringSaved(true);
 

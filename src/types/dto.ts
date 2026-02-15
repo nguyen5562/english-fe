@@ -72,7 +72,7 @@ export type CreateQuizDto = Omit<Quiz, '_id' | 'sections'>;
 export type UpdateQuizDto = Partial<CreateQuizDto>;
 
 // Exercise Attempt
-export type AnswerDto = Omit<Answer, '_id'>;
+export type AnswerDto = Omit<Answer, '_id' | 'createdAt' | 'updatedAt'>;
 
 export type SectionAttemptDto = {
   sectionId: string;
