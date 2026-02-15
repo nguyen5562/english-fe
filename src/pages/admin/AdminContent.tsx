@@ -198,9 +198,9 @@ export default function AdminContent() {
     }
   };
 
-  const fetchLessonsForCourse = async (courseId: string) => {
+  const fetchLessonsForCourse = async (courseId: string, force = false) => {
     // Nếu đã load rồi thì không load lại
-    if (lessonsMap[courseId] !== undefined) {
+    if (!force && lessonsMap[courseId] !== undefined) {
       return;
     }
 
@@ -361,7 +361,7 @@ export default function AdminContent() {
         });
       }
       // Refresh lessons của course này
-      await fetchLessonsForCourse(selectedCourse._id);
+      await fetchLessonsForCourse(selectedCourse._id, true);
       setOpenLessonDialog(false);
       setSelectedLesson(null);
       toast.success(
@@ -399,7 +399,7 @@ export default function AdminContent() {
     try {
       await lessonService.deleteLesson(lessonId);
       // Refresh lessons của course này
-      await fetchLessonsForCourse(courseId);
+      await fetchLessonsForCourse(courseId, true);
       toast.success('Đã xóa bài học thành công');
     } catch (e: unknown) {
       if (axios.isAxiosError(e)) {
@@ -441,7 +441,7 @@ export default function AdminContent() {
       };
       await lessonService.addSlide(selectedLesson._id, dto);
       // Refresh lessons của course này
-      await fetchLessonsForCourse(selectedCourse._id);
+      await fetchLessonsForCourse(selectedCourse._id, true);
       setOpenSlideDialog(false);
       toast.success('Đã thêm slide thành công');
     } catch (e: unknown) {
@@ -477,7 +477,7 @@ export default function AdminContent() {
     try {
       await lessonService.removeSlide(lessonId, slideId);
       // Refresh lessons của course này
-      await fetchLessonsForCourse(courseId);
+      await fetchLessonsForCourse(courseId, true);
       toast.success('Đã xóa slide thành công');
     } catch (e: unknown) {
       if (axios.isAxiosError(e)) {
@@ -519,7 +519,7 @@ export default function AdminContent() {
       };
       await lessonService.addVideo(selectedLesson._id, dto);
       // Refresh lessons của course này
-      await fetchLessonsForCourse(selectedCourse._id);
+      await fetchLessonsForCourse(selectedCourse._id, true);
       setOpenVideoDialog(false);
       toast.success('Đã thêm video thành công');
     } catch (e: unknown) {
@@ -555,7 +555,7 @@ export default function AdminContent() {
     try {
       await lessonService.removeVideo(lessonId, videoId);
       // Refresh lessons của course này
-      await fetchLessonsForCourse(courseId);
+      await fetchLessonsForCourse(courseId, true);
       toast.success('Đã xóa video thành công');
     } catch (e: unknown) {
       if (axios.isAxiosError(e)) {
@@ -597,7 +597,7 @@ export default function AdminContent() {
       };
       await lessonService.addReference(selectedLesson._id, dto);
       // Refresh lessons của course này
-      await fetchLessonsForCourse(selectedCourse._id);
+      await fetchLessonsForCourse(selectedCourse._id, true);
       setOpenReferenceDialog(false);
       toast.success('Đã thêm tài liệu thành công');
     } catch (e: unknown) {
@@ -633,7 +633,7 @@ export default function AdminContent() {
     try {
       await lessonService.removeReference(lessonId, referenceId);
       // Refresh lessons của course này
-      await fetchLessonsForCourse(courseId);
+      await fetchLessonsForCourse(courseId, true);
       toast.success('Đã xóa tài liệu thành công');
     } catch (e: unknown) {
       if (axios.isAxiosError(e)) {
