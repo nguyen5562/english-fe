@@ -214,8 +214,6 @@ export default function QuizDetail() {
       return {
         questionId: q._id,
         answer: arr,
-        createdAt: new Date(),
-        updatedAt: new Date(),
       };
     });
 

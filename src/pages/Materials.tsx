@@ -40,6 +40,206 @@ import { toast } from '../utils/toast';
 import type { Course, Lesson } from '../types';
 import { resolveUrl } from '../utils/questionHelpers';
 
+const getYoutubeId = (url: string) => {
+  if (!url) return null;
+  const regExp =
+    /^.*(youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=|\&v=)([^#\&\?]*).*/;
+  const match = url.match(regExp);
+  return match && match[2].length === 11 ? match[2] : null;
+};
+
+const ThumbnailPreview = ({
+  url,
+  type,
+}: {
+  url: string;
+  type: 'slide' | 'video' | 'ref';
+}) => {
+  const ytId = getYoutubeId(url);
+  const resolvedUrl = resolveUrl(url) ?? '';
+  const ext = url.split('.').pop()?.toLowerCase() || '';
+
+  if (ytId) {
+    return (
+      <Box
+        component="img"
+        src={`https://img.youtube.com/vi/${ytId}/maxresdefault.jpg`}
+        onError={(e: any) => {
+          e.target.src = `https://img.youtube.com/vi/${ytId}/hqdefault.jpg`;
+        }}
+        sx={{ width: '100%', height: '100%', objectFit: 'cover' }}
+        alt="youtube-thumbnail"
+      />
+    );
+  }
+
+  if (['mp4', 'webm', 'ogg', 'mov'].includes(ext) || type === 'video') {
+    return (
+      <Box sx={{ width: '100%', height: '100%', position: 'relative' }}>
+        <Box
+          component="video"
+          src={`${resolvedUrl}#t=0.5`}
+          preload="metadata"
+          sx={{ width: '100%', height: '100%', objectFit: 'cover' }}
+        />
+        <Box
+          className="thumbnail-overlay"
+          sx={{
+            position: 'absolute',
+            inset: 0,
+            bgcolor: 'rgba(0,0,0,0.3)',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            transition: 'background-color 0.2s',
+          }}
+        >
+          <PlayArrowIcon
+            className="thumbnail-icon"
+            sx={{
+              fontSize: 40,
+              color: '#fff',
+              transition: 'transform 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+            }}
+          />
+        </Box>
+      </Box>
+    );
+  }
+
+  if (['pdf'].includes(ext)) {
+    return (
+      <Box
+        sx={{
+          width: '100%',
+          height: '100%',
+          overflow: 'hidden',
+          position: 'relative',
+          bgcolor: '#fff',
+        }}
+      >
+        <Box
+          sx={{
+            position: 'absolute',
+            top: -24,
+            left: -40,
+            width: 'calc(100% + 80px)',
+            height: 'calc(100% + 40px)',
+            pointerEvents: 'none',
+          }}
+        >
+          <iframe
+            src={`${resolvedUrl}#toolbar=0&navpanes=0&scrollbar=0&view=FitH`}
+            style={{
+              width: '100%',
+              height: '100%',
+              border: 'none',
+              background: '#fff',
+            }}
+            scrolling="no"
+          />
+        </Box>
+        <Box
+          className="thumbnail-overlay"
+          sx={{
+            position: 'absolute',
+            inset: 0,
+            zIndex: 1,
+            transition: 'background-color 0.2s',
+          }}
+        />
+      </Box>
+    );
+  }
+
+  if (['doc', 'docx', 'ppt', 'pptx'].includes(ext)) {
+    const encodedUrl = encodeURIComponent(resolvedUrl);
+    const viewerUrl = `https://view.officeapps.live.com/op/embed.aspx?src=${encodedUrl}`;
+    return (
+      <Box
+        sx={{
+          width: '100%',
+          height: '100%',
+          overflow: 'hidden',
+          position: 'relative',
+          bgcolor: '#fff',
+        }}
+      >
+        <Box
+          sx={{
+            position: 'absolute',
+            top: -30,
+            left: -20,
+            width: 'calc(100% + 40px)',
+            height: 'calc(100% + 40px)',
+            pointerEvents: 'none',
+          }}
+        >
+          <iframe
+            src={viewerUrl}
+            style={{
+              width: '100%',
+              height: '100%',
+              border: 'none',
+              background: '#fff',
+            }}
+            scrolling="no"
+          />
+        </Box>
+        <Box
+          className="thumbnail-overlay"
+          sx={{
+            position: 'absolute',
+            inset: 0,
+            zIndex: 1,
+            transition: 'background-color 0.2s',
+          }}
+        />
+      </Box>
+    );
+  }
+
+  let Icon = DescriptionIcon;
+  let color = '#00796b';
+  let bgColor = '#e0f2f1';
+
+  if (type === 'slide') {
+    Icon = SlideshowIcon;
+    color = '#1976d2';
+    bgColor = '#e3f2fd';
+  }
+
+  return (
+    <Box
+      sx={{
+        width: '100%',
+        height: '100%',
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        bgcolor: bgColor,
+      }}
+    >
+      <Icon
+        className="thumbnail-icon"
+        sx={{
+          fontSize: 64,
+          color,
+          transition: 'transform 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+        }}
+      />
+      <Box
+        className="thumbnail-overlay"
+        sx={{
+          position: 'absolute',
+          inset: 0,
+          transition: 'background-color 0.2s',
+        }}
+      />
+    </Box>
+  );
+};
+
 interface TabPanelProps {
   children?: React.ReactNode;
   index: number;
@@ -247,47 +447,98 @@ export default function Materials() {
               {lesson.slides && lesson.slides.length > 0 ? (
                 <Grid container spacing={2}>
                   {lesson.slides.map((slide) => (
-                    <Grid size={{ xs: 12, sm: 6 }} key={slide._id}>
+                    <Grid size={{ xs: 12, md: 6 }} key={slide._id}>
                       <Card
                         variant="outlined"
-                        sx={{ borderRadius: 2, borderStyle: 'dashed' }}
+                        sx={{
+                          display: 'flex',
+                          borderRadius: 3,
+                          overflow: 'hidden',
+                          cursor: 'pointer',
+                          transition: 'all 0.2s ease-in-out',
+                          borderColor: 'divider',
+                          '&:hover': {
+                            boxShadow: '0 6px 16px rgba(0,0,0,0.08)',
+                            borderColor: 'primary.main',
+                            transform: 'translateY(-2px)',
+                            '& .thumbnail-icon': {
+                              transform: 'scale(1.15)',
+                            },
+                          },
+                        }}
+                        onClick={() =>
+                          window.open(resolveUrl(slide.url) ?? '', '_blank')
+                        }
                       >
-                        <CardContent sx={{ p: '12px !important' }}>
+                        <Box
+                          sx={{
+                            width: 220,
+                            minHeight: 125,
+                            flexShrink: 0,
+                            bgcolor: '#e3f2fd',
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                            borderRight: '1px solid',
+                            borderColor: 'divider',
+                            overflow: 'hidden',
+                            position: 'relative',
+                          }}
+                        >
+                          <ThumbnailPreview url={slide.url} type="slide" />
+                        </Box>
+                        <CardContent
+                          sx={{
+                            p: 1.5,
+                            flex: 1,
+                            display: 'flex',
+                            flexDirection: 'column',
+                            justifyContent: 'center',
+                            '&:last-child': { pb: 1.5 },
+                          }}
+                        >
+                          <Typography
+                            variant="subtitle1"
+                            sx={{
+                              fontWeight: 600,
+                              mb: 0.5,
+                              lineHeight: 1.2,
+                              display: '-webkit-box',
+                              WebkitLineClamp: 2,
+                              WebkitBoxOrient: 'vertical',
+                              overflow: 'hidden',
+                            }}
+                          >
+                            {slide.title}
+                          </Typography>
+                          <Typography
+                            variant="body2"
+                            color="text.secondary"
+                            sx={{ mb: 1 }}
+                          >
+                            Slide bài giảng
+                          </Typography>
                           <Box
                             sx={{
+                              mt: 'auto',
                               display: 'flex',
                               alignItems: 'center',
-                              mb: 1,
                             }}
                           >
-                            <SlideshowIcon
+                            <Button
+                              size="small"
+                              variant="outlined"
                               sx={{
-                                mr: 1,
-                                color: 'primary.main',
-                                fontSize: 18,
+                                borderRadius: 1.5,
+                                textTransform: 'none',
+                                py: 0.25,
+                                px: 1.5,
+                                fontWeight: 500,
                               }}
-                            />
-                            <Typography
-                              variant="body1"
-                              sx={{ fontWeight: 400 }}
-                              noWrap
                             >
-                              {slide.title}
-                            </Typography>
+                              Mở slide
+                            </Button>
                           </Box>
-                          <Button
-                            size="small"
-                            variant="text"
-                            href={resolveUrl(slide.url) ?? ''}
-                            target="_blank"
-                            sx={{
-                              borderRadius: 1.5,
-                              textTransform: 'none',
-                              py: 0,
-                            }}
-                          >
-                            Mở slide
-                          </Button>
                         </CardContent>
                       </Card>
                     </Grid>
@@ -308,53 +559,112 @@ export default function Materials() {
             <TabPanel value={currentTab} index={1}>
               {lesson.videos && lesson.videos.length > 0 ? (
                 <Grid container spacing={2}>
-                  {lesson.videos.map((video) => (
-                    <Grid size={{ xs: 12, sm: 6 }} key={video._id}>
-                      <Card
-                        variant="outlined"
-                        sx={{ borderRadius: 2, borderStyle: 'dashed' }}
-                      >
-                        <CardContent sx={{ p: '12px !important' }}>
+                  {lesson.videos.map((video) => {
+                    const ytId = getYoutubeId(video.url);
+                    const resolvedUrl = resolveUrl(video.url) ?? '';
+                    return (
+                      <Grid size={{ xs: 12, md: 6 }} key={video._id}>
+                        <Card
+                          variant="outlined"
+                          sx={{
+                            display: 'flex',
+                            borderRadius: 3,
+                            overflow: 'hidden',
+                            cursor: 'pointer',
+                            transition: 'all 0.2s ease-in-out',
+                            borderColor: 'divider',
+                            '&:hover': {
+                              boxShadow: '0 6px 16px rgba(0,0,0,0.08)',
+                              borderColor: 'error.main',
+                              transform: 'translateY(-2px)',
+                              '& .thumbnail-overlay': {
+                                bgcolor: 'rgba(0,0,0,0.1)',
+                              },
+                              '& .play-icon': {
+                                transform: 'scale(1.15)',
+                              },
+                            },
+                          }}
+                          onClick={() => window.open(resolvedUrl, '_blank')}
+                        >
                           <Box
                             sx={{
+                              width: 220,
+                              minHeight: 125,
+                              flexShrink: 0,
+                              bgcolor: '#000',
+                              position: 'relative',
                               display: 'flex',
                               alignItems: 'center',
-                              mb: 1,
+                              justifyContent: 'center',
+                              borderRight: '1px solid',
+                              borderColor: 'divider',
+                              overflow: 'hidden',
                             }}
                           >
-                            <VideoLibraryIcon
-                              sx={{
-                                mr: 1,
-                                color: 'primary.main',
-                                fontSize: 18,
-                              }}
-                            />
+                            <ThumbnailPreview url={video.url} type="video" />
+                          </Box>
+                          <CardContent
+                            sx={{
+                              p: 1.5,
+                              flex: 1,
+                              display: 'flex',
+                              flexDirection: 'column',
+                              justifyContent: 'center',
+                              '&:last-child': { pb: 1.5 },
+                            }}
+                          >
                             <Typography
-                              variant="body1"
-                              sx={{ fontWeight: 400 }}
-                              noWrap
+                              variant="subtitle1"
+                              sx={{
+                                fontWeight: 600,
+                                mb: 0.5,
+                                lineHeight: 1.2,
+                                display: '-webkit-box',
+                                WebkitLineClamp: 2,
+                                WebkitBoxOrient: 'vertical',
+                                overflow: 'hidden',
+                              }}
                             >
                               {video.title}
                             </Typography>
-                          </Box>
-                          <Button
-                            size="small"
-                            variant="text"
-                            startIcon={<PlayArrowIcon sx={{ fontSize: 16 }} />}
-                            href={resolveUrl(video.url) ?? ''}
-                            target="_blank"
-                            sx={{
-                              borderRadius: 1.5,
-                              textTransform: 'none',
-                              py: 0,
-                            }}
-                          >
-                            Phát video
-                          </Button>
-                        </CardContent>
-                      </Card>
-                    </Grid>
-                  ))}
+                            <Typography
+                              variant="body2"
+                              color="text.secondary"
+                              sx={{ mb: 1 }}
+                            >
+                              Video bài giảng
+                            </Typography>
+                            <Box
+                              sx={{
+                                mt: 'auto',
+                                display: 'flex',
+                                alignItems: 'center',
+                              }}
+                            >
+                              <Button
+                                size="small"
+                                color="error"
+                                variant="outlined"
+                                startIcon={
+                                  <PlayArrowIcon sx={{ fontSize: 16 }} />
+                                }
+                                sx={{
+                                  borderRadius: 1.5,
+                                  textTransform: 'none',
+                                  py: 0.25,
+                                  px: 1.5,
+                                  fontWeight: 500,
+                                }}
+                              >
+                                Phát video
+                              </Button>
+                            </Box>
+                          </CardContent>
+                        </Card>
+                      </Grid>
+                    );
+                  })}
                 </Grid>
               ) : (
                 <Typography
@@ -373,58 +683,105 @@ export default function Materials() {
                 <Grid container spacing={2}>
                   {lesson.references.map((ref) => {
                     const isPdf = /\.pdf$/i.test(ref.url);
+                    const resolvedUrl = resolveUrl(ref.url) ?? '';
                     return (
-                      <Grid size={{ xs: 12, sm: 6 }} key={ref._id}>
+                      <Grid size={{ xs: 12, md: 6 }} key={ref._id}>
                         <Card
                           variant="outlined"
-                          sx={{ borderRadius: 2, borderStyle: 'dashed' }}
+                          sx={{
+                            display: 'flex',
+                            borderRadius: 3,
+                            overflow: 'hidden',
+                            cursor: 'pointer',
+                            transition: 'all 0.2s ease-in-out',
+                            borderColor: 'divider',
+                            position: 'relative',
+                            '&:hover': {
+                              boxShadow: '0 6px 16px rgba(0,0,0,0.08)',
+                              borderColor: isPdf
+                                ? 'error.main'
+                                : 'primary.main',
+                              transform: 'translateY(-2px)',
+                              '& .thumbnail-icon': {
+                                transform: 'scale(1.15)',
+                              },
+                              '& .pdf-overlay': {
+                                bgcolor: 'rgba(0,0,0,0)',
+                              },
+                            },
+                          }}
+                          onClick={() => window.open(resolvedUrl, '_blank')}
                         >
-                          <CardContent sx={{ p: '12px !important' }}>
+                          <Box
+                            sx={{
+                              width: 220,
+                              minHeight: 125,
+                              flexShrink: 0,
+                              bgcolor: isPdf ? '#f5f5f5' : '#e0f2f1',
+                              position: 'relative',
+                              display: 'flex',
+                              alignItems: 'center',
+                              justifyContent: 'center',
+                              borderRight: '1px solid',
+                              borderColor: 'divider',
+                              overflow: 'hidden',
+                            }}
+                          >
+                            <ThumbnailPreview url={ref.url} type="ref" />
+                          </Box>
+                          <CardContent
+                            sx={{
+                              p: 1.5,
+                              flex: 1,
+                              display: 'flex',
+                              flexDirection: 'column',
+                              justifyContent: 'center',
+                              '&:last-child': { pb: 1.5 },
+                            }}
+                          >
+                            <Typography
+                              variant="subtitle1"
+                              sx={{
+                                fontWeight: 600,
+                                mb: 0.5,
+                                lineHeight: 1.2,
+                                display: '-webkit-box',
+                                WebkitLineClamp: 2,
+                                WebkitBoxOrient: 'vertical',
+                                overflow: 'hidden',
+                              }}
+                            >
+                              {ref.title}
+                            </Typography>
+                            <Typography
+                              variant="body2"
+                              color="text.secondary"
+                              sx={{ mb: 1 }}
+                            >
+                              {isPdf ? 'Định dạng PDF' : 'Liên kết tài liệu'}
+                            </Typography>
                             <Box
                               sx={{
+                                mt: 'auto',
                                 display: 'flex',
                                 alignItems: 'center',
-                                mb: 1,
                               }}
                             >
-                              {isPdf ? (
-                                <PdfIcon
-                                  sx={{
-                                    mr: 1,
-                                    color: 'error.main',
-                                    fontSize: 18,
-                                  }}
-                                />
-                              ) : (
-                                <LinkIcon
-                                  sx={{
-                                    mr: 1,
-                                    color: 'primary.main',
-                                    fontSize: 18,
-                                  }}
-                                />
-                              )}
-                              <Typography
-                                variant="body1"
-                                sx={{ fontWeight: 400 }}
-                                noWrap
+                              <Button
+                                size="small"
+                                color={isPdf ? 'error' : 'primary'}
+                                variant="outlined"
+                                sx={{
+                                  borderRadius: 1.5,
+                                  textTransform: 'none',
+                                  py: 0.25,
+                                  px: 1.5,
+                                  fontWeight: 500,
+                                }}
                               >
-                                {ref.title}
-                              </Typography>
+                                Xem tài liệu
+                              </Button>
                             </Box>
-                            <Button
-                              size="small"
-                              variant="text"
-                              href={resolveUrl(ref.url) ?? ''}
-                              target="_blank"
-                              sx={{
-                                borderRadius: 1.5,
-                                textTransform: 'none',
-                                py: 0,
-                              }}
-                            >
-                              Xem tài liệu
-                            </Button>
                           </CardContent>
                         </Card>
                       </Grid>
