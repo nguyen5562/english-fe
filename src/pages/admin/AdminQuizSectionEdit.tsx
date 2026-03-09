@@ -57,9 +57,11 @@ const TYPES_NEED_AUDIO: QuestionType[] = [
   'listening',
   'pronunciation',
   'picture-choice',
+  'fill-blank',
+  'multiple-choice'
 ];
 const TYPES_NEED_VIDEO: QuestionType[] = ['video-recording', 'picture-choice'];
-const TYPES_NEED_IMAGE: QuestionType[] = ['picture-choice'];
+const TYPES_NEED_IMAGE: QuestionType[] = ['picture-choice', 'multiple-choice'];
 
 // Section fields theo kiểu câu hỏi (gen khác nhau)
 const SECTION_NEED_PASSAGE: QuestionType[] = [

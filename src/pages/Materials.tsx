@@ -26,8 +26,8 @@ import {
   VideoLibrary as VideoLibraryIcon,
   Description as DescriptionIcon,
   PlayArrow as PlayArrowIcon,
-  PictureAsPdf as PdfIcon,
-  Link as LinkIcon,
+  // PictureAsPdf as PdfIcon,
+  // Link as LinkIcon,
   Search as SearchIcon,
   School as CourseIcon,
   MenuBook as LessonIcon,
@@ -560,7 +560,7 @@ export default function Materials() {
               {lesson.videos && lesson.videos.length > 0 ? (
                 <Grid container spacing={2}>
                   {lesson.videos.map((video) => {
-                    const ytId = getYoutubeId(video.url);
+                    // const ytId = getYoutubeId(video.url);
                     const resolvedUrl = resolveUrl(video.url) ?? '';
                     return (
                       <Grid size={{ xs: 12, md: 6 }} key={video._id}>

@@ -716,7 +716,7 @@ export default function AdminContent() {
             return (
               <Accordion
                 key={course._id}
-                defaultExpanded={courses.length === 1}
+                // defaultExpanded={courses.length === 1}
                 onChange={(_, expanded) =>
                   handleAccordionChange(course._id, expanded)
                 }
