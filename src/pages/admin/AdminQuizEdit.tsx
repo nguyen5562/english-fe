@@ -75,7 +75,7 @@ export default function AdminQuizEdit() {
           const msg =
             (e.response?.data as { message?: string })?.message ??
             e.response?.statusText ??
-            'Không thể tải quiz';
+            'Failed to load quiz';
           toast.error(String(msg));
         }
       })
@@ -90,9 +90,9 @@ export default function AdminQuizEdit() {
   const handleDeleteSection = async (sectionId: string) => {
     if (!id) return;
     const ok = await confirm({
-      title: 'Xác nhận xóa phần',
-      message: 'Bạn có chắc muốn xóa phần này?',
-      confirmText: 'Xóa',
+      title: 'Confirm delete section',
+      message: 'Are you sure you want to delete this section?',
+      confirmText: 'Delete',
       confirmColor: 'error',
     });
     if (!ok) return;
@@ -100,16 +100,16 @@ export default function AdminQuizEdit() {
       setDeleting(true);
       const updated = await quizService.removeSection(id, sectionId);
       setQuiz(updated);
-      toast.success('Đã xóa phần');
+      toast.success('Deleted section');
     } catch (e: unknown) {
       if (axios.isAxiosError(e)) {
         const msg =
           (e.response?.data as { message?: string })?.message ??
           e.response?.statusText ??
-          'Không thể xóa phần';
+          'Failed to delete section';
         toast.error(String(msg));
       } else {
-        toast.error('Không thể xóa phần');
+        toast.error('Failed to delete section');
       }
     } finally {
       setDeleting(false);
@@ -123,13 +123,13 @@ export default function AdminQuizEdit() {
       const updated = await quizService.updateQuiz(id, editData);
       setQuiz(updated);
       setEditDialogOpen(false);
-      toast.success('Đã cập nhật thông tin quiz');
+      toast.success('Updated quiz info successfully');
     } catch (e: unknown) {
       if (axios.isAxiosError(e)) {
         const msg =
           (e.response?.data as { message?: string })?.message ??
           e.response?.statusText ??
-          'Không thể cập nhật';
+          'Failed to update quiz';
         toast.error(String(msg));
       }
     } finally {
@@ -153,9 +153,9 @@ export default function AdminQuizEdit() {
           onClick={() => navigate('/admin/quizzes')}
           sx={{ mb: 2 }}
         >
-          Quay lại
+          Back
         </Button>
-        <Typography color="text.secondary">Không tìm thấy quiz.</Typography>
+        <Typography color="text.secondary">Quiz not found.</Typography>
       </Box>
     );
   }
@@ -170,7 +170,7 @@ export default function AdminQuizEdit() {
         onClick={() => navigate('/admin/quizzes')}
         sx={{ mb: 2 }}
       >
-        Quay lại
+        Back
       </Button>
 
       <Card sx={{ mb: 3 }}>
@@ -180,8 +180,8 @@ export default function AdminQuizEdit() {
             <Box sx={{ flexGrow: 1 }}>
               <Typography variant="h5">{quiz.title}</Typography>
               <Typography variant="body2" color="text.secondary">
-                {courseName} · {quiz.timeLimit} phút ·{' '}
-                {quiz.sections?.length ?? 0} phần
+                {courseName} · {quiz.timeLimit} minutes ·{' '}
+                {quiz.sections?.length ?? 0} sections
               </Typography>
             </Box>
             <Button
@@ -190,7 +190,7 @@ export default function AdminQuizEdit() {
               size="small"
               onClick={() => setEditDialogOpen(true)}
             >
-              Sửa thông tin
+              Edit info
             </Button>
           </Box>
           {quiz.description && (
@@ -202,7 +202,7 @@ export default function AdminQuizEdit() {
       </Card>
 
       <Typography variant="h6" sx={{ mb: 2 }}>
-        Các phần quiz
+        Quiz sections
       </Typography>
       <Button
         variant="contained"
@@ -212,12 +212,12 @@ export default function AdminQuizEdit() {
         }
         sx={{ mb: 2 }}
       >
-        Thêm phần
+        Add section
       </Button>
 
       {(quiz.sections?.length ?? 0) === 0 ? (
         <Typography color="text.secondary">
-          Chưa có phần nào. Nhấn &quot;Thêm phần&quot; để tạo.
+          No sections found. Click &quot;Add section&quot; to create one.
         </Typography>
       ) : (
         <List>
@@ -250,7 +250,7 @@ export default function AdminQuizEdit() {
                           variant="caption"
                           color="text.secondary"
                         >
-                          {section.questions?.length ?? 0} câu hỏi
+                          {section.questions?.length ?? 0} questions
                         </Typography>
                       </Box>
                     }
@@ -290,11 +290,11 @@ export default function AdminQuizEdit() {
         maxWidth="sm"
         fullWidth
       >
-        <DialogTitle>Sửa thông tin quiz</DialogTitle>
+        <DialogTitle>Edit quiz info</DialogTitle>
         <DialogContent dividers>
           <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2, pt: 1 }}>
             <TextField
-              label="Tiêu đề"
+              label="Title"
               fullWidth
               value={editData.title}
               onChange={(e) =>
@@ -302,7 +302,7 @@ export default function AdminQuizEdit() {
               }
             />
             <TextField
-              label="Mô tả"
+              label="Description"
               fullWidth
               multiline
               rows={3}
@@ -315,10 +315,10 @@ export default function AdminQuizEdit() {
               sx={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 2 }}
             >
               <FormControl fullWidth>
-                <InputLabel>Khóa học</InputLabel>
+                <InputLabel>Course</InputLabel>
                 <Select
                   value={editData.courseId}
-                  label="Khóa học"
+                  label="Course"
                   onChange={(e) =>
                     setEditData({ ...editData, courseId: e.target.value })
                   }
@@ -331,7 +331,7 @@ export default function AdminQuizEdit() {
                 </Select>
               </FormControl>
               <TextField
-                label="Thời gian (phút)"
+                label="Time limit (minutes)"
                 type="number"
                 fullWidth
                 value={editData.timeLimit}
@@ -347,14 +347,14 @@ export default function AdminQuizEdit() {
         </DialogContent>
         <DialogActions>
           <Button onClick={() => setEditDialogOpen(false)} disabled={saving}>
-            Hủy
+            Cancel
           </Button>
           <Button
             onClick={handleSaveInfo}
             variant="contained"
             disabled={saving || !editData.title || !editData.courseId}
           >
-            {saving ? 'Đang lưu...' : 'Lưu thay đổi'}
+            {saving ? 'Saving...' : 'Save changes'}
           </Button>
         </DialogActions>
       </Dialog>

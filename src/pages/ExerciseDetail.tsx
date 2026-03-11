@@ -111,7 +111,7 @@ export default function ExerciseDetail() {
           const msg =
             (e.response?.data as { message?: string })?.message ??
             e.response?.statusText ??
-            'Không thể tải bài tập';
+            'Failed to load exercise';
           toast.error(String(msg));
         }
       })
@@ -297,7 +297,7 @@ export default function ExerciseDetail() {
   if (loadingExercise) {
     return (
       <Box sx={{ display: 'flex', justifyContent: 'center', p: 4 }}>
-        <Typography>Đang tải...</Typography>
+        <Typography>Loading...</Typography>
       </Box>
     );
   }
@@ -310,10 +310,10 @@ export default function ExerciseDetail() {
           onClick={() => navigate('/exercises')}
           sx={{ mb: 2 }}
         >
-          Quay lại
+          Back
         </Button>
         <Typography color="text.secondary">
-          Không tìm thấy bài tập hoặc đã hết hạn.
+          Exercise not found or expired.
         </Typography>
       </Box>
     );
@@ -332,10 +332,10 @@ export default function ExerciseDetail() {
           onClick={() => navigate('/exercises')}
           sx={{ mb: 2 }}
         >
-          Quay lại
+          Back
         </Button>
         <Typography color="text.secondary">
-          Bài tập không có phần nào hoặc phần không tồn tại.
+          Exercise section not found.
         </Typography>
       </Box>
     );
@@ -344,7 +344,7 @@ export default function ExerciseDetail() {
   const startRecording = async (questionId: string, isVideo = false) => {
     try {
       if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
-        toast.error('Trình duyệt không hỗ trợ ghi âm/quay phim.');
+        toast.error('Your browser does not support audio or video recording.');
         return;
       }
 
@@ -403,7 +403,7 @@ export default function ExerciseDetail() {
     } catch (error) {
       console.error(error);
       toast.error(
-        'Không thể bắt đầu ghi. Vui lòng kiểm tra quyền truy cập micro/camera.',
+        'Unable to start recording. Please check microphone/camera access.',
       );
     }
   };
@@ -475,7 +475,7 @@ export default function ExerciseDetail() {
     }
 
     if (hasUploadError) {
-      toast.error('Có lỗi khi tải lên file ghi âm. Vui lòng thử lại.');
+      toast.error('Failed to upload audio/video file. Please try again.');
       return;
     }
 
@@ -555,10 +555,10 @@ export default function ExerciseDetail() {
           const msg =
             (e.response?.data as { message?: string })?.message ??
             e.response?.statusText ??
-            'Không thể lưu kết quả';
+            'Failed to save results';
           toast.error(String(msg));
         } else {
-          toast.error('Không thể lưu kết quả');
+          toast.error('Failed to save results');
         }
       }
     }
@@ -820,7 +820,7 @@ export default function ExerciseDetail() {
               variant="outlined"
               value={value}
               onChange={(e) => handleAnswerChange(question._id, e.target.value)}
-              placeholder="Nhập câu trả lời của bạn"
+              placeholder="Enter your answer"
               disabled={viewingSaved}
             />
           </Box>
@@ -856,7 +856,7 @@ export default function ExerciseDetail() {
               {question.title}
             </Typography>
             <Typography variant="body2" color="text.secondary" sx={{ mb: 1 }}>
-              Hãy nghe mẫu và ghi âm lại phát âm của bạn.
+              Listen to the sample and record your pronunciation again.
             </Typography>
             <Box sx={{ display: 'flex', gap: 1, flexWrap: 'wrap', mb: 1 }}>
               <Button
@@ -865,7 +865,7 @@ export default function ExerciseDetail() {
                 disabled={status === 'recording' || viewingSaved}
                 onClick={() => startRecording(question._id)}
               >
-                {status === 'recording' ? 'Đang ghi...' : 'Ghi âm'}
+                {status === 'recording' ? 'Recording...' : 'Record'}
               </Button>
               <Button
                 variant="outlined"
@@ -874,7 +874,7 @@ export default function ExerciseDetail() {
                 disabled={status !== 'recording' || viewingSaved}
                 onClick={() => stopRecording(question._id)}
               >
-                Dừng
+                Stop
               </Button>
               <Button
                 variant="outlined"
@@ -883,13 +883,13 @@ export default function ExerciseDetail() {
                 disabled={!displayUrl || status === 'recording'}
                 onClick={handlePlayRecording}
               >
-                Nghe lại
+                Listen again
               </Button>
             </Box>
             {displayUrl && (
               <Box sx={{ mt: 1 }}>
                 <Typography variant="body2" sx={{ mb: 0.5 }}>
-                  Bản ghi của bạn:
+                  Your recording:
                 </Typography>
                 <audio
                   id={`audio-${question._id}`}
@@ -928,7 +928,7 @@ export default function ExerciseDetail() {
               {question.title}
             </Typography>
             <Typography variant="body2" color="text.secondary" sx={{ mb: 1 }}>
-              Hãy quay video trả lời của bạn.
+              Record your video answer.
             </Typography>
 
             {/* Video Preview / Playback */}
@@ -968,7 +968,7 @@ export default function ExerciseDetail() {
                     color: 'white',
                   }}
                 >
-                  <Typography variant="body2">Chưa có video</Typography>
+                  <Typography variant="body2">No video</Typography>
                 </Box>
               )}
             </Box>
@@ -980,7 +980,7 @@ export default function ExerciseDetail() {
                 disabled={status === 'recording' || viewingSaved}
                 onClick={() => startRecording(question._id, true)}
               >
-                {status === 'recording' ? 'Đang quay...' : 'Bắt đầu quay'}
+                {status === 'recording' ? 'Recording...' : 'Start recording'}
               </Button>
               <Button
                 variant="outlined"
@@ -989,7 +989,7 @@ export default function ExerciseDetail() {
                 disabled={status !== 'recording' || viewingSaved}
                 onClick={() => stopRecording(question._id)}
               >
-                Dừng
+                Stop
               </Button>
               <Button
                 variant="outlined"
@@ -998,7 +998,7 @@ export default function ExerciseDetail() {
                 disabled={!displayUrl || status === 'recording'}
                 onClick={handlePlayVideo}
               >
-                Xem lại
+                Listen again
               </Button>
             </Box>
           </Box>
@@ -1020,7 +1020,7 @@ export default function ExerciseDetail() {
               variant="outlined"
               value={value}
               onChange={(e) => handleAnswerChange(question._id, e.target.value)}
-              placeholder="Nhập câu trả lời của bạn"
+              placeholder="Enter your answer"
               disabled={viewingSaved}
             />
           </Box>
@@ -1036,7 +1036,7 @@ export default function ExerciseDetail() {
               {question.title}
             </Typography>
             <Typography variant="body2" color="text.secondary" sx={{ mb: 1 }}>
-              Hãy viết lại câu đúng trật tự.
+              Write the correct sentence.
             </Typography>
             <TextField
               key={`${question._id}-${retryKey}`}
@@ -1044,7 +1044,7 @@ export default function ExerciseDetail() {
               variant="outlined"
               value={value}
               onChange={(e) => handleAnswerChange(question._id, e.target.value)}
-              placeholder="Nhập câu trả lời của bạn"
+              placeholder="Enter your answer"
               disabled={viewingSaved}
             />
           </Box>
@@ -1064,7 +1064,7 @@ export default function ExerciseDetail() {
               variant="outlined"
               value={value}
               onChange={(e) => handleAnswerChange(question._id, e.target.value)}
-              placeholder="Nhập câu trả lời của bạn"
+              placeholder="Enter your answer"
               disabled={viewingSaved}
             />
           </Box>
@@ -1134,7 +1134,7 @@ export default function ExerciseDetail() {
             {renderQuestionMedia(question)}
             {renderQuestionWordBankWithHandler()}
             <Typography variant="body2" color="text.secondary" sx={{ mb: 1 }}>
-              Điền từ vào chỗ trống số {question.title}:
+              Fill in the blank number {question.title}:
             </Typography>
             <TextField
               key={`${question._id}-${retryKey}`}
@@ -1143,7 +1143,7 @@ export default function ExerciseDetail() {
               variant="outlined"
               value={value}
               onChange={(e) => handleAnswerChange(question._id, e.target.value)}
-              placeholder="Nhập từ cần điền"
+              placeholder="Enter the word to fill in"
               disabled={viewingSaved}
             />
           </Box>
@@ -1192,7 +1192,7 @@ export default function ExerciseDetail() {
               variant="outlined"
               value={value}
               onChange={(e) => handleAnswerChange(question._id, e.target.value)}
-              placeholder="Nhập câu trả lời của bạn"
+              placeholder="Enter your answer"
               disabled={viewingSaved || showResult}
             />
           </Box>
@@ -1207,7 +1207,7 @@ export default function ExerciseDetail() {
         onClick={() => navigate('/exercises')}
         sx={{ mb: 2 }}
       >
-        Quay lại
+        Back
       </Button>
 
       <Card>
@@ -1217,8 +1217,8 @@ export default function ExerciseDetail() {
               {exercise.title}
             </Typography>
             <Typography variant="body2" color="text.secondary">
-              Phần {currentSectionIndex + 1} / {exercise.sections.length} · Tổng
-              số câu hỏi: {allQuestions.length}
+              Section {currentSectionIndex + 1} / {exercise.sections.length} · Total
+              number of questions: {allQuestions.length}
             </Typography>
           </Box>
 
@@ -1226,7 +1226,7 @@ export default function ExerciseDetail() {
           <Box key={`${currentSection._id}-${retryKey}`}>
             <Box sx={{ display: 'flex', alignItems: 'center', mb: 1, gap: 1 }}>
               <Typography variant="h6">
-                Phần {currentSectionIndex + 1}: {currentSection.title}
+                Section {currentSectionIndex + 1}: {currentSection.title}
               </Typography>
               <Chip
                 label={
@@ -1347,7 +1347,7 @@ export default function ExerciseDetail() {
                       }}
                     >
                       <Typography variant="subtitle2" sx={{ mb: 0.5 }}>
-                        Câu {index + 1}
+                        Question {index + 1}
                       </Typography>
 
                       {renderQuestion(question, currentSection.questionType)}
@@ -1360,19 +1360,19 @@ export default function ExerciseDetail() {
                                 variant="body2"
                                 sx={{ color: 'success.main' }}
                               >
-                                Đúng
+                                Correct
                               </Typography>
                             ) : (
                               <Typography
                                 variant="body2"
                                 sx={{ color: 'error.main' }}
                               >
-                                Sai
+                                Wrong
                               </Typography>
                             )
                           ) : (
                             <Typography variant="body2" color="text.secondary">
-                              Đã lưu
+                              Saved
                             </Typography>
                           )}
                         </Box>
@@ -1398,7 +1398,7 @@ export default function ExerciseDetail() {
                 setShowResult(false);
               }}
             >
-              Phần trước
+              Previous section
             </Button>
             <Box sx={{ display: 'flex', gap: 2 }}>
               {(viewingSaved || Object.keys(checkedResults).length > 0) &&
@@ -1408,7 +1408,7 @@ export default function ExerciseDetail() {
                   color="inherit"
                   onClick={handleRetrySection}
                 >
-                  Làm lại
+                  Retry
                 </Button>
               ) : (
                 <Button
@@ -1416,7 +1416,7 @@ export default function ExerciseDetail() {
                   color="secondary"
                   onClick={handleCheckSection}
                 >
-                  {!isSectionGraded(currentSection) ? 'Lưu' : 'Kiểm tra'}
+                  {!isSectionGraded(currentSection) ? 'Save' : 'Check'}
                 </Button>
               )}
               <Button
@@ -1433,7 +1433,7 @@ export default function ExerciseDetail() {
                   setShowResult(false);
                 }}
               >
-                Phần tiếp theo
+                Next section
               </Button>
             </Box>
           </Box>
@@ -1444,7 +1444,7 @@ export default function ExerciseDetail() {
         <DialogTitle>
           <Box sx={{ display: 'flex', alignItems: 'center' }}>
             <CheckCircleIcon sx={{ color: 'success.main', mr: 1 }} />
-            Kết quả bài làm
+            Result
           </Box>
         </DialogTitle>
         <DialogContent>
@@ -1454,27 +1454,27 @@ export default function ExerciseDetail() {
                 {Math.round((score.score / score.maxScore) * 100)}%
               </Typography>
               <Typography variant="body1" align="center" color="text.secondary">
-                Điểm số: {score.score} / {score.maxScore}
+                Score: {score.score} / {score.maxScore}
               </Typography>
               <Alert severity="success" sx={{ mt: 2 }}>
-                Bài làm đã được lưu vào hồ sơ học tập của bạn!
+                Your exercise has been saved to your learning profile!
               </Alert>
             </Box>
           ) : (
             <Box>
               <Typography variant="body1" align="center" color="text.secondary">
-                Kết quả bài làm đã được lưu.
+                Your exercise has been saved.
               </Typography>
               <Alert severity="info" sx={{ mt: 2 }}>
-                Kết quả (ghi âm, video, ...) sẽ được lưu và có thể được đánh giá
-                thủ công sau.
+                Your exercise (audio, video, ...) will be saved and manually graded
+                later.
               </Alert>
             </Box>
           )}
         </DialogContent>
         <DialogActions>
           <Button onClick={() => setShowResult(false)} variant="contained">
-            Đóng
+            Close
           </Button>
         </DialogActions>
       </Dialog>

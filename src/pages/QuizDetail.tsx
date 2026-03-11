@@ -115,7 +115,7 @@ export default function QuizDetail() {
           setShowResult(true);
           setResultDialogOpen(false);
           setQuizLocked(false);
-          toast.info('Bạn đã hoàn thành bài quiz này trước đó.');
+          toast.info('You have completed this quiz before.');
         } else {
           setQuiz(quizData);
           setTimeRemaining((quizData.timeLimit ?? 60) * 60);
@@ -134,7 +134,7 @@ export default function QuizDetail() {
           const msg =
             (e.response?.data as { message?: string })?.message ??
             e.response?.statusText ??
-            'Không thể tải quiz';
+            'Failed to load quiz';
           toast.error(String(msg));
         }
       } finally {
@@ -240,10 +240,10 @@ export default function QuizDetail() {
         const msg =
           (e.response?.data as { message?: string })?.message ??
           e.response?.statusText ??
-          'Không thể nộp bài';
+          'Failed to submit quiz';
         toast.error(String(msg));
       } else {
-        toast.error('Không thể nộp bài');
+        toast.error('Failed to submit quiz');
       }
     } finally {
       setSubmitting(false);
@@ -414,7 +414,7 @@ export default function QuizDetail() {
                       onChange={(e) =>
                         handleAnswerChange(question._id, e.target.value)
                       }
-                      placeholder="Nhập câu trả lời"
+                      placeholder="Enter your answer"
                       disabled={disabled}
                     />
                   </>
@@ -440,7 +440,7 @@ export default function QuizDetail() {
               variant="outlined"
               value={value}
               onChange={(e) => handleAnswerChange(question._id, e.target.value)}
-              placeholder="Nhập câu trả lời"
+              placeholder="Enter your answer"
               disabled={disabled}
             />
           </Box>
@@ -498,14 +498,14 @@ export default function QuizDetail() {
             {renderQuestionMedia(question)}
             {renderQuestionWordBank(question)}
             <Typography variant="body2" color="text.secondary" sx={{ mb: 1 }}>
-              Điền từ vào chỗ trống:
+              Fill in the blank:
             </Typography>
             <TextField
               fullWidth
               size="small"
               value={value}
               onChange={(e) => handleAnswerChange(question._id, e.target.value)}
-              placeholder="Nhập từ cần điền"
+              placeholder="Enter the word to fill in the blank"
               disabled={disabled}
             />
           </Box>
@@ -592,7 +592,7 @@ export default function QuizDetail() {
               {question.title}
             </Typography>
             <Typography variant="body2" color="text.secondary" sx={{ mb: 1 }}>
-              Nhập câu trả lời của bạn (mô tả hoặc nội dung)
+              Enter your answer (description or content)
             </Typography>
             <TextField
               fullWidth
@@ -600,7 +600,7 @@ export default function QuizDetail() {
               rows={4}
               value={value}
               onChange={(e) => handleAnswerChange(question._id, e.target.value)}
-              placeholder="Nhập câu trả lời"
+              placeholder="Enter your answer"
               disabled={disabled}
             />
           </Box>
@@ -619,7 +619,7 @@ export default function QuizDetail() {
               variant="outlined"
               value={value}
               onChange={(e) => handleAnswerChange(question._id, e.target.value)}
-              placeholder="Nhập câu trả lời"
+              placeholder="Enter your answer"
               disabled={disabled}
             />
           </Box>
@@ -711,7 +711,7 @@ export default function QuizDetail() {
                 mb: 0.5,
               }}
             >
-              {isCorrect ? 'Chính xác' : 'Chưa chính xác'}
+              {isCorrect ? 'Correct' : 'Incorrect'}
             </Typography>
             {!isCorrect && (
               <Box>
@@ -720,7 +720,7 @@ export default function QuizDetail() {
                   color="text.secondary"
                   sx={{ fontWeight: 'bold', textTransform: 'uppercase' }}
                 >
-                  Đáp án đúng:
+                  Correct answer:
                 </Typography>
                 {effectiveType === 'picture-choice' ? (
                   <Box sx={{ display: 'flex', gap: 1, mt: 1 }}>
@@ -776,10 +776,10 @@ export default function QuizDetail() {
           onClick={() => navigate('/quizzes')}
           sx={{ mb: 2 }}
         >
-          Quay lại
+          Back
         </Button>
         <Typography color="text.secondary">
-          Không tìm thấy quiz hoặc đã hết hạn.
+          Quiz not found or expired.
         </Typography>
       </Box>
     );
@@ -797,7 +797,7 @@ export default function QuizDetail() {
         onClick={handleBackNavigation}
         sx={{ mb: 2 }}
       >
-        Quay lại
+        Back
       </Button>
 
       <Card>
@@ -837,7 +837,7 @@ export default function QuizDetail() {
                   }}
                 >
                   <Typography variant="h6">
-                    Phần {currentSectionIndex + 1}: {currentSection.title}
+                    Section {currentSectionIndex + 1}: {currentSection.title}
                   </Typography>
                   {currentSection.sectionType && (
                     <Chip
@@ -864,8 +864,8 @@ export default function QuizDetail() {
                   </Typography>
                 )}
                 <Typography variant="body2" color="text.secondary">
-                  Phần {currentSectionIndex + 1} / {quiz.sections?.length ?? 0}{' '}
-                  · {currentSection.questions?.length ?? 0} câu hỏi
+                  Section {currentSectionIndex + 1} / {quiz.sections?.length ?? 0}{' '}
+                  · {currentSection.questions?.length ?? 0} questions
                 </Typography>
               </Box>
 
@@ -875,9 +875,9 @@ export default function QuizDetail() {
                 sx={{ mt: 2, mb: 2 }}
               />
               <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
-                Tổng tiến độ:{' '}
+                Total progress:{' '}
                 {questionsCompleted + (currentSection.questions?.length ?? 0)} /{' '}
-                {totalQuestions} câu hỏi
+                {totalQuestions} questions
               </Typography>
 
               <Divider sx={{ my: 2 }} />
@@ -908,7 +908,7 @@ export default function QuizDetail() {
                   }
                   disabled={currentSectionIndex === 0 || submitting}
                 >
-                  Phần trước
+                  Previous section
                 </Button>
                 <Button
                   variant="contained"
@@ -917,9 +917,9 @@ export default function QuizDetail() {
                 >
                   {isLastSection
                     ? showResult
-                      ? 'Về danh sách'
-                      : 'Nộp bài'
-                    : 'Phần tiếp'}
+                      ? 'Back to list'
+                      : 'Submit'
+                    : 'Next section'}
                 </Button>
               </Box>
             </>
@@ -944,7 +944,7 @@ export default function QuizDetail() {
                 mr: 1,
               }}
             />
-            Kết quả bài kiểm tra
+            Test results
           </Box>
         </DialogTitle>
         <DialogContent>
@@ -966,49 +966,49 @@ export default function QuizDetail() {
                 color="text.secondary"
                 gutterBottom
               >
-                Điểm số: {result.score} / {result.maxScore}
+                Score: {result.score} / {result.maxScore}
               </Typography>
               <Alert
                 severity={result.percentage >= 60 ? 'success' : 'info'}
                 sx={{ mt: 2 }}
               >
                 {result.percentage >= 60
-                  ? 'Chúc mừng! Bạn đã hoàn thành bài quiz.'
-                  : 'Bạn có thể làm lại để cải thiện điểm số.'}
+                  ? 'Congratulations! You have completed the quiz.'
+                  : 'You can retake it to improve your score.'}
               </Alert>
             </Box>
           )}
         </DialogContent>
         <DialogActions>
           <Button onClick={() => setResultDialogOpen(false)} color="inherit">
-            Xem lại bài làm
+            Retake
           </Button>
           <Button onClick={() => navigate('/quizzes')} variant="contained">
-            Quay lại danh sách quiz
+            Back to list
           </Button>
         </DialogActions>
       </Dialog>
 
       {/* Exit Confirmation Dialog */}
       <Dialog open={exitDialogOpen} onClose={() => setExitDialogOpen(false)}>
-        <DialogTitle>Xác nhận thoát</DialogTitle>
+        <DialogTitle>Confirm exit</DialogTitle>
         <DialogContent>
           <Typography>
-            Bạn đang trong quá trình làm bài quiz. Nếu thoát ra bây giờ, hệ
-            thống sẽ tự động nộp bài với những câu bạn đã làm. Bạn có chắc chắn
-            muốn nộp bài và thoát?
+            You are currently in the process of taking the quiz. If you exit now,
+            the system will automatically submit your answers. Are you sure you
+            want to submit and exit?
           </Typography>
         </DialogContent>
         <DialogActions>
           <Button onClick={() => setExitDialogOpen(false)} color="inherit">
-            Tiếp tục làm bài
+            Continue
           </Button>
           <Button
             onClick={handleConfirmExit}
             color="primary"
             variant="contained"
           >
-            Nộp bài và thoát
+            Submit and exit
           </Button>
         </DialogActions>
       </Dialog>

@@ -70,10 +70,10 @@ export default function AdminQuizzes() {
         const msg =
           (e.response?.data as { message?: string })?.message ??
           e.response?.statusText ??
-          'Không thể tải dữ liệu';
+          'Failed to load data';
         toast.error(String(msg));
       } else {
-        toast.error('Không thể tải dữ liệu');
+        toast.error('Failed to load data');
       }
     } finally {
       setLoading(false);
@@ -86,25 +86,25 @@ export default function AdminQuizzes() {
 
   const handleDelete = async (quizId: string) => {
     const ok = await confirm({
-      title: 'Xác nhận xóa quiz',
-      message: 'Bạn có chắc muốn xóa quiz này?',
-      confirmText: 'Xóa',
+      title: 'Confirm delete quiz',
+      message: 'Are you sure you want to delete this quiz?',
+      confirmText: 'Delete',
       confirmColor: 'error',
     });
     if (!ok) return;
     try {
       await quizService.deleteQuiz(quizId);
-      toast.success('Đã xóa quiz');
+      toast.success('Deleted quiz');
       fetchData();
     } catch (e: unknown) {
       if (axios.isAxiosError(e)) {
         const msg =
           (e.response?.data as { message?: string })?.message ??
           e.response?.statusText ??
-          'Không thể xóa';
+          'Failed to delete quiz';
         toast.error(String(msg));
       } else {
-        toast.error('Không thể xóa quiz');
+        toast.error('Failed to delete quiz');
       }
     }
   };
@@ -121,7 +121,7 @@ export default function AdminQuizzes() {
 
   const handleSaveNewQuiz = async () => {
     if (!addForm.courseId || !addForm.title.trim()) {
-      toast.error('Vui lòng chọn khóa học và nhập tên quiz');
+      toast.error('Please select a course and enter a quiz name');
       return;
     }
     try {
@@ -133,7 +133,7 @@ export default function AdminQuizzes() {
         timeLimit: addForm.timeLimit,
       };
       const created = await quizService.createQuiz(dto);
-      toast.success('Đã thêm quiz');
+      toast.success('Added quiz');
       setOpenAddQuiz(false);
       fetchData();
       navigate(`/admin/quizzes/${created._id}`);
@@ -142,10 +142,10 @@ export default function AdminQuizzes() {
         const msg =
           (e.response?.data as { message?: string })?.message ??
           e.response?.statusText ??
-          'Không thể thêm quiz';
+          'Failed to add quiz';
         toast.error(String(msg));
       } else {
-        toast.error('Không thể thêm quiz');
+        toast.error('Failed to add quiz');
       }
     } finally {
       setSaving(false);
@@ -173,14 +173,14 @@ export default function AdminQuizzes() {
               variant="h4"
               sx={{ fontWeight: 600, color: 'text.primary', mb: 0.5 }}
             >
-              Quản lý Quiz
+              Quiz Management
             </Typography>
             <Typography
               variant="body2"
               color="text.secondary"
               sx={{ fontWeight: 500 }}
             >
-              Thiết lập các bài kiểm tra đánh giá trình độ tổng hợp
+              Setup comprehensive assessment tests
             </Typography>
           </Box>
         </Box>
@@ -199,7 +199,7 @@ export default function AdminQuizzes() {
             '&:hover': { boxShadow: '0 6px 16px rgba(156, 39, 176, 0.4)' },
           }}
         >
-          Thêm Quiz mới
+          Add New Quiz
         </Button>
       </Box>
 
@@ -211,7 +211,7 @@ export default function AdminQuizzes() {
         <Card>
           <CardContent>
             <Typography color="text.secondary" align="center">
-              Chưa có quiz nào. Hãy thêm quiz mới!
+              No quiz found. Please add a new quiz!
             </Typography>
           </CardContent>
         </Card>
@@ -303,7 +303,7 @@ export default function AdminQuizzes() {
                       lineHeight: 1.4,
                     }}
                   >
-                    {quiz.description || 'Không có mô tả.'}
+                    {quiz.description || 'No description.'}
                   </Typography>
 
                   <Box sx={{ display: 'flex', gap: 1.5, mt: 'auto' }}>
@@ -337,7 +337,7 @@ export default function AdminQuizzes() {
                           display: 'block',
                         }}
                       >
-                        Phút
+                        Minutes
                       </Typography>
                     </Box>
                     <Box
@@ -373,7 +373,7 @@ export default function AdminQuizzes() {
                           display: 'block',
                         }}
                       >
-                        Câu hỏi
+                        Questions
                       </Typography>
                     </Box>
                   </Box>
@@ -428,13 +428,13 @@ export default function AdminQuizzes() {
         maxWidth="sm"
         fullWidth
       >
-        <DialogTitle>Thêm Quiz</DialogTitle>
+        <DialogTitle>Add New Quiz</DialogTitle>
         <DialogContent>
           <FormControl fullWidth sx={{ mt: 1 }}>
-            <InputLabel>Khóa học</InputLabel>
+            <InputLabel>Course</InputLabel>
             <Select
               value={addForm.courseId}
-              label="Khóa học"
+              label="Course"
               onChange={(e) =>
                 setAddForm((f) => ({ ...f, courseId: e.target.value }))
               }
@@ -448,7 +448,7 @@ export default function AdminQuizzes() {
           </FormControl>
           <TextField
             fullWidth
-            label="Tên quiz"
+            label="Quiz Name"
             value={addForm.title}
             onChange={(e) =>
               setAddForm((f) => ({ ...f, title: e.target.value }))
@@ -457,7 +457,7 @@ export default function AdminQuizzes() {
           />
           <TextField
             fullWidth
-            label="Mô tả"
+            label="Description"
             value={addForm.description}
             onChange={(e) =>
               setAddForm((f) => ({ ...f, description: e.target.value }))
@@ -469,7 +469,7 @@ export default function AdminQuizzes() {
           <TextField
             fullWidth
             type="number"
-            label="Thời gian (phút)"
+            label="Time Limit (minutes)"
             value={addForm.timeLimit}
             onChange={(e) =>
               setAddForm((f) => ({
@@ -482,13 +482,13 @@ export default function AdminQuizzes() {
           />
         </DialogContent>
         <DialogActions>
-          <Button onClick={() => setOpenAddQuiz(false)}>Hủy</Button>
+          <Button onClick={() => setOpenAddQuiz(false)}>Cancel</Button>
           <Button
             variant="contained"
             onClick={handleSaveNewQuiz}
             disabled={saving}
           >
-            {saving ? 'Đang lưu...' : 'Thêm'}
+            {saving ? 'Saving...' : 'Add'}
           </Button>
         </DialogActions>
       </Dialog>

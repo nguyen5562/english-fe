@@ -69,7 +69,7 @@ export function FilePicker({
       <Box sx={{ display: 'flex', gap: 1, alignItems: 'flex-start' }}>
         <TextField
           fullWidth
-          placeholder="Nhập URL hoặc chọn file"
+          placeholder="Enter URL or select file"
           value={value}
           onChange={(e) => onChange(e.target.value)}
           helperText={helperText}
@@ -101,7 +101,7 @@ export function FilePicker({
             },
           }}
         >
-          Chọn file
+          Select file
         </Button>
       </Box>
     </Box>

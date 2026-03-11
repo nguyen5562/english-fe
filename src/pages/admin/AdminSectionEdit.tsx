@@ -82,19 +82,19 @@ const SECTION_TYPE_OPTIONS: { value: SectionType; label: string }[] = [
 ];
 
 const QUESTION_TYPE_OPTIONS: { value: QuestionType; label: string }[] = [
-  { value: 'multiple-choice', label: 'Trắc nghiệm' },
-  { value: 'dropdown-choice', label: 'Chọn đáp án (dropdown)' }, //
-  { value: 'fill-sentence', label: 'Điền câu' }, //
-  { value: 'fill-blank', label: 'Điền từ vào chỗ trống' }, //
-  { value: 'word-order', label: 'Sắp xếp từ' }, //
-  { value: 'word-bank', label: 'Từ gợi ý' }, //
-  { value: 'listening', label: 'Nghe' },
-  { value: 'reading-mcq', label: 'Đọc hiểu trắc nghiệm' },
-  { value: 'paragraph-fill', label: 'Điền vào đoạn văn' }, //
-  { value: 'picture-choice', label: 'Chọn tranh' }, //
-  { value: 'pronunciation', label: 'Phát âm' }, //
-  { value: 'writing', label: 'Viết' }, //
-  { value: 'video-recording', label: 'Ghi âm / Video' }, //
+  { value: 'multiple-choice', label: 'Multiple choice' },
+  { value: 'dropdown-choice', label: 'Dropdown choice' }, //
+  { value: 'fill-sentence', label: 'Fill sentence' }, //
+  { value: 'fill-blank', label: 'Fill blank' }, //
+  { value: 'word-order', label: 'Word order' }, //
+  { value: 'word-bank', label: 'Word bank' }, //
+  { value: 'listening', label: 'Listening' },
+  { value: 'reading-mcq', label: 'Reading mcq' },
+  { value: 'paragraph-fill', label: 'Paragraph fill' }, //
+  { value: 'picture-choice', label: 'Picture choice' }, //
+  { value: 'pronunciation', label: 'Pronunciation' }, //
+  { value: 'writing', label: 'Writing' }, //
+  { value: 'video-recording', label: 'Video recording' }, //
 ];
 
 export default function AdminSectionEdit() {
@@ -230,7 +230,7 @@ export default function AdminSectionEdit() {
           const msg =
             (e.response?.data as { message?: string })?.message ??
             e.response?.statusText ??
-            'Không thể tải dữ liệu';
+            'Failed to load data';
           toast.error(String(msg));
         }
       })
@@ -249,7 +249,7 @@ export default function AdminSectionEdit() {
 
   const handleSaveSection = async () => {
     if (!exerciseId || !sectionForm.title.trim()) {
-      toast.error('Vui lòng nhập tên phần');
+      toast.error('Please enter section title');
       return;
     }
     try {
@@ -273,7 +273,7 @@ export default function AdminSectionEdit() {
       if (isNew) {
         await exerciseService.addSection(exerciseId, dto);
         toast.success(
-          'Đã tạo phần. Bạn có thể thêm câu hỏi ở trang tiếp theo.',
+          'Section created successfully. You can add questions on the next page.',
         );
         const updated = await exerciseService.getExerciseById(exerciseId);
         const newSection =
@@ -286,7 +286,7 @@ export default function AdminSectionEdit() {
         }
       } else if (sectionId) {
         await exerciseService.updateSection(exerciseId, sectionId, dto);
-        toast.success('Đã cập nhật phần');
+        toast.success('Section updated successfully');
         const updated = await exerciseService.getExerciseById(exerciseId);
         setExercise(updated);
         // Navigate if ID changed (safety check)
@@ -305,10 +305,10 @@ export default function AdminSectionEdit() {
         const msg =
           (e.response?.data as { message?: string })?.message ??
           e.response?.statusText ??
-          'Không thể lưu phần';
+          'Failed to save section';
         toast.error(String(msg));
       } else {
-        toast.error('Không thể lưu phần');
+        toast.error('Failed to save section');
       }
     } finally {
       setSaving(false);
@@ -370,7 +370,7 @@ export default function AdminSectionEdit() {
   const handleAddQuestionToSection = async () => {
     if (!exerciseId || !sectionId || sectionId === 'new') return;
     if (!questionForm.title.trim()) {
-      toast.error('Vui lòng nhập nội dung câu hỏi');
+      toast.error('Please enter question content');
       return;
     }
     const dto = buildQuestionDto();
@@ -378,14 +378,14 @@ export default function AdminSectionEdit() {
       TYPES_WITH_OPTIONS.includes(sectionQuestionType) &&
       (!dto.options?.length || !dto.correctAnswer?.length)
     ) {
-      toast.error('Vui lòng thêm ít nhất một đáp án và chọn đáp án đúng');
+      toast.error('Please add at least one answer and select the correct answer');
       return;
     }
     if (
       TYPES_FILL_BLANK.includes(sectionQuestionType) &&
       !dto.correctAnswer?.length
     ) {
-      toast.error('Vui lòng thêm ít nhất một đáp án đúng');
+      toast.error('Please add at least one correct answer');
       return;
     }
     try {
@@ -398,10 +398,10 @@ export default function AdminSectionEdit() {
           editingQuestionId,
           dto,
         );
-        toast.success('Đã cập nhật câu hỏi');
+        toast.success('Question updated successfully');
       } else {
         updated = await exerciseService.addQuestion(exerciseId, sectionId, dto);
-        toast.success('Đã thêm câu hỏi');
+        toast.success('Question added successfully');
       }
       setExercise(updated);
       setQuestionForm({
@@ -425,14 +425,14 @@ export default function AdminSectionEdit() {
           (e.response?.data as { message?: string })?.message ??
           e.response?.statusText ??
           (editingQuestionId
-            ? 'Không thể cập nhật câu hỏi'
-            : 'Không thể thêm câu hỏi');
+            ? 'Failed to update question'
+            : 'Failed to add question');
         toast.error(String(msg));
       } else {
         toast.error(
           editingQuestionId
-            ? 'Không thể cập nhật câu hỏi'
-            : 'Không thể thêm câu hỏi',
+            ? 'Failed to update question'
+            : 'Failed to add question',
         );
       }
     } finally {
@@ -443,9 +443,9 @@ export default function AdminSectionEdit() {
   const handleRemoveQuestion = async (questionId: string) => {
     if (!exerciseId || !sectionId || sectionId === 'new') return;
     const ok = await confirm({
-      title: 'Xác nhận xóa câu hỏi',
-      message: 'Bạn có chắc muốn xóa câu hỏi này?',
-      confirmText: 'Xóa',
+      title: 'Confirm delete question',
+      message: 'Are you sure you want to delete this question?',
+      confirmText: 'Delete',
       confirmColor: 'error',
     });
     if (!ok) return;
@@ -457,16 +457,16 @@ export default function AdminSectionEdit() {
         questionId,
       );
       setExercise(updated);
-      toast.success('Đã xóa câu hỏi');
+      toast.success('Question deleted successfully');
     } catch (e: unknown) {
       if (axios.isAxiosError(e)) {
         const msg =
           (e.response?.data as { message?: string })?.message ??
           e.response?.statusText ??
-          'Không thể xóa câu hỏi';
+          'Failed to delete question';
         toast.error(String(msg));
       } else {
-        toast.error('Không thể xóa câu hỏi');
+        toast.error('Failed to delete question');
       }
     } finally {
       setSaving(false);
@@ -507,9 +507,9 @@ export default function AdminSectionEdit() {
           onClick={() => navigate('/admin/exercises')}
           sx={{ mb: 2 }}
         >
-          Quay lại
+          Back
         </Button>
-        <Typography color="text.secondary">Không tìm thấy bài tập.</Typography>
+        <Typography color="text.secondary">Exercise not found.</Typography>
       </Box>
     );
   }
@@ -524,7 +524,7 @@ export default function AdminSectionEdit() {
         onClick={() => navigate(`/admin/exercises/${exercise?._id}`)}
         sx={{ mb: 2 }}
       >
-        Quay lại
+        Back
       </Button>
 
       <Card sx={{ mb: 3 }}>
@@ -536,8 +536,8 @@ export default function AdminSectionEdit() {
               <Typography variant="body2" color="text.secondary">
                 {courseName}{' '}
                 {isNew
-                  ? '· Thêm phần mới'
-                  : `· Sửa phần: ${currentSection?.title ?? ''}`}
+                  ? '· Add new section'
+                  : `· Edit section: ${currentSection?.title ?? ''}`}
               </Typography>
             </Box>
           </Box>
@@ -546,17 +546,17 @@ export default function AdminSectionEdit() {
 
       <Typography variant="h6" sx={{ mb: 2 }}>
         {isNew
-          ? 'Thông tin phần (chọn kiểu phần & kiểu câu hỏi trước)'
-          : 'Thông tin phần'}
+          ? 'Section information (choose section type & question type first)'
+          : 'Section information'}
       </Typography>
 
       <Card sx={{ mb: 3 }}>
         <CardContent>
           <FormControl fullWidth sx={{ mb: 2 }}>
-            <InputLabel>Loại phần</InputLabel>
+            <InputLabel>Section type</InputLabel>
             <Select
               value={sectionForm.sectionType}
-              label="Loại phần"
+              label="Section type"
               onChange={(e) =>
                 setSectionForm((f) => ({
                   ...f,
@@ -572,10 +572,10 @@ export default function AdminSectionEdit() {
             </Select>
           </FormControl>
           <FormControl fullWidth sx={{ mb: 2 }}>
-            <InputLabel>Kiểu câu hỏi</InputLabel>
+            <InputLabel>Question type</InputLabel>
             <Select
               value={sectionForm.questionType}
-              label="Kiểu câu hỏi"
+              label="Question type"
               disabled={!isNew}
               onChange={(e) =>
                 setSectionForm((f) => ({
@@ -596,14 +596,14 @@ export default function AdminSectionEdit() {
                 color="text.secondary"
                 sx={{ mt: 0.5 }}
               >
-                Kiểu câu hỏi cố định sau khi tạo phần; mọi câu hỏi trong phần
-                dùng chung kiểu này.
+                Question type is fixed after section creation; all questions in the section
+                use this type.
               </Typography>
             )}
           </FormControl>
           <TextField
             fullWidth
-            label="Tên phần"
+            label="Section name"
             value={sectionForm.title}
             onChange={(e) =>
               setSectionForm((f) => ({ ...f, title: e.target.value }))
@@ -612,7 +612,7 @@ export default function AdminSectionEdit() {
           />
           <TextField
             fullWidth
-            label="Mô tả"
+            label="Description"
             value={sectionForm.description}
             onChange={(e) =>
               setSectionForm((f) => ({ ...f, description: e.target.value }))
@@ -627,8 +627,8 @@ export default function AdminSectionEdit() {
               fullWidth
               label={
                 sectionForm.questionType === 'paragraph-fill'
-                  ? 'Đoạn văn (dùng ____ cho mỗi chỗ trống)'
-                  : 'Đoạn văn (passage)'
+                  ? 'Passage (use ____ for each blank)'
+                  : 'Passage'
               }
               value={sectionForm.passage}
               onChange={(e) =>
@@ -641,21 +641,21 @@ export default function AdminSectionEdit() {
           )}
           <Box sx={{ mb: 2, display: 'flex', flexDirection: 'column', gap: 2 }}>
             <FilePicker
-              label="URL Audio (phần)"
+              label="Audio URL (section)"
               value={sectionForm.audioUrl}
               onChange={(url) =>
                 setSectionForm((f) => ({ ...f, audioUrl: url }))
               }
             />
             <FilePicker
-              label="URL Video (phần)"
+              label="Video URL (section)"
               value={sectionForm.videoUrl}
               onChange={(url) =>
                 setSectionForm((f) => ({ ...f, videoUrl: url }))
               }
             />
             <FilePicker
-              label="URL Hình ảnh (phần)"
+              label="Image URL (section)"
               value={sectionForm.imageUrl}
               onChange={(url) =>
                 setSectionForm((f) => ({ ...f, imageUrl: url }))
@@ -665,7 +665,7 @@ export default function AdminSectionEdit() {
           {SECTION_NEED_WORD_BANK.includes(sectionForm.questionType) && (
             <TextField
               fullWidth
-              label="Từ gợi ý (cách nhau bởi dấu phẩy hoặc xuống dòng)"
+              label="Word bank (separated by commas or newlines)"
               value={sectionForm.wordBankStr}
               onChange={(e) =>
                 setSectionForm((f) => ({ ...f, wordBankStr: e.target.value }))
@@ -681,7 +681,7 @@ export default function AdminSectionEdit() {
       {!isNew && (
         <>
           <Typography variant="h6" sx={{ mb: 2 }}>
-            Câu hỏi trong phần (kiểu:{' '}
+            Questions in section (type:{' '}
             {QUESTION_TYPE_OPTIONS.find(
               (o) => o.value === sectionForm.questionType,
             )?.label ?? sectionForm.questionType}
@@ -693,11 +693,11 @@ export default function AdminSectionEdit() {
             onClick={openAddQuestion}
             sx={{ mb: 2 }}
           >
-            Thêm câu hỏi
+            Add question
           </Button>
           {(currentSection?.questions?.length ?? 0) === 0 ? (
             <Typography color="text.secondary">
-              Chưa có câu hỏi nào trong phần này.
+              No questions in this section yet.
             </Typography>
           ) : (
             <List>
@@ -725,8 +725,8 @@ export default function AdminSectionEdit() {
                   }
                 >
                   <ListItemText
-                    primary={q.title || '(Không tiêu đề)'}
-                    secondary={`Điểm: ${q.point}`}
+                    primary={q.title || '(No title)'}
+                    secondary={`Score: ${q.point}`}
                   />
                 </ListItem>
               ))}
@@ -742,13 +742,13 @@ export default function AdminSectionEdit() {
           disabled={saving}
           sx={{ mr: 1 }}
         >
-          {saving ? 'Đang lưu...' : isNew ? 'Tạo phần' : 'Lưu phần'}
+          {saving ? 'Saving...' : isNew ? 'Create section' : 'Save section'}
         </Button>
         <Button
           variant="outlined"
           onClick={() => navigate(`/admin/exercises/${exercise?._id}`)}
         >
-          Hủy
+          Cancel
         </Button>
       </Box>
 
@@ -760,7 +760,7 @@ export default function AdminSectionEdit() {
         fullWidth
       >
         <DialogTitle>
-          {editingQuestionId ? 'Sửa câu hỏi' : 'Thêm câu hỏi'} — Kiểu:{' '}
+          {editingQuestionId ? 'Edit question' : 'Add question'} — Type:{' '}
           {QUESTION_TYPE_OPTIONS.find((o) => o.value === sectionQuestionType)
             ?.label ?? sectionQuestionType}
         </DialogTitle>
@@ -769,8 +769,8 @@ export default function AdminSectionEdit() {
             fullWidth
             label={
               TYPES_FILL_BLANK.includes(sectionQuestionType)
-                ? 'Nội dung câu (dùng ____ cho mỗi chỗ trống)'
-                : 'Nội dung câu hỏi'
+                ? 'Question content (use ____ for each blank)'
+                : 'Question content'
             }
             value={questionForm.title}
             onChange={(e) =>
@@ -783,7 +783,7 @@ export default function AdminSectionEdit() {
           <TextField
             fullWidth
             type="number"
-            label="Điểm"
+            label="Score"
             value={questionForm.point}
             onChange={(e) =>
               setQuestionForm((f) => ({
@@ -801,12 +801,12 @@ export default function AdminSectionEdit() {
             TYPES_NEED_IMAGE.includes(sectionQuestionType)) && (
             <>
               <Typography variant="subtitle2" sx={{ mt: 2, mb: 1 }}>
-                URL media câu hỏi (theo kiểu phần — chọn từ file manager)
+                Question media URL (according to section type — select from file manager)
               </Typography>
               <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
                 {TYPES_NEED_AUDIO.includes(sectionQuestionType) && (
                   <FilePicker
-                    label="URL Audio"
+                    label="Audio URL"
                     value={questionForm.audioUrl ?? ''}
                     onChange={(url) =>
                       setQuestionForm((f) => ({ ...f, audioUrl: url }))
@@ -815,7 +815,7 @@ export default function AdminSectionEdit() {
                 )}
                 {TYPES_NEED_VIDEO.includes(sectionQuestionType) && (
                   <FilePicker
-                    label="URL Video"
+                    label="Video URL"
                     value={questionForm.videoUrl ?? ''}
                     onChange={(url) =>
                       setQuestionForm((f) => ({ ...f, videoUrl: url }))
@@ -824,7 +824,7 @@ export default function AdminSectionEdit() {
                 )}
                 {TYPES_NEED_IMAGE.includes(sectionQuestionType) && (
                   <FilePicker
-                    label="URL Hình ảnh"
+                    label="Image URL"
                     value={questionForm.imageUrl ?? ''}
                     onChange={(url) =>
                       setQuestionForm((f) => ({ ...f, imageUrl: url }))
@@ -838,7 +838,7 @@ export default function AdminSectionEdit() {
             sectionQuestionType === 'paragraph-fill') && (
             <TextField
               fullWidth
-              label="Từ gợi ý (word bank, cách nhau bởi dấu phẩy)"
+              label="Word bank (separated by commas)"
               value={questionForm.wordBankStr ?? ''}
               onChange={(e) =>
                 setQuestionForm((f) => ({ ...f, wordBankStr: e.target.value }))
@@ -854,7 +854,7 @@ export default function AdminSectionEdit() {
             <>
               <Divider sx={{ my: 2 }} />
               <Typography variant="subtitle2" sx={{ mb: 1 }}>
-                Các đáp án (nhấn &quot;Thêm đáp án&quot; rồi nhập text hoặc chọn
+                Options (click &quot;Add option&quot; then enter text or select
                 file)
               </Typography>
               {optionsList.map((opt, idx) => (
@@ -870,7 +870,7 @@ export default function AdminSectionEdit() {
                   <TextField
                     fullWidth
                     size="small"
-                    placeholder="Nội dung đáp án hoặc để trống nếu dùng file"
+                    placeholder="Option content or leave empty if using file"
                     value={opt}
                     onChange={(e) => {
                       const next = [...optionsList];
@@ -894,7 +894,7 @@ export default function AdminSectionEdit() {
                     }}
                     sx={{ minWidth: 100, height: 40 }}
                   >
-                    Chọn file
+                    Select file
                   </Button>
                   <IconButton
                     size="small"
@@ -914,23 +914,23 @@ export default function AdminSectionEdit() {
                 onClick={() => setOptionsList((p) => [...p, ''])}
                 sx={{ mt: 1 }}
               >
-                Thêm đáp án
+                Add option
               </Button>
               <Typography variant="subtitle2" sx={{ mt: 1, mb: 1 }}>
-                Đáp án đúng
+                Correct answer
               </Typography>
               <FormControl fullWidth size="small" sx={{ mb: 2 }}>
-                <InputLabel>Chọn từ các đáp án trên</InputLabel>
+                <InputLabel>Select from options above</InputLabel>
                 <Select
                   value={
                     optionsList.includes(correctAnswerSingle)
                       ? correctAnswerSingle
                       : ''
                   }
-                  label="Chọn từ các đáp án trên"
+                  label="Select from options above"
                   onChange={(e) => setCorrectAnswerSingle(e.target.value)}
                 >
-                  <MenuItem value="">— Chọn —</MenuItem>
+                  <MenuItem value="">— Select —</MenuItem>
                   {optionsList.filter(Boolean).map((opt, i) => (
                     <MenuItem key={i} value={opt}>
                       {opt.length > 50 ? opt.slice(0, 50) + '…' : opt}
@@ -939,7 +939,7 @@ export default function AdminSectionEdit() {
                 </Select>
               </FormControl>
               <FilePicker
-                label="Hoặc nhập URL / chọn file làm đáp án đúng"
+                label="Or enter URL / select file as correct answer"
                 value={
                   optionsList.includes(correctAnswerSingle)
                     ? ''
@@ -955,8 +955,7 @@ export default function AdminSectionEdit() {
             <>
               <Divider sx={{ my: 2 }} />
               <Typography variant="subtitle2" sx={{ mb: 1 }}>
-                Đáp án đúng cho từng chỗ trống (thêm lần lượt, mỗi ô có thể text
-                hoặc file)
+                Correct answers for each blank (add one by one, each can be text or file)
               </Typography>
               {correctAnswerList.map((ans, idx) => (
                 <Box
@@ -971,7 +970,7 @@ export default function AdminSectionEdit() {
                   <TextField
                     fullWidth
                     size="small"
-                    placeholder={`Đáp án chỗ trống ${idx + 1}`}
+                    placeholder={`Answer for blank ${idx + 1}`}
                     value={ans}
                     onChange={(e) => {
                       const next = [...correctAnswerList];
@@ -995,7 +994,7 @@ export default function AdminSectionEdit() {
                     }}
                     sx={{ minWidth: 100, height: 40 }}
                   >
-                    Chọn file
+                    Select file
                   </Button>
                   <IconButton
                     size="small"
@@ -1015,7 +1014,7 @@ export default function AdminSectionEdit() {
                 onClick={() => setCorrectAnswerList((p) => [...p, ''])}
                 sx={{ mt: 1 }}
               >
-                Thêm đáp án
+                Add answer
               </Button>
             </>
           )}
@@ -1025,18 +1024,18 @@ export default function AdminSectionEdit() {
             <>
               <Divider sx={{ my: 2 }} />
               <Typography variant="subtitle2" sx={{ mb: 1 }}>
-                Đáp án đúng
+                Correct answer
               </Typography>
               <TextField
                 fullWidth
                 size="small"
-                placeholder="Nhập đáp án đúng (text)"
+                placeholder="Enter correct answer (text)"
                 value={correctAnswerSingle}
                 onChange={(e) => setCorrectAnswerSingle(e.target.value)}
                 sx={{ mb: 2 }}
               />
               <FilePicker
-                label="Hoặc nhập URL / chọn file làm đáp án đúng"
+                label="Or enter URL / select file as correct answer"
                 value={correctAnswerSingle}
                 onChange={(url) => setCorrectAnswerSingle(url)}
               />
@@ -1044,13 +1043,13 @@ export default function AdminSectionEdit() {
           )}
         </DialogContent>
         <DialogActions>
-          <Button onClick={() => setOpenQuestionDialog(false)}>Hủy</Button>
+          <Button onClick={() => setOpenQuestionDialog(false)}>Cancel</Button>
           <Button
             variant="contained"
             onClick={handleAddQuestionToSection}
             disabled={saving}
           >
-            {editingQuestionId ? 'Lưu câu hỏi' : 'Thêm câu hỏi'}
+            {editingQuestionId ? 'Save question' : 'Add question'}
           </Button>
         </DialogActions>
       </Dialog>

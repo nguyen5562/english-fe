@@ -106,10 +106,10 @@ export default function Progress() {
           const msg =
             (e.response?.data as { message?: string })?.message ??
             e.response?.statusText ??
-            'Không thể tải dữ liệu tiến độ';
+            'Failed to load progress data';
           toast.error(String(msg));
         } else {
-          toast.error('Không thể tải dữ liệu tiến độ');
+          toast.error('Failed to load progress data');
         }
       } finally {
         setLoading(false);
@@ -374,12 +374,12 @@ export default function Progress() {
     return (
       <Box>
         <Typography variant="h4" gutterBottom>
-          Tiến độ học tập
+          Progress
         </Typography>
         <Card>
           <CardContent>
             <Typography color="text.secondary" align="center">
-              Vui lòng đăng nhập để xem tiến độ học tập
+              Please login to view your progress
             </Typography>
           </CardContent>
         </Card>
@@ -421,10 +421,10 @@ export default function Progress() {
   return (
     <Box>
       <Typography variant="h4" gutterBottom>
-        Tiến độ học tập
+        Progress
       </Typography>
       <Typography variant="body2" color="text.secondary" paragraph>
-        Theo dõi kết quả và sự tiến bộ của bạn
+        Track your results and progress
       </Typography>
 
       {/* Overall Statistics */}
@@ -435,7 +435,7 @@ export default function Progress() {
               <Box sx={{ display: 'flex', alignItems: 'center', mb: 1 }}>
                 <AssignmentIcon sx={{ color: 'primary.main', mr: 1 }} />
                 <Typography variant="h6" sx={{ fontWeight: 600 }}>
-                  Phần bài tập
+                  Exercise sections
                 </Typography>
               </Box>
               <Typography
@@ -445,7 +445,7 @@ export default function Progress() {
                 {completedSections}/{totalSections}
               </Typography>
               <Typography variant="body2" color="text.secondary">
-                Đã hoàn thành
+                Completed
               </Typography>
             </CardContent>
           </Card>
@@ -457,7 +457,7 @@ export default function Progress() {
               <Box sx={{ display: 'flex', alignItems: 'center', mb: 1 }}>
                 <QuizIcon sx={{ color: 'secondary.main', mr: 1 }} />
                 <Typography variant="h6" sx={{ fontWeight: 600 }}>
-                  Quiz
+                  Quizzes
                 </Typography>
               </Box>
               <Typography
@@ -467,7 +467,7 @@ export default function Progress() {
                 {completedQuizzes}/{totalQuizzes}
               </Typography>
               <Typography variant="body2" color="text.secondary">
-                Đã hoàn thành
+                Completed
               </Typography>
             </CardContent>
           </Card>
@@ -479,7 +479,7 @@ export default function Progress() {
               <Box sx={{ display: 'flex', alignItems: 'center', mb: 1 }}>
                 <SchoolIcon sx={{ color: 'success.main', mr: 1 }} />
                 <Typography variant="h6" sx={{ fontWeight: 600 }}>
-                  Khóa học
+                  Courses
                 </Typography>
               </Box>
               <Typography
@@ -489,7 +489,7 @@ export default function Progress() {
                 {courses.length}
               </Typography>
               <Typography variant="body2" color="text.secondary">
-                Đang theo học
+                Enrolled
               </Typography>
             </CardContent>
           </Card>
@@ -501,7 +501,7 @@ export default function Progress() {
               <Box sx={{ display: 'flex', alignItems: 'center', mb: 1 }}>
                 <TrendingUpIcon sx={{ color: 'warning.main', mr: 1 }} />
                 <Typography variant="h6" sx={{ fontWeight: 600 }}>
-                  Hoạt động
+                  Activities
                 </Typography>
               </Box>
               <Typography
@@ -511,7 +511,7 @@ export default function Progress() {
                 {completedSections + completedQuizzes}
               </Typography>
               <Typography variant="body2" color="text.secondary">
-                Tổng số hoạt động
+                Total activities
               </Typography>
             </CardContent>
           </Card>
@@ -524,7 +524,7 @@ export default function Progress() {
         gutterBottom
         sx={{ mt: 4, mb: 2, fontWeight: 600 }}
       >
-        Tiến độ theo khóa học
+        Course progress
       </Typography>
       <Grid container spacing={3}>
         {courseProgresses.map((progress) => (
@@ -556,7 +556,7 @@ export default function Progress() {
                     }}
                   >
                     <Typography variant="body2" sx={{ fontWeight: 500 }}>
-                      Hoàn thành tổng thể
+                      Overall completion
                     </Typography>
                     <Typography variant="body2" sx={{ fontWeight: 700 }}>
                       {Math.round(progress.completionPercent)}%
@@ -579,7 +579,7 @@ export default function Progress() {
                       }}
                     >
                       <Typography variant="body2" sx={{ fontWeight: 500 }}>
-                        Điểm trung bình
+                        Average score
                       </Typography>
                       <Typography variant="body2" sx={{ fontWeight: 700 }}>
                         {progress.averageScore.toFixed(1)}%
@@ -603,7 +603,7 @@ export default function Progress() {
                 <Box sx={{ display: 'flex', gap: 2, mt: 2 }}>
                   <Box sx={{ flex: 1 }}>
                     <Typography variant="caption" color="text.secondary">
-                      Phần bài tập
+                      Exercise sections
                     </Typography>
                     <Typography variant="body1" sx={{ fontWeight: 600 }}>
                       {progress.completedExercises}/{progress.totalExercises}
@@ -611,7 +611,7 @@ export default function Progress() {
                   </Box>
                   <Box sx={{ flex: 1 }}>
                     <Typography variant="caption" color="text.secondary">
-                      Quiz
+                      Quizzes
                     </Typography>
                     <Typography variant="body1" sx={{ fontWeight: 600 }}>
                       {progress.completedQuizzes}/{progress.totalQuizzes}
@@ -631,7 +631,7 @@ export default function Progress() {
         sx={{ mt: 4, mb: 2, fontWeight: 600 }}
       >
         <TrendingUpIcon sx={{ verticalAlign: 'middle', mr: 1 }} />
-        Lịch sử làm bài gần đây
+        Recent activities
       </Typography>
       <Card>
         <CardContent>
@@ -639,10 +639,10 @@ export default function Progress() {
             <Table>
               <TableHead>
                 <TableRow>
-                  <TableCell sx={{ fontWeight: 600 }}>Loại</TableCell>
-                  <TableCell sx={{ fontWeight: 600 }}>Tiêu đề</TableCell>
-                  <TableCell sx={{ fontWeight: 600 }}>Điểm số</TableCell>
-                  <TableCell sx={{ fontWeight: 600 }}>Thời gian</TableCell>
+                  <TableCell sx={{ fontWeight: 600 }}>Type</TableCell>
+                  <TableCell sx={{ fontWeight: 600 }}>Title</TableCell>
+                  <TableCell sx={{ fontWeight: 600 }}>Score</TableCell>
+                  <TableCell sx={{ fontWeight: 600 }}>Time</TableCell>
                 </TableRow>
               </TableHead>
               <TableBody>
@@ -660,7 +660,7 @@ export default function Progress() {
                       <TableCell>
                         <Chip
                           label={
-                            activity.type === 'exercise' ? 'Bài tập' : 'Quiz'
+                            activity.type === 'exercise' ? 'Exercise' : 'Quiz'
                           }
                           size="small"
                           color={
@@ -696,7 +696,7 @@ export default function Progress() {
                           </Box>
                         ) : (
                           <Typography variant="body2" color="text.secondary">
-                            Đã hoàn thành
+                            Completed
                           </Typography>
                         )}
                       </TableCell>
@@ -718,7 +718,7 @@ export default function Progress() {
                   <TableRow>
                     <TableCell colSpan={4} align="center">
                       <Typography color="text.secondary" sx={{ py: 4 }}>
-                        Chưa có lịch sử làm bài
+                        No recent activities
                       </Typography>
                     </TableCell>
                   </TableRow>

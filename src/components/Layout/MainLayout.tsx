@@ -77,21 +77,21 @@ export default function MainLayout() {
   const isQuizLocked = useUIStore((s) => s.isQuizLocked);
 
   const menuItems = () => [
-    { text: 'Trang chủ', icon: <DashboardIcon />, path: '/' },
-    { text: 'Khóa học', icon: <MenuBookIcon />, path: '/materials' },
-    { text: 'Bài tập', icon: <AssignmentIcon />, path: '/exercises' },
-    { text: 'Quiz', icon: <QuizIcon />, path: '/quizzes' },
+    { text: 'Dashboard', icon: <DashboardIcon />, path: '/' },
+    { text: 'Courses', icon: <MenuBookIcon />, path: '/materials' },
+    { text: 'Exercises', icon: <AssignmentIcon />, path: '/exercises' },
+    { text: 'Quizzes', icon: <QuizIcon />, path: '/quizzes' },
     ...(user?.role === 'teacher'
       ? [
           {
-            text: 'Báo cáo thống kê',
+            text: 'Statistics',
             icon: <BarChartIcon />,
             path: '/statistics',
           },
         ]
       : [
           {
-            text: 'Tiến độ học tập',
+            text: 'Progress',
             icon: <AssessmentIcon />,
             path: '/progress',
           },
@@ -105,7 +105,7 @@ export default function MainLayout() {
   const handleNavigation = (path: string) => {
     if (isQuizLocked) {
       toast.warning(
-        'Bạn đang trong quá trình làm quiz. Vui lòng hoàn thành hoặc hủy sát hạch trước khi chuyển trang.',
+        'You are in the process of taking a quiz. Please complete or cancel the exam before switching pages.',
       );
       return;
     }
@@ -174,10 +174,10 @@ export default function MainLayout() {
         const msg =
           (e.response?.data as { message?: string })?.message ??
           e.response?.statusText ??
-          'Cập nhật thông tin thất bại';
+          'Update profile failed';
         setProfileError(String(msg));
       } else {
-        setProfileError('Cập nhật thông tin thất bại');
+        setProfileError('Update profile failed');
       }
     } finally {
       setProfileSaving(false);
@@ -205,12 +205,12 @@ export default function MainLayout() {
       !passwordData.newPassword ||
       !passwordData.confirmPassword
     ) {
-      setPasswordError('Vui lòng điền đầy đủ thông tin');
+      setPasswordError('Please fill in all information');
       return;
     }
 
     if (passwordData.newPassword !== passwordData.confirmPassword) {
-      setPasswordError('Mật khẩu xác nhận không khớp');
+      setPasswordError('Password confirmation does not match');
       return;
     }
 
@@ -227,16 +227,16 @@ export default function MainLayout() {
         confirmPassword: '',
       });
       setPasswordError('');
-      toast.success('Đổi mật khẩu thành công!');
+      toast.success('Change password successfully!');
     } catch (e: unknown) {
       if (axios.isAxiosError(e)) {
         const msg =
           (e.response?.data as { message?: string })?.message ??
           e.response?.statusText ??
-          'Đổi mật khẩu thất bại';
+          'Change password failed';
         setPasswordError(String(msg));
       } else {
-        setPasswordError('Đổi mật khẩu thất bại');
+        setPasswordError('Change password failed');
       }
     } finally {
       setPasswordSaving(false);
@@ -246,7 +246,7 @@ export default function MainLayout() {
   const handleAdminClick = () => {
     if (isQuizLocked) {
       toast.warning(
-        'Bạn đang trong quá trình làm quiz. Vui lòng hoàn thành hoặc hủy sát hạch trước khi chuyển trang.',
+        'You are in the process of taking a quiz. Please complete or cancel the exam before switching pages.',
       );
       return;
     }
@@ -257,13 +257,13 @@ export default function MainLayout() {
   const handleLogout = () => {
     if (isQuizLocked) {
       toast.warning(
-        'Bạn đang trong quá trình làm quiz. Vui lòng hoàn thành bài trước khi đăng xuất.',
+        'You are in the process of taking a quiz. Please complete the exam before logging out.',
       );
       return;
     }
     handleMenuClose();
     logout();
-    toast.success('Đăng xuất thành công!');
+    toast.success('Logout successfully!');
     navigate('/login');
   };
 
@@ -274,7 +274,7 @@ export default function MainLayout() {
       <Toolbar sx={{ bgcolor: 'primary.main', color: 'white' }}>
         <SchoolIcon sx={{ mr: 2 }} />
         <Typography variant="h6" noWrap component="div">
-          Học Tiếng Anh
+          English Learning
         </Typography>
       </Toolbar>
       <Divider />
@@ -329,7 +329,7 @@ export default function MainLayout() {
             <MenuIcon />
           </IconButton>
           <Typography variant="h6" noWrap component="div" sx={{ flexGrow: 1 }}>
-            Hệ thống Học Tiếng Anh Đại học
+            English Learning System
           </Typography>
           <IconButton
             size="large"
@@ -385,7 +385,7 @@ export default function MainLayout() {
               </Avatar>
               <Box sx={{ flexGrow: 1 }}>
                 <Typography variant="body1" sx={{ fontWeight: 500 }}>
-                  {user?.username || 'Người dùng'}
+                  {user?.username || 'User'}
                 </Typography>
                 <Typography variant="body2" color="text.secondary">
                   {user?.email || ''}
@@ -393,7 +393,7 @@ export default function MainLayout() {
                 <Box sx={{ mt: 1 }}>
                   <Chip
                     label={
-                      user?.role === 'teacher' ? 'Giảng viên' : 'Sinh viên'
+                      user?.role === 'teacher' ? 'Teacher' : 'Student'
                     }
                     size="small"
                     color="secondary"
@@ -407,26 +407,26 @@ export default function MainLayout() {
                 <ListItemIcon>
                   <SettingsIcon fontSize="small" />
                 </ListItemIcon>
-                Đến trang quản trị
+                Admin
               </MenuItem>
             )}
             <MenuItem onClick={handleProfileClick}>
               <ListItemIcon>
                 <AccountCircleIcon fontSize="small" />
               </ListItemIcon>
-              Thông tin cá nhân
+              Profile
             </MenuItem>
             <MenuItem onClick={handleChangePasswordClick}>
               <ListItemIcon>
                 <LockIcon fontSize="small" />
               </ListItemIcon>
-              Đổi mật khẩu
+              Change password
             </MenuItem>
             <MenuItem onClick={handleLogout}>
               <ListItemIcon>
                 <LogoutIcon fontSize="small" />
               </ListItemIcon>
-              Đăng xuất
+              Logout
             </MenuItem>
           </Menu>
         </Toolbar>
@@ -487,7 +487,7 @@ export default function MainLayout() {
         maxWidth="sm"
         fullWidth
       >
-        <DialogTitle>Thông tin cá nhân</DialogTitle>
+        <DialogTitle>Profile</DialogTitle>
         <DialogContent>
           <Box sx={{ pt: 2 }}>
             {profileError && (
@@ -501,7 +501,7 @@ export default function MainLayout() {
             )}
             <TextField
               fullWidth
-              label="Tên người dùng"
+              label="Username"
               value={formData.username}
               onChange={(e) =>
                 setFormData({ ...formData, username: e.target.value })
@@ -520,8 +520,8 @@ export default function MainLayout() {
             />
             <TextField
               fullWidth
-              label="Vai trò"
-              value={user?.role === 'teacher' ? 'Giảng viên' : 'Sinh viên'}
+              label="Role"
+              value={user?.role === 'teacher' ? 'Teacher' : 'Student'}
               disabled
               margin="normal"
             />
@@ -529,14 +529,14 @@ export default function MainLayout() {
         </DialogContent>
         <DialogActions>
           <Button onClick={handleProfileCancel} disabled={profileSaving}>
-            Hủy
+            Cancel
           </Button>
           <Button
             onClick={handleProfileSave}
             variant="contained"
             disabled={profileSaving}
           >
-            {profileSaving ? 'Đang lưu...' : 'Lưu'}
+            {profileSaving ? 'Saving...' : 'Save'}
           </Button>
         </DialogActions>
       </Dialog>
@@ -548,7 +548,7 @@ export default function MainLayout() {
         maxWidth="sm"
         fullWidth
       >
-        <DialogTitle>Đổi mật khẩu</DialogTitle>
+        <DialogTitle>Change password</DialogTitle>
         <DialogContent>
           <Box sx={{ pt: 2 }}>
             {passwordError && (
@@ -562,7 +562,7 @@ export default function MainLayout() {
             )}
             <TextField
               fullWidth
-              label="Mật khẩu cũ"
+              label="Old password"
               type="password"
               value={passwordData.oldPassword}
               onChange={(e) =>
@@ -575,7 +575,7 @@ export default function MainLayout() {
             />
             <TextField
               fullWidth
-              label="Mật khẩu mới"
+              label="New password"
               type="password"
               value={passwordData.newPassword}
               onChange={(e) =>
@@ -588,7 +588,7 @@ export default function MainLayout() {
             />
             <TextField
               fullWidth
-              label="Nhập lại mật khẩu mới"
+              label="Confirm new password"
               type="password"
               value={passwordData.confirmPassword}
               onChange={(e) =>
@@ -603,14 +603,14 @@ export default function MainLayout() {
         </DialogContent>
         <DialogActions>
           <Button onClick={handleChangePasswordClose} disabled={passwordSaving}>
-            Hủy
+            Cancel
           </Button>
           <Button
             onClick={handleChangePasswordSave}
             variant="contained"
             disabled={passwordSaving}
           >
-            {passwordSaving ? 'Đang lưu...' : 'Lưu'}
+            {passwordSaving ? 'Saving...' : 'Save'}
           </Button>
         </DialogActions>
       </Dialog>

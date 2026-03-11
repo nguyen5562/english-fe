@@ -30,7 +30,7 @@ export default function Login() {
 
   const handleLogin = async () => {
     if (!email || !password) {
-      toast.error('Vui lòng điền đầy đủ thông tin');
+      toast.error('Please fill in all information');
       return;
     }
 
@@ -38,17 +38,17 @@ export default function Login() {
       setLoading(true);
       const { user, access_token } = await authService.login(email, password);
       setAuth({ user, accessToken: access_token });
-      toast.success('Đăng nhập thành công!');
+      toast.success('Login success!');
       navigate('/');
     } catch (e) {
       if (axios.isAxiosError(e)) {
         const msg =
           (e.response?.data as { message?: string })?.message ??
           e.response?.statusText ??
-          'Đăng nhập thất bại';
+          'Login failed';
         toast.error(String(msg));
       } else {
-        toast.error('Đăng nhập thất bại');
+        toast.error('Login failed');
       }
     } finally {
       setLoading(false);
@@ -82,7 +82,7 @@ export default function Login() {
           >
             <SchoolIcon sx={{ fontSize: 48, color: 'primary.main', mr: 2 }} />
             <Typography variant="h4" component="h1">
-              Đăng nhập
+              Login
             </Typography>
           </Box>
 
@@ -103,7 +103,7 @@ export default function Login() {
               margin="normal"
               required
               fullWidth
-              label="Mật khẩu"
+              label="Password"
               type={showPassword ? 'text' : 'password'}
               value={password}
               onChange={(e) => setPassword(e.target.value)}
@@ -131,16 +131,16 @@ export default function Login() {
               onClick={handleLogin}
               disabled={loading}
             >
-              {loading ? 'Đang đăng nhập...' : 'Đăng nhập'}
+              {loading ? 'Logging in...' : 'Login'}
             </Button>
             <Box sx={{ textAlign: 'center', mt: 2 }}>
               <Typography variant="body2" color="text.secondary">
-                Chưa có tài khoản?{' '}
+                Don't have an account?{' '}
                 <Link
                   to="/register"
                   style={{ color: 'inherit', textDecoration: 'underline' }}
                 >
-                  Đăng ký ngay
+                  Register now
                 </Link>
               </Typography>
             </Box>

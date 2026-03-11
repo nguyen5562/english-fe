@@ -72,10 +72,10 @@ export default function Quizzes() {
           const msg =
             (e.response?.data as { message?: string })?.message ??
             e.response?.statusText ??
-            'Không thể tải danh sách quiz';
+            'Failed to load quizzes';
           toast.error(String(msg));
         } else {
-          toast.error('Không thể tải danh sách quiz');
+          toast.error('Failed to load quizzes');
         }
       } finally {
         setLoading(false);
@@ -124,13 +124,13 @@ export default function Quizzes() {
         <Typography variant="h4">Quiz</Typography>
         <Box sx={{ display: 'flex', gap: 2 }}>
           <FormControl sx={{ minWidth: 200 }} size="small">
-            <InputLabel>Khóa học</InputLabel>
+            <InputLabel>Course</InputLabel>
             <Select
               value={selectedCourse}
-              label="Khóa học"
+              label="Course"
               onChange={(e) => setSelectedCourse(e.target.value)}
             >
-              <MenuItem value="all">Tất cả khóa học</MenuItem>
+              <MenuItem value="all">All courses</MenuItem>
               {courses.map((course) => (
                 <MenuItem key={course._id} value={course._id}>
                   {course.name}
@@ -140,15 +140,15 @@ export default function Quizzes() {
           </FormControl>
 
           <FormControl sx={{ minWidth: 150 }} size="small">
-            <InputLabel>Trạng thái</InputLabel>
+            <InputLabel>Status</InputLabel>
             <Select
               value={selectedStatus}
-              label="Trạng thái"
+              label="Status"
               onChange={(e) => setSelectedStatus(e.target.value)}
             >
-              <MenuItem value="all">Tất cả</MenuItem>
-              <MenuItem value="completed">Đã làm</MenuItem>
-              <MenuItem value="todo">Chưa làm</MenuItem>
+              <MenuItem value="all">All</MenuItem>
+              <MenuItem value="completed">Completed</MenuItem>
+              <MenuItem value="todo">Todo</MenuItem>
             </Select>
           </FormControl>
         </Box>
@@ -162,7 +162,7 @@ export default function Quizzes() {
         <Card>
           <CardContent>
             <Typography color="text.secondary" align="center">
-              Chưa có quiz nào
+              No quizzes found
             </Typography>
           </CardContent>
         </Card>
@@ -256,8 +256,7 @@ export default function Quizzes() {
                         lineHeight: 1.4,
                       }}
                     >
-                      {quiz.description ||
-                        'Không có mô tả cho bài kiểm tra này.'}
+                      {quiz.description || 'No description for this quiz.'}
                     </Typography>
 
                     <Box
@@ -273,7 +272,7 @@ export default function Quizzes() {
                           (sum, section) =>
                             sum + (section.questions?.length ?? 0),
                           0,
-                        )} câu hỏi`}
+                        )} questions`}
                         size="small"
                         sx={{ fontWeight: 600, bgcolor: 'action.hover' }}
                       />
@@ -283,7 +282,7 @@ export default function Quizzes() {
                             sx={{ fontSize: '1rem !important' }}
                           />
                         }
-                        label={`${quiz.timeLimit} phút`}
+                        label={`${quiz.timeLimit} minutes`}
                         size="small"
                         sx={{ fontWeight: 600, bgcolor: 'action.hover' }}
                       />
@@ -312,7 +311,7 @@ export default function Quizzes() {
                             }}
                           />
                           <Typography variant="body2" sx={{ fontWeight: 600 }}>
-                            Đã hoàn thành
+                            Completed
                           </Typography>
                         </Box>
                         {maxScore > 0 && (
@@ -332,7 +331,7 @@ export default function Quizzes() {
                           color="text.secondary"
                           sx={{ fontStyle: 'italic' }}
                         >
-                          Chưa có lượt làm bài nào
+                          No attempts found
                         </Typography>
                       </Box>
                     )}
@@ -356,7 +355,7 @@ export default function Quizzes() {
                         },
                       }}
                     >
-                      {attempt ? 'Xem lại' : 'Bắt đầu làm'}
+                      {attempt ? 'Reattempt' : 'Start'}
                     </Button>
                   </Box>
                 </Card>

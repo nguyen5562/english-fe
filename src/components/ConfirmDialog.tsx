@@ -63,7 +63,7 @@ export const useConfirm = () => {
           onClick={() => handleClose(false)}
           sx={{ textTransform: 'none' }}
         >
-          {options.cancelText || 'Hủy'}
+          {options.cancelText || 'Cancel'}
         </Button>
         <Button
           onClick={() => handleClose(true)}
@@ -71,7 +71,7 @@ export const useConfirm = () => {
           color={options.confirmColor || 'primary'}
           sx={{ textTransform: 'none' }}
         >
-          {options.confirmText || 'Xác nhận'}
+          {options.confirmText || 'Confirm'}
         </Button>
       </DialogActions>
     </Dialog>

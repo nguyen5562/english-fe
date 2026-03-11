@@ -112,10 +112,10 @@ export default function Statistics() {
           const msg =
             (e.response?.data as { message?: string })?.message ??
             e.response?.statusText ??
-            'Không thể tải dữ liệu thống kê';
+            'Failed to load statistics data';
           toast.error(String(msg));
         } else {
-          toast.error('Không thể tải dữ liệu thống kê');
+          toast.error('Failed to load statistics data');
         }
       } finally {
         setLoading(false);
@@ -366,7 +366,7 @@ export default function Statistics() {
     return (
       <Box>
         <Alert severity="error">
-          Bạn không có quyền truy cập trang này. Chỉ dành cho giảng viên.
+          You do not have permission to access this page. Only teachers can access this page.
         </Alert>
       </Box>
     );
@@ -400,10 +400,10 @@ export default function Statistics() {
   return (
     <Box>
       <Typography variant="h4" gutterBottom>
-        Thống kê và Báo cáo
+        Statistics and Reports
       </Typography>
       <Typography variant="body2" color="text.secondary" paragraph>
-        Theo dõi tình hình học tập của sinh viên
+        Track student progress
       </Typography>
 
       {/* Overview Statistics */}
@@ -424,7 +424,7 @@ export default function Statistics() {
             <Box sx={{ display: 'flex', alignItems: 'center', mb: 1 }}>
               <PeopleIcon sx={{ color: 'primary.main', mr: 1 }} />
               <Typography variant="h6" sx={{ fontWeight: 600 }}>
-                Sinh viên
+                Students
               </Typography>
             </Box>
             <Typography
@@ -434,7 +434,7 @@ export default function Statistics() {
               {students.length}
             </Typography>
             <Typography variant="body2" color="text.secondary">
-              Tổng số sinh viên
+              Total students
             </Typography>
           </CardContent>
         </Card>
@@ -444,7 +444,7 @@ export default function Statistics() {
             <Box sx={{ display: 'flex', alignItems: 'center', mb: 1 }}>
               <AssignmentIcon sx={{ color: 'secondary.main', mr: 1 }} />
               <Typography variant="h6" sx={{ fontWeight: 600 }}>
-                Bài tập
+                Exercises
               </Typography>
             </Box>
             <Typography
@@ -454,7 +454,7 @@ export default function Statistics() {
               {avgSectionCompletionRate.toFixed(1)}%
             </Typography>
             <Typography variant="body2" color="text.secondary">
-              Tỷ lệ hoàn thành TB
+              Average completion rate
             </Typography>
           </CardContent>
         </Card>
@@ -474,7 +474,7 @@ export default function Statistics() {
               {avgQuizCompletionRate.toFixed(1)}%
             </Typography>
             <Typography variant="body2" color="text.secondary">
-              Tỷ lệ hoàn thành TB
+              Average completion rate
             </Typography>
           </CardContent>
         </Card>
@@ -484,7 +484,7 @@ export default function Statistics() {
             <Box sx={{ display: 'flex', alignItems: 'center', mb: 1 }}>
               <TrendingUpIcon sx={{ color: 'warning.main', mr: 1 }} />
               <Typography variant="h6" sx={{ fontWeight: 600 }}>
-                Điểm TB
+                Average score
               </Typography>
             </Box>
             <Typography
@@ -494,7 +494,7 @@ export default function Statistics() {
               {averageScore.toFixed(1)}%
             </Typography>
             <Typography variant="body2" color="text.secondary">
-              Điểm trung bình chung
+              Average score
             </Typography>
           </CardContent>
         </Card>
@@ -512,9 +512,9 @@ export default function Statistics() {
           }}
           sx={{ borderBottom: 1, borderColor: 'divider' }}
         >
-          <Tab label="Theo Bài tập" value="exercises" />
-          <Tab label="Theo Quiz" value="quizzes" />
-          <Tab label="Theo Sinh viên" value="students" />
+          <Tab label="Exercises" value="exercises" />
+          <Tab label="Quizzes" value="quizzes" />
+          <Tab label="Students" value="students" />
         </Tabs>
 
         <CardContent>
@@ -536,12 +536,12 @@ export default function Statistics() {
                 renderInput={(params) => (
                   <TextField
                     {...params}
-                    label="Chọn bài tập"
-                    placeholder="Tìm kiếm bài tập..."
+                    label="Select exercise"
+                    placeholder="Search exercise..."
                   />
                 )}
                 sx={{ mb: 3 }}
-                noOptionsText="Không tìm thấy bài tập"
+                noOptionsText="No exercises found"
               />
 
               {selectedExerciseData && (
@@ -552,7 +552,7 @@ export default function Statistics() {
                     sx={{ display: 'flex', alignItems: 'center', gap: 1 }}
                   >
                     <CheckCircleIcon color="success" />
-                    Đã làm ({selectedExerciseData.completed.length})
+                    Completed ({selectedExerciseData.completed.length})
                   </Typography>
                   <TableContainer
                     component={Paper}
@@ -563,14 +563,14 @@ export default function Statistics() {
                       <TableHead>
                         <TableRow>
                           <TableCell sx={{ fontWeight: 600 }}>
-                            Sinh viên
+                            Student
                           </TableCell>
                           <TableCell sx={{ fontWeight: 600 }}>Email</TableCell>
                           <TableCell sx={{ fontWeight: 600 }}>
-                            Tiến độ
+                            Progress
                           </TableCell>
                           <TableCell sx={{ fontWeight: 600 }}>
-                            Hành động
+                            Action
                           </TableCell>
                         </TableRow>
                       </TableHead>
@@ -593,7 +593,7 @@ export default function Statistics() {
                               </TableCell>
                               <TableCell>
                                 <Chip
-                                  label="Xem chi tiết"
+                                  label="View details"
                                   color="primary"
                                   size="small"
                                   onClick={() =>
@@ -611,7 +611,7 @@ export default function Statistics() {
                           <TableRow>
                             <TableCell colSpan={4} align="center">
                               <Typography color="text.secondary">
-                                Chưa có sinh viên nào làm bài
+                                No students have completed this exercise
                               </Typography>
                             </TableCell>
                           </TableRow>
@@ -626,14 +626,14 @@ export default function Statistics() {
                     sx={{ display: 'flex', alignItems: 'center', gap: 1 }}
                   >
                     <CancelIcon color="error" />
-                    Chưa làm ({selectedExerciseData.notStarted.length})
+                    Not started ({selectedExerciseData.notStarted.length})
                   </Typography>
                   <TableContainer component={Paper} variant="outlined">
                     <Table>
                       <TableHead>
                         <TableRow>
                           <TableCell sx={{ fontWeight: 600 }}>
-                            Sinh viên
+                            Student
                           </TableCell>
                           <TableCell sx={{ fontWeight: 600 }}>Email</TableCell>
                         </TableRow>
@@ -649,7 +649,7 @@ export default function Statistics() {
                           <TableRow>
                             <TableCell colSpan={2} align="center">
                               <Typography color="text.secondary">
-                                Tất cả sinh viên đã làm bài
+                                All students have completed this exercise
                               </Typography>
                             </TableCell>
                           </TableRow>
@@ -678,12 +678,12 @@ export default function Statistics() {
                 renderInput={(params) => (
                   <TextField
                     {...params}
-                    label="Chọn quiz"
-                    placeholder="Tìm kiếm quiz..."
+                    label="Select quiz"
+                    placeholder="Search quiz..."
                   />
                 )}
                 sx={{ mb: 3 }}
-                noOptionsText="Không tìm thấy quiz"
+                noOptionsText="No quizzes found"
               />
 
               {selectedQuizData && (
@@ -694,7 +694,7 @@ export default function Statistics() {
                     sx={{ display: 'flex', alignItems: 'center', gap: 1 }}
                   >
                     <CheckCircleIcon color="success" />
-                    Đã làm ({selectedQuizData.completed.length})
+                    Completed ({selectedQuizData.completed.length})
                   </Typography>
                   <TableContainer
                     component={Paper}
@@ -705,12 +705,12 @@ export default function Statistics() {
                       <TableHead>
                         <TableRow>
                           <TableCell sx={{ fontWeight: 600 }}>
-                            Sinh viên
+                            Student
                           </TableCell>
                           <TableCell sx={{ fontWeight: 600 }}>Email</TableCell>
-                          <TableCell sx={{ fontWeight: 600 }}>Điểm</TableCell>
+                          <TableCell sx={{ fontWeight: 600 }}>Score</TableCell>
                           <TableCell sx={{ fontWeight: 600 }}>
-                            Hành động
+                            Action
                           </TableCell>
                         </TableRow>
                       </TableHead>
@@ -754,7 +754,7 @@ export default function Statistics() {
                                     />
                                   ) : (
                                     <Chip
-                                      label="Đã hoàn thành"
+                                      label="Completed"
                                       color="success"
                                       size="small"
                                     />
@@ -762,7 +762,7 @@ export default function Statistics() {
                                 </TableCell>
                                 <TableCell>
                                   <Chip
-                                    label="Xem chi tiết"
+                                    label="View details"
                                     color="primary"
                                     size="small"
                                     onClick={() =>
@@ -781,7 +781,7 @@ export default function Statistics() {
                           <TableRow>
                             <TableCell colSpan={4} align="center">
                               <Typography color="text.secondary">
-                                Chưa có sinh viên nào làm quiz
+                                No students have completed this quiz
                               </Typography>
                             </TableCell>
                           </TableRow>
@@ -796,14 +796,14 @@ export default function Statistics() {
                     sx={{ display: 'flex', alignItems: 'center', gap: 1 }}
                   >
                     <CancelIcon color="error" />
-                    Chưa làm ({selectedQuizData.notStarted.length})
+                    Not started ({selectedQuizData.notStarted.length})
                   </Typography>
                   <TableContainer component={Paper} variant="outlined">
                     <Table>
                       <TableHead>
                         <TableRow>
                           <TableCell sx={{ fontWeight: 600 }}>
-                            Sinh viên
+                            Student
                           </TableCell>
                           <TableCell sx={{ fontWeight: 600 }}>Email</TableCell>
                         </TableRow>
@@ -819,7 +819,7 @@ export default function Statistics() {
                           <TableRow>
                             <TableCell colSpan={2} align="center">
                               <Typography color="text.secondary">
-                                Tất cả sinh viên đã làm quiz
+                                All students have completed this quiz
                               </Typography>
                             </TableCell>
                           </TableRow>
@@ -849,18 +849,18 @@ export default function Statistics() {
                 renderInput={(params) => (
                   <TextField
                     {...params}
-                    label="Chọn sinh viên"
-                    placeholder="Tìm kiếm sinh viên..."
+                    label="Select student"
+                    placeholder="Search student..."
                   />
                 )}
                 sx={{ mb: 3 }}
-                noOptionsText="Không tìm thấy sinh viên"
+                noOptionsText="No students found"
               />
 
               {selectedStudentData && (
                 <Box>
                   <Typography variant="h6" gutterBottom>
-                    Bài tập đã làm ({selectedStudentData.exercises.length})
+                    Exercises completed ({selectedStudentData.exercises.length})
                   </Typography>
                   <TableContainer
                     component={Paper}
@@ -871,16 +871,16 @@ export default function Statistics() {
                       <TableHead>
                         <TableRow>
                           <TableCell sx={{ fontWeight: 600 }}>
-                            Bài tập
+                            Exercise
                           </TableCell>
                           <TableCell sx={{ fontWeight: 600 }}>
-                            Khóa học
+                            Course
                           </TableCell>
                           <TableCell sx={{ fontWeight: 600 }}>
-                            Tiến độ
+                            Progress
                           </TableCell>
                           <TableCell sx={{ fontWeight: 600 }}>
-                            Hành động
+                            Action
                           </TableCell>
                         </TableRow>
                       </TableHead>
@@ -909,7 +909,7 @@ export default function Statistics() {
                                 </TableCell>
                                 <TableCell>
                                   <Chip
-                                    label="Xem chi tiết"
+                                    label="View details"
                                     color="primary"
                                     size="small"
                                     onClick={() =>
@@ -928,7 +928,7 @@ export default function Statistics() {
                           <TableRow>
                             <TableCell colSpan={4} align="center">
                               <Typography color="text.secondary">
-                                Chưa làm bài tập nào
+                                No exercises completed
                               </Typography>
                             </TableCell>
                           </TableRow>
@@ -938,7 +938,7 @@ export default function Statistics() {
                   </TableContainer>
 
                   <Typography variant="h6" gutterBottom>
-                    Quiz đã làm ({selectedStudentData.quizzes.length})
+                    Quiz completed ({selectedStudentData.quizzes.length})
                   </Typography>
                   <TableContainer component={Paper} variant="outlined">
                     <Table>
@@ -946,11 +946,11 @@ export default function Statistics() {
                         <TableRow>
                           <TableCell sx={{ fontWeight: 600 }}>Quiz</TableCell>
                           <TableCell sx={{ fontWeight: 600 }}>
-                            Khóa học
+                            Course
                           </TableCell>
-                          <TableCell sx={{ fontWeight: 600 }}>Điểm</TableCell>
+                          <TableCell sx={{ fontWeight: 600 }}>Score</TableCell>
                           <TableCell sx={{ fontWeight: 600 }}>
-                            Hành động
+                            Action
                           </TableCell>
                         </TableRow>
                       </TableHead>
@@ -997,7 +997,7 @@ export default function Statistics() {
                                     />
                                   ) : (
                                     <Chip
-                                      label="Đã hoàn thành"
+                                      label="Completed"
                                       color="success"
                                       size="small"
                                     />
@@ -1005,7 +1005,7 @@ export default function Statistics() {
                                 </TableCell>
                                 <TableCell>
                                   <Chip
-                                    label="Xem chi tiết"
+                                    label="View details"
                                     color="primary"
                                     size="small"
                                     onClick={() =>
@@ -1024,7 +1024,7 @@ export default function Statistics() {
                           <TableRow>
                             <TableCell colSpan={4} align="center">
                               <Typography color="text.secondary">
-                                Chưa làm quiz nào
+                                No quizzes completed
                               </Typography>
                             </TableCell>
                           </TableRow>

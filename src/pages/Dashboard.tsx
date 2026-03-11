@@ -37,10 +37,10 @@ export default function Dashboard() {
           const msg =
             (e.response?.data as { message?: string })?.message ??
             e.response?.statusText ??
-            'Không thể tải danh sách khóa học';
+            'Failed to load courses';
           toast.error(String(msg));
         } else {
-          toast.error('Không thể tải danh sách khóa học');
+          toast.error('Failed to load courses');
         }
       } finally {
         setLoading(false);
@@ -53,12 +53,12 @@ export default function Dashboard() {
   return (
     <Box>
       <Typography variant="h4" gutterBottom>
-        Chào mừng, {user?.username ?? 'bạn'}!
+        Welcome, {user?.username ?? 'you'}!
       </Typography>
       <Typography variant="body1" color="text.secondary" paragraph>
         {user?.role === 'teacher'
-          ? 'Quản lý và theo dõi tình hình học tập của sinh viên'
-          : 'Bắt đầu hành trình học tiếng Anh của bạn'}
+          ? 'Manage and monitor student learning progress'
+          : 'Start your English learning journey'}
       </Typography>
 
       {loading ? (
@@ -72,7 +72,7 @@ export default function Dashboard() {
             variant="h5"
             sx={{ fontWeight: 600, mb: 2, color: 'text.primary' }}
           >
-            Khóa học của bạn
+            Your courses
           </Typography>
           {courses.length === 0 ? (
             <Card
@@ -85,7 +85,7 @@ export default function Dashboard() {
             >
               <CardContent sx={{ p: 4 }}>
                 <Typography color="text.secondary" align="center">
-                  Chưa có khóa học nào
+                  No courses available
                 </Typography>
               </CardContent>
             </Card>
@@ -161,7 +161,7 @@ export default function Dashboard() {
                           boxShadow: 'none',
                         }}
                       >
-                        Xem chi tiết
+                        View details
                       </Button>
                     </CardContent>
                   </Card>
@@ -175,7 +175,7 @@ export default function Dashboard() {
             variant="h5"
             sx={{ fontWeight: 600, mb: 2, color: 'text.primary' }}
           >
-            Luyện tập & Kiểm tra
+            Practice & Test
           </Typography>
           <Grid container spacing={3}>
             <Grid size={{ xs: 12, md: 6 }}>
@@ -199,7 +199,7 @@ export default function Dashboard() {
                       sx={{ fontSize: 40, color: 'primary.main', mr: 2 }}
                     />
                     <Typography variant="h6" sx={{ fontWeight: 600 }}>
-                      Bài tập
+                      Exercises
                     </Typography>
                   </Box>
                   <Typography
@@ -207,8 +207,8 @@ export default function Dashboard() {
                     color="text.secondary"
                     sx={{ mb: 3, lineHeight: 1.6 }}
                   >
-                    Luyện tập với các bài tập tương tác hàng ngày để cải thiện
-                    kỹ năng ngôn ngữ của bạn một cách nhanh chóng.
+                    Practice with daily interactive exercises to quickly improve
+                    your language skills.
                   </Typography>
                   <Button
                     variant="outlined"
@@ -221,7 +221,7 @@ export default function Dashboard() {
                       py: 1,
                     }}
                   >
-                    Làm bài tập ngay
+                    Do exercises now
                   </Button>
                 </CardContent>
               </Card>
@@ -248,7 +248,7 @@ export default function Dashboard() {
                       sx={{ fontSize: 40, color: 'secondary.main', mr: 2 }}
                     />
                     <Typography variant="h6" sx={{ fontWeight: 600 }}>
-                      Quiz
+                      Quizzes
                     </Typography>
                   </Box>
                   <Typography
@@ -256,8 +256,7 @@ export default function Dashboard() {
                     color="text.secondary"
                     sx={{ mb: 3, lineHeight: 1.6 }}
                   >
-                    Thực hiện các bài kiểm tra đánh giá kiến thức sau mỗi chương
-                    học để theo dõi sự tiến bộ của bản thân.
+                    Take quizzes after each chapter to track your progress.
                   </Typography>
                   <Button
                     variant="outlined"
@@ -271,7 +270,7 @@ export default function Dashboard() {
                       py: 1,
                     }}
                   >
-                    Bắt đầu Quiz
+                    Start Quiz
                   </Button>
                 </CardContent>
               </Card>

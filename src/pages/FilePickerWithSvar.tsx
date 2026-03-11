@@ -37,9 +37,9 @@ export default function FilePickerWithSvar() {
           style={{ width: 520, padding: 8 }}
           value={value}
           onChange={(e) => setValue(e.target.value)}
-          placeholder="URL file sẽ nằm ở đây..."
+          placeholder="URL file will be here..."
         />
-        <button onClick={openPopup}>Chọn file</button>
+        <button onClick={openPopup}>Select file</button>
       </div>
     </div>
   );

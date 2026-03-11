@@ -79,10 +79,10 @@ export default function AdminDashboard() {
           const msg =
             (e.response?.data as { message?: string })?.message ??
             e.response?.statusText ??
-            'Không thể tải thống kê';
+            'Failed to load statistics';
           toast.error(String(msg));
         } else {
-          toast.error('Không thể tải thống kê');
+          toast.error('Failed to load statistics');
         }
       } finally {
         setLoading(false);
@@ -94,28 +94,28 @@ export default function AdminDashboard() {
 
   const cards = [
     {
-      title: 'Học phần',
+      title: 'Courses',
       count: stats.courses,
       icon: <SchoolIcon sx={{ fontSize: 40 }} />,
       color: 'primary.main',
       path: '/admin/content',
     },
     {
-      title: 'Bài tập',
+      title: 'Exercises',
       count: stats.exercises,
       icon: <AssignmentIcon sx={{ fontSize: 40 }} />,
       color: 'info.main',
       path: '/admin/exercises',
     },
     {
-      title: 'Quiz',
+      title: 'Quizzes',
       count: stats.quizzes,
       icon: <QuizIcon sx={{ fontSize: 40 }} />,
       color: 'warning.main',
       path: '/admin/quizzes',
     },
     {
-      title: 'Người dùng',
+      title: 'Users',
       count: stats.users,
       icon: <PeopleIcon sx={{ fontSize: 40 }} />,
       color: 'success.main',
@@ -138,14 +138,14 @@ export default function AdminDashboard() {
             variant="h4"
             sx={{ fontWeight: 600, color: 'text.primary', mb: 0.5 }}
           >
-            Chào mừng, {user?.username ?? 'Admin'}!
+            Welcome, {user?.username ?? 'Admin'}!
           </Typography>
           <Typography
             variant="body2"
             color="text.secondary"
             sx={{ fontWeight: 500 }}
           >
-            Hệ thống quản trị đào tạo tiếng Anh trực tuyến
+            Online English training management system
           </Typography>
         </Box>
       </Box>
@@ -206,7 +206,7 @@ export default function AdminDashboard() {
                   fullWidth
                   onClick={() => navigate(stat.path)}
                 >
-                  Quản lý {stat.title}
+                  Manage {stat.title}
                 </Button>
               </CardContent>
             </Card>
@@ -245,10 +245,10 @@ export default function AdminDashboard() {
                 />
                 <Box>
                   <Typography variant="h6" sx={{ fontWeight: 700 }}>
-                    Thống kê
+                    Statistics
                   </Typography>
                   <Typography variant="body2" color="text.secondary">
-                    Xem báo cáo hệ thống
+                    View system report
                   </Typography>
                 </Box>
               </Box>
@@ -260,7 +260,7 @@ export default function AdminDashboard() {
                 onClick={() => navigate('/statistics')}
                 sx={{ borderRadius: 2, textTransform: 'none', fontWeight: 700 }}
               >
-                Xem chi tiết
+                View details
               </Button>
             </CardContent>
           </Card>
@@ -296,10 +296,10 @@ export default function AdminDashboard() {
                 />
                 <Box>
                   <Typography variant="h6" sx={{ fontWeight: 700 }}>
-                    Tài nguyên
+                    Resources
                   </Typography>
                   <Typography variant="body2" color="text.secondary">
-                    Quản lý file & media
+                    Manage files & media
                   </Typography>
                 </Box>
               </Box>
@@ -311,7 +311,7 @@ export default function AdminDashboard() {
                 onClick={openFileManager}
                 sx={{ borderRadius: 2, textTransform: 'none', fontWeight: 700 }}
               >
-                Mở quản lý file
+                Open file manager
               </Button>
             </CardContent>
           </Card>

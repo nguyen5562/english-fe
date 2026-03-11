@@ -277,10 +277,10 @@ export default function Materials() {
           const msg =
             (e.response?.data as { message?: string })?.message ??
             e.response?.statusText ??
-            'Không thể tải danh sách khóa học';
+            'Failed to load course list';
           toast.error(String(msg));
         } else {
-          toast.error('Không thể tải danh sách khóa học');
+          toast.error('Failed to load course list');
         }
       } finally {
         setLoadingCourses(false);
@@ -330,10 +330,10 @@ export default function Materials() {
             const msg =
               (e.response?.data as { message?: string })?.message ??
               e.response?.statusText ??
-              'Không thể tải bài học';
+              'Failed to load lesson';
             toast.error(String(msg));
           } else {
-            toast.error('Không thể tải bài học');
+            toast.error('Failed to load lesson');
           }
           setLessons([]);
         }
@@ -435,7 +435,7 @@ export default function Materials() {
                 iconPosition="start"
               />
               <Tab
-                label="Tài liệu"
+                label="References"
                 icon={<DescriptionIcon sx={{ fontSize: 18 }} />}
                 iconPosition="start"
               />
@@ -516,7 +516,7 @@ export default function Materials() {
                             color="text.secondary"
                             sx={{ mb: 1 }}
                           >
-                            Slide bài giảng
+                            Slide
                           </Typography>
                           <Box
                             sx={{
@@ -536,7 +536,7 @@ export default function Materials() {
                                 fontWeight: 500,
                               }}
                             >
-                              Mở slide
+                              Open slide
                             </Button>
                           </Box>
                         </CardContent>
@@ -551,7 +551,7 @@ export default function Materials() {
                   align="center"
                   sx={{ py: 2 }}
                 >
-                  Chưa có slides
+                  No slides
                 </Typography>
               )}
             </TabPanel>
@@ -633,7 +633,7 @@ export default function Materials() {
                               color="text.secondary"
                               sx={{ mb: 1 }}
                             >
-                              Video bài giảng
+                              Video
                             </Typography>
                             <Box
                               sx={{
@@ -657,7 +657,7 @@ export default function Materials() {
                                   fontWeight: 500,
                                 }}
                               >
-                                Phát video
+                                Play video
                               </Button>
                             </Box>
                           </CardContent>
@@ -673,7 +673,7 @@ export default function Materials() {
                   align="center"
                   sx={{ py: 2 }}
                 >
-                  Chưa có video
+                  No video
                 </Typography>
               )}
             </TabPanel>
@@ -758,7 +758,7 @@ export default function Materials() {
                               color="text.secondary"
                               sx={{ mb: 1 }}
                             >
-                              {isPdf ? 'Định dạng PDF' : 'Liên kết tài liệu'}
+                              {isPdf ? 'PDF' : 'Document'}
                             </Typography>
                             <Box
                               sx={{
@@ -779,7 +779,7 @@ export default function Materials() {
                                   fontWeight: 500,
                                 }}
                               >
-                                Xem tài liệu
+                                {isPdf ? 'Open PDF' : 'Open document'}
                               </Button>
                             </Box>
                           </CardContent>
@@ -795,7 +795,7 @@ export default function Materials() {
                   align="center"
                   sx={{ py: 2 }}
                 >
-                  Chưa có tài liệu tham khảo
+                  No references
                 </Typography>
               )}
             </TabPanel>
@@ -822,12 +822,12 @@ export default function Materials() {
             variant="h4"
             sx={{ fontWeight: 500, color: 'text.primary', mb: 1 }}
           >
-            Khóa học
+            Courses
           </Typography>
         </Box>
         <TextField
           size="small"
-          placeholder="Tìm khóa học..."
+          placeholder="Search courses..."
           value={searchQuery}
           onChange={(e) => setSearchQuery(e.target.value)}
           sx={{
@@ -863,7 +863,7 @@ export default function Materials() {
         >
           <CourseIcon sx={{ fontSize: 60, color: 'grey.300', mb: 2 }} />
           <Typography color="text.secondary">
-            Không tìm thấy khóa học nào phù hợp.
+            No courses found.
           </Typography>
         </Paper>
       ) : (
@@ -949,7 +949,7 @@ export default function Materials() {
                         alignItems: 'center',
                       }}
                     >
-                      Xem bài học{' '}
+                      View lesson{' '}
                       <ArrowBackIcon
                         sx={{
                           fontSize: 14,
@@ -1018,10 +1018,10 @@ export default function Materials() {
         }}
       >
         <Typography variant="h6" sx={{ fontWeight: 500 }}>
-          Danh sách bài học
+          Lessons
         </Typography>
         <Typography variant="body1" color="text.secondary">
-          {lessons.length} bài học hiện có
+          {lessons.length} lessons available
         </Typography>
       </Box>
 
@@ -1041,7 +1041,7 @@ export default function Materials() {
         >
           <LessonIcon sx={{ fontSize: 60, color: 'grey.300', mb: 2 }} />
           <Typography variant="body1" color="text.secondary">
-            Chưa có bài học nào được đăng tải cho khóa học này.
+            No lessons available for this course.
           </Typography>
         </Paper>
       ) : (

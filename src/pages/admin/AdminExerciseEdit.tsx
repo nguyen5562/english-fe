@@ -76,7 +76,7 @@ export default function AdminExerciseEdit() {
           const msg =
             (e.response?.data as { message?: string })?.message ??
             e.response?.statusText ??
-            'Không thể tải bài tập';
+            'Failed to load exercise';
           toast.error(String(msg));
         }
       })
@@ -91,9 +91,9 @@ export default function AdminExerciseEdit() {
   const handleDeleteSection = async (sectionId: string) => {
     if (!id) return;
     const ok = await confirm({
-      title: 'Xác nhận xóa phần',
-      message: 'Bạn có chắc muốn xóa phần này?',
-      confirmText: 'Xóa',
+      title: 'Confirm delete section',
+      message: 'Are you sure you want to delete this section?',
+      confirmText: 'Delete',
       confirmColor: 'error',
     });
     if (!ok) return;
@@ -101,16 +101,16 @@ export default function AdminExerciseEdit() {
       setDeleting(true);
       const updated = await exerciseService.removeSection(id, sectionId);
       setExercise(updated);
-      toast.success('Đã xóa phần');
+      toast.success('Deleted section successfully');
     } catch (e: unknown) {
       if (axios.isAxiosError(e)) {
         const msg =
           (e.response?.data as { message?: string })?.message ??
           e.response?.statusText ??
-          'Không thể xóa phần';
+          'Failed to delete section';
         toast.error(String(msg));
       } else {
-        toast.error('Không thể xóa phần');
+        toast.error('Failed to delete section');
       }
     } finally {
       setDeleting(false);
@@ -124,13 +124,13 @@ export default function AdminExerciseEdit() {
       const updated = await exerciseService.updateExercise(id, editData);
       setExercise(updated);
       setEditDialogOpen(false);
-      toast.success('Đã cập nhật thông tin bài tập');
+      toast.success('Updated exercise information successfully');
     } catch (e: unknown) {
       if (axios.isAxiosError(e)) {
         const msg =
           (e.response?.data as { message?: string })?.message ??
           e.response?.statusText ??
-          'Không thể cập nhật';
+          'Failed to update';
         toast.error(String(msg));
       }
     } finally {
@@ -154,9 +154,9 @@ export default function AdminExerciseEdit() {
           onClick={() => navigate('/admin/exercises')}
           sx={{ mb: 2 }}
         >
-          Quay lại
+          Back
         </Button>
-        <Typography color="text.secondary">Không tìm thấy bài tập.</Typography>
+        <Typography color="text.secondary">Exercise not found.</Typography>
       </Box>
     );
   }
@@ -171,7 +171,7 @@ export default function AdminExerciseEdit() {
         onClick={() => navigate('/admin/exercises')}
         sx={{ mb: 2 }}
       >
-        Quay lại
+        Back
       </Button>
 
       <Card sx={{ mb: 3 }}>
@@ -183,7 +183,7 @@ export default function AdminExerciseEdit() {
             <Box sx={{ flexGrow: 1 }}>
               <Typography variant="h5">{exercise.title}</Typography>
               <Typography variant="body2" color="text.secondary">
-                {courseName} · {exercise.sections?.length ?? 0} phần
+                {courseName} · {exercise.sections?.length ?? 0} sections
               </Typography>
             </Box>
             <Button
@@ -192,7 +192,7 @@ export default function AdminExerciseEdit() {
               size="small"
               onClick={() => setEditDialogOpen(true)}
             >
-              Sửa thông tin
+              Edit
             </Button>
           </Box>
           {exercise.description && (
@@ -204,7 +204,7 @@ export default function AdminExerciseEdit() {
       </Card>
 
       <Typography variant="h6" sx={{ mb: 2 }}>
-        Các phần bài tập
+        Sections
       </Typography>
       <Button
         variant="contained"
@@ -216,12 +216,12 @@ export default function AdminExerciseEdit() {
         }
         sx={{ mb: 2 }}
       >
-        Thêm phần
+        Add section
       </Button>
 
       {(exercise.sections?.length ?? 0) === 0 ? (
         <Typography color="text.secondary">
-          Chưa có phần nào. Nhấn &quot;Thêm phần&quot; để tạo.
+          No sections found. Click &quot;Add section&quot; to create one.
         </Typography>
       ) : (
         <List>
@@ -254,7 +254,7 @@ export default function AdminExerciseEdit() {
                           variant="caption"
                           color="text.secondary"
                         >
-                          {section.questions?.length ?? 0} câu hỏi
+                          {section.questions?.length ?? 0} questions
                         </Typography>
                       </Box>
                     }
@@ -294,11 +294,11 @@ export default function AdminExerciseEdit() {
         maxWidth="sm"
         fullWidth
       >
-        <DialogTitle>Sửa thông tin bài tập</DialogTitle>
+        <DialogTitle>Edit exercise information</DialogTitle>
         <DialogContent dividers>
           <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2, pt: 1 }}>
             <TextField
-              label="Tiêu đề"
+              label="Title"
               fullWidth
               value={editData.title}
               onChange={(e) =>
@@ -306,7 +306,7 @@ export default function AdminExerciseEdit() {
               }
             />
             <TextField
-              label="Mô tả"
+              label="Description"
               fullWidth
               multiline
               rows={3}
@@ -316,10 +316,10 @@ export default function AdminExerciseEdit() {
               }
             />
             <FormControl fullWidth>
-              <InputLabel>Khóa học</InputLabel>
+              <InputLabel>Course</InputLabel>
               <Select
                 value={editData.courseId}
-                label="Khóa học"
+                label="Course"
                 onChange={(e) =>
                   setEditData({ ...editData, courseId: e.target.value })
                 }
@@ -335,14 +335,14 @@ export default function AdminExerciseEdit() {
         </DialogContent>
         <DialogActions>
           <Button onClick={() => setEditDialogOpen(false)} disabled={saving}>
-            Hủy
+            Cancel
           </Button>
           <Button
             onClick={handleSaveInfo}
             variant="contained"
             disabled={saving || !editData.title || !editData.courseId}
           >
-            {saving ? 'Đang lưu...' : 'Lưu thay đổi'}
+            {saving ? 'Saving...' : 'Save'}
           </Button>
         </DialogActions>
       </Dialog>

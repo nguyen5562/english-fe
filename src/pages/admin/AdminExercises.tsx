@@ -68,10 +68,10 @@ export default function AdminExercises() {
         const msg =
           (e.response?.data as { message?: string })?.message ??
           e.response?.statusText ??
-          'Không thể tải dữ liệu';
+          'Failed to load data';
         toast.error(String(msg));
       } else {
-        toast.error('Không thể tải dữ liệu');
+        toast.error('Failed to load data');
       }
     } finally {
       setLoading(false);
@@ -84,25 +84,25 @@ export default function AdminExercises() {
 
   const handleDelete = async (id: string) => {
     const ok = await confirm({
-      title: 'Xác nhận xóa bài tập',
-      message: 'Bạn có chắc muốn xóa bài tập này?',
-      confirmText: 'Xóa',
+      title: 'Confirm delete exercise',
+      message: 'Are you sure you want to delete this exercise?',
+      confirmText: 'Delete',
       confirmColor: 'error',
     });
     if (!ok) return;
     try {
       await exerciseService.deleteExercise(id);
-      toast.success('Đã xóa bài tập');
+      toast.success('Deleted exercise successfully');
       fetchData();
     } catch (e: unknown) {
       if (axios.isAxiosError(e)) {
         const msg =
           (e.response?.data as { message?: string })?.message ??
           e.response?.statusText ??
-          'Không thể xóa';
+          'Failed to delete exercise';
         toast.error(String(msg));
       } else {
-        toast.error('Không thể xóa bài tập');
+        toast.error('Failed to delete exercise');
       }
     }
   };
@@ -114,7 +114,7 @@ export default function AdminExercises() {
 
   const handleSaveNewExercise = async () => {
     if (!addForm.courseId || !addForm.title.trim()) {
-      toast.error('Vui lòng chọn khóa học và nhập tên bài tập');
+      toast.error('Please select a course and enter an exercise name');
       return;
     }
     try {
@@ -125,7 +125,7 @@ export default function AdminExercises() {
         description: addForm.description.trim() || null,
       };
       const created = await exerciseService.createExercise(dto);
-      toast.success('Đã thêm bài tập');
+      toast.success('Added exercise successfully');
       setOpenAddExercise(false);
       fetchData();
       navigate(`/admin/exercises/${created._id}`);
@@ -134,10 +134,10 @@ export default function AdminExercises() {
         const msg =
           (e.response?.data as { message?: string })?.message ??
           e.response?.statusText ??
-          'Không thể thêm bài tập';
+          'Failed to add exercise';
         toast.error(String(msg));
       } else {
-        toast.error('Không thể thêm bài tập');
+        toast.error('Failed to add exercise');
       }
     } finally {
       setSaving(false);
@@ -167,14 +167,14 @@ export default function AdminExercises() {
               variant="h4"
               sx={{ fontWeight: 600, color: 'text.primary', mb: 0.5 }}
             >
-              Quản lý Bài tập
+              Exercise Management
             </Typography>
             <Typography
               variant="body2"
               color="text.secondary"
               sx={{ fontWeight: 500 }}
             >
-              Tạo và quản lý các bài tập rèn luyện kỹ năng cho sinh viên
+              Create and manage exercises for students
             </Typography>
           </Box>
         </Box>
@@ -192,7 +192,7 @@ export default function AdminExercises() {
             '&:hover': { boxShadow: '0 6px 16px rgba(25, 118, 210, 0.4)' },
           }}
         >
-          Thêm Bài tập mới
+          Add New Exercise
         </Button>
       </Box>
 
@@ -204,7 +204,7 @@ export default function AdminExercises() {
         <Card>
           <CardContent>
             <Typography color="text.secondary" align="center">
-              Chưa có bài tập nào. Hãy thêm bài tập mới!
+              No exercises found. Please add a new exercise!
             </Typography>
           </CardContent>
         </Card>
@@ -296,7 +296,7 @@ export default function AdminExercises() {
                       lineHeight: 1.4,
                     }}
                   >
-                    {exercise.description || 'Không có mô tả.'}
+                    {exercise.description || 'No description.'}
                   </Typography>
 
                   <Box sx={{ display: 'flex', gap: 1.5, mt: 'auto' }}>
@@ -330,7 +330,7 @@ export default function AdminExercises() {
                           display: 'block',
                         }}
                       >
-                        Phần
+                        Sections
                       </Typography>
                     </Box>
                     <Box
@@ -366,7 +366,7 @@ export default function AdminExercises() {
                           display: 'block',
                         }}
                       >
-                        Câu hỏi
+                        Questions
                       </Typography>
                     </Box>
                   </Box>
@@ -422,13 +422,13 @@ export default function AdminExercises() {
         maxWidth="sm"
         fullWidth
       >
-        <DialogTitle>Thêm bài tập</DialogTitle>
+        <DialogTitle>Add New Exercise</DialogTitle>
         <DialogContent>
           <FormControl fullWidth sx={{ mt: 1 }}>
-            <InputLabel>Khóa học</InputLabel>
+            <InputLabel>Course</InputLabel>
             <Select
               value={addForm.courseId}
-              label="Khóa học"
+              label="Course"
               onChange={(e) =>
                 setAddForm((f) => ({ ...f, courseId: e.target.value }))
               }
@@ -442,7 +442,7 @@ export default function AdminExercises() {
           </FormControl>
           <TextField
             fullWidth
-            label="Tên bài tập"
+            label="Exercise Name"
             value={addForm.title}
             onChange={(e) =>
               setAddForm((f) => ({ ...f, title: e.target.value }))
@@ -451,7 +451,7 @@ export default function AdminExercises() {
           />
           <TextField
             fullWidth
-            label="Mô tả"
+            label="Description"
             value={addForm.description}
             onChange={(e) =>
               setAddForm((f) => ({ ...f, description: e.target.value }))
@@ -462,13 +462,13 @@ export default function AdminExercises() {
           />
         </DialogContent>
         <DialogActions>
-          <Button onClick={() => setOpenAddExercise(false)}>Hủy</Button>
+          <Button onClick={() => setOpenAddExercise(false)}>Cancel</Button>
           <Button
             variant="contained"
             onClick={handleSaveNewExercise}
             disabled={saving}
           >
-            {saving ? 'Đang lưu...' : 'Thêm'}
+            {saving ? 'Saving...' : 'Add'}
           </Button>
         </DialogActions>
       </Dialog>

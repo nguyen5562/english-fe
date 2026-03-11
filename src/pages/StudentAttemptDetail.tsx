@@ -81,7 +81,7 @@ const renderFileAnswer = (answer: string) => {
               fontWeight: 600,
             }}
           >
-            🎤 File ghi âm:
+            🎤 Audio file:
           </Typography>
           <audio
             controls
@@ -94,7 +94,7 @@ const renderFileAnswer = (answer: string) => {
             rel="noopener"
             sx={{ display: 'block', mt: 0.5, fontSize: '0.75rem' }}
           >
-            Tải xuống
+            Download
           </Link>
         </Box>
       ) : isVideo ? (
@@ -108,7 +108,7 @@ const renderFileAnswer = (answer: string) => {
               fontWeight: 600,
             }}
           >
-            🎥 Video ghi hình:
+            🎥 Video file:
           </Typography>
           <video
             controls
@@ -121,7 +121,7 @@ const renderFileAnswer = (answer: string) => {
             rel="noopener"
             sx={{ display: 'block', mt: 0.5, fontSize: '0.75rem' }}
           >
-            Tải xuống
+            Download
           </Link>
         </Box>
       ) : (
@@ -135,7 +135,7 @@ const renderFileAnswer = (answer: string) => {
               fontWeight: 600,
             }}
           >
-            📄 File đính kèm:
+            📄 File attachment:
           </Typography>
           <Link
             href={fileUrl}
@@ -171,7 +171,7 @@ export default function StudentAttemptDetail() {
 
   useEffect(() => {
     if (!studentId || !id) {
-      setError('Thiếu thông tin sinh viên hoặc bài tập/quiz');
+      setError('Missing student ID or exercise/quiz ID');
       setLoading(false);
       return;
     }
@@ -220,8 +220,8 @@ export default function StudentAttemptDetail() {
         }
       } catch (err: any) {
         console.error('Error fetching data:', err);
-        setError(err.response?.data?.message || 'Không thể tải dữ liệu');
-        toast.error('Không thể tải dữ liệu');
+        setError(err.response?.data?.message || 'Failed to load data');
+        toast.error('Failed to load data');
       } finally {
         setLoading(false);
       }
@@ -254,7 +254,7 @@ export default function StudentAttemptDetail() {
           onClick={() => navigate(-1)}
           sx={{ mt: 2 }}
         >
-          Quay lại
+          Back
         </Button>
       </Box>
     );
@@ -269,16 +269,16 @@ export default function StudentAttemptDetail() {
           onClick={() => navigate(-1)}
           sx={{ mb: 2 }}
         >
-          Quay lại
+          Back
         </Button>
         <Typography variant="h4" sx={{ fontWeight: 700, mb: 1 }}>
-          Chi tiết bài làm
+          Attempt details
         </Typography>
         <Box sx={{ display: 'flex', gap: 2, flexWrap: 'wrap' }}>
-          <Chip label={`Sinh viên: ${student?.username}`} color="primary" />
+          <Chip label={`Student: ${student?.username}`} color="primary" />
           <Chip label={`Email: ${student?.email}`} variant="outlined" />
           {attemptType === 'exercise' && exercise && (
-            <Chip label={`Bài tập: ${exercise.title}`} color="secondary" />
+            <Chip label={`Exercise: ${exercise.title}`} color="secondary" />
           )}
           {attemptType === 'quiz' && quiz && (
             <Chip label={`Quiz: ${quiz.title}`} color="secondary" />
@@ -290,7 +290,7 @@ export default function StudentAttemptDetail() {
       {attemptType === 'exercise' && exercise && (
         <Box>
           {exerciseAttempts.length === 0 ? (
-            <Alert severity="info">Sinh viên chưa làm bài tập này</Alert>
+            <Alert severity="info">Student has not done this exercise</Alert>
           ) : (
             exerciseAttempts.map((attempt) => (
               <Box key={attempt._id} sx={{ mb: 4 }}>
@@ -329,7 +329,7 @@ export default function StudentAttemptDetail() {
                           }}
                         >
                           <Chip
-                            label={`Điểm: ${sectionAttempt.score ?? 0}/${maxScore}`}
+                            label={`Score: ${sectionAttempt.score ?? 0}/${maxScore}`}
                             color={
                               sectionAttempt.score === maxScore
                                 ? 'success'
@@ -337,11 +337,11 @@ export default function StudentAttemptDetail() {
                             }
                           />
                           <Chip
-                            label={`Số lần thử: ${sectionAttempt.tries ?? 0}`}
+                            label={`Number of attempts: ${sectionAttempt.tries ?? 0}`}
                           />
                           {sectionAttempt.submittedAt && (
                             <Chip
-                              label={`Nộp: ${new Date(sectionAttempt.submittedAt).toLocaleString('vi-VN')}`}
+                              label={`Submitted: ${new Date(sectionAttempt.submittedAt).toLocaleString('vi-VN')}`}
                               variant="outlined"
                             />
                           )}
@@ -427,10 +427,10 @@ export default function StudentAttemptDetail() {
                                     variant="h6"
                                     sx={{ fontWeight: 600 }}
                                   >
-                                    Câu {qIdx + 1}
+                                    Question {qIdx + 1}
                                   </Typography>
                                   <Chip
-                                    label={`${question.point} điểm`}
+                                    label={`${question.point} points`}
                                     size="small"
                                   />
                                 </Box>
@@ -504,7 +504,7 @@ export default function StudentAttemptDetail() {
                                         variant="body2"
                                         sx={{ fontWeight: 600, mr: 1 }}
                                       >
-                                        Ngân hàng từ:
+                                        Word bank:
                                       </Typography>
                                       {question.wordBank.map(
                                         (word: string, wIdx: number) => (
@@ -537,7 +537,7 @@ export default function StudentAttemptDetail() {
                                       color: 'primary.main',
                                     }}
                                   >
-                                    📝 Đáp án của sinh viên:
+                                    📝 Student answer:
                                   </Typography>
 
                                   {isNonGradable ? (
@@ -553,7 +553,7 @@ export default function StudentAttemptDetail() {
                                         )
                                       ) : (
                                         <Chip
-                                          label="(Chưa trả lời)"
+                                          label="(Not answered)"
                                           size="small"
                                           color="default"
                                         />
@@ -570,7 +570,7 @@ export default function StudentAttemptDetail() {
                                       }}
                                     >
                                       {studentAnswer?.answer?.join(', ') ||
-                                        '(Chưa trả lời)'}
+                                        '(Not answered)'}
                                     </Typography>
                                   )}
 
@@ -579,7 +579,7 @@ export default function StudentAttemptDetail() {
                                       variant="body2"
                                       sx={{ color: 'success.main', mt: 1 }}
                                     >
-                                      <strong>Đáp án đúng:</strong>{' '}
+                                      <strong>Correct answer:</strong>{' '}
                                       {question.correctAnswer?.join(', ')}
                                     </Typography>
                                   )}
@@ -594,8 +594,8 @@ export default function StudentAttemptDetail() {
                                         mt: 1,
                                       }}
                                     >
-                                      * Câu hỏi dạng {section.questionType}{' '}
-                                      không được chấm điểm tự động
+                                      * Question type {section.questionType}{' '}
+                                      is not automatically graded
                                     </Typography>
                                   )}
                                 </Box>
@@ -617,27 +617,27 @@ export default function StudentAttemptDetail() {
       {attemptType === 'quiz' && quiz && (
         <Box>
           {!quizAttempt ? (
-            <Alert severity="info">Sinh viên chưa làm quiz này</Alert>
+            <Alert severity="info">Student has not done this quiz</Alert>
           ) : (
             <Box>
               {/* Quiz Summary */}
               <Card sx={{ mb: 3 }}>
                 <CardContent>
                   <Typography variant="h5" sx={{ fontWeight: 600, mb: 2 }}>
-                    Tổng quan
+                    Overview
                   </Typography>
                   <Box sx={{ display: 'flex', gap: 2, flexWrap: 'wrap' }}>
                     <Chip
-                      label={`Điểm: ${quizAttempt.totalScore ?? 0}`}
+                      label={`Score: ${quizAttempt.totalScore ?? 0}`}
                       color="primary"
                       size="medium"
                     />
                     <Chip
-                      label={`Bắt đầu: ${quizAttempt.startedAt ? new Date(quizAttempt.startedAt).toLocaleString('vi-VN') : 'N/A'}`}
+                      label={`Started: ${quizAttempt.startedAt ? new Date(quizAttempt.startedAt).toLocaleString('vi-VN') : 'N/A'}`}
                       variant="outlined"
                     />
                     <Chip
-                      label={`Nộp: ${quizAttempt.submittedAt ? new Date(quizAttempt.submittedAt).toLocaleString('vi-VN') : 'N/A'}`}
+                      label={`Submitted: ${quizAttempt.submittedAt ? new Date(quizAttempt.submittedAt).toLocaleString('vi-VN') : 'N/A'}`}
                       variant="outlined"
                     />
                   </Box>
@@ -650,7 +650,7 @@ export default function StudentAttemptDetail() {
                   <Card key={section._id} sx={{ mb: 3 }}>
                     <CardContent>
                       <Typography variant="h5" sx={{ fontWeight: 600, mb: 2 }}>
-                        {section.title || `Phần ${sIdx + 1}`}
+                        {section.title || `Section ${sIdx + 1}`}
                       </Typography>
 
                       {/* Section Media */}
@@ -731,10 +731,10 @@ export default function StudentAttemptDetail() {
                                   variant="h6"
                                   sx={{ fontWeight: 600 }}
                                 >
-                                  Câu {qIdx + 1}
+                                  Question {qIdx + 1}
                                 </Typography>
                                 <Chip
-                                  label={`${question.point} điểm`}
+                                  label={`${question.point} points`}
                                   size="small"
                                 />
                               </Box>
@@ -808,7 +808,7 @@ export default function StudentAttemptDetail() {
                                       variant="body2"
                                       sx={{ fontWeight: 600, mr: 1 }}
                                     >
-                                      Ngân hàng từ:
+                                      Word bank:
                                     </Typography>
                                     {question.wordBank.map(
                                       (word: string, wIdx: number) => (
@@ -841,7 +841,7 @@ export default function StudentAttemptDetail() {
                                     color: 'primary.main',
                                   }}
                                 >
-                                  📝 Đáp án của sinh viên:
+                                  📝 Student answer:
                                 </Typography>
 
                                 {isNonGradable ? (
@@ -857,7 +857,7 @@ export default function StudentAttemptDetail() {
                                       )
                                     ) : (
                                       <Chip
-                                        label="(Chưa trả lời)"
+                                        label="(Not answered)"
                                         size="small"
                                         color="default"
                                       />
@@ -874,7 +874,7 @@ export default function StudentAttemptDetail() {
                                     }}
                                   >
                                     {studentAnswer?.answer?.join(', ') ||
-                                      '(Chưa trả lời)'}
+                                      '(Not answered)'}
                                   </Typography>
                                 )}
 
@@ -883,7 +883,7 @@ export default function StudentAttemptDetail() {
                                     variant="body2"
                                     sx={{ color: 'success.main', mt: 1 }}
                                   >
-                                    <strong>Đáp án đúng:</strong>{' '}
+                                    <strong>Correct answer:</strong>{' '}
                                     {question.correctAnswer?.join(', ')}
                                   </Typography>
                                 )}
@@ -898,8 +898,7 @@ export default function StudentAttemptDetail() {
                                       mt: 1,
                                     }}
                                   >
-                                    * Câu hỏi dạng {section.questionType} không
-                                    được chấm điểm tự động
+                                    * Question type {section.questionType} is not automatically graded
                                   </Typography>
                                 )}
                               </Box>

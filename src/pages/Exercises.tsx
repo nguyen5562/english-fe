@@ -71,10 +71,10 @@ export default function Exercises() {
           const msg =
             (e.response?.data as { message?: string })?.message ??
             e.response?.statusText ??
-            'Không thể tải danh sách bài tập';
+            'Failed to load exercises';
           toast.error(String(msg));
         } else {
-          toast.error('Không thể tải danh sách bài tập');
+          toast.error('Failed to load exercises');
         }
       } finally {
         setLoading(false);
@@ -159,15 +159,15 @@ export default function Exercises() {
           mb: 3,
         }}
       >
-        <Typography variant="h4">Bài tập</Typography>
+        <Typography variant="h4">Exercises</Typography>
         <FormControl sx={{ minWidth: 200 }}>
-          <InputLabel>Lọc theo khóa học</InputLabel>
+          <InputLabel>Filter by course</InputLabel>
           <Select
             value={selectedCourse}
-            label="Lọc theo khóa học"
+            label="Filter by course"
             onChange={(e) => setSelectedCourse(e.target.value)}
           >
-            <MenuItem value="all">Tất cả</MenuItem>
+            <MenuItem value="all">All</MenuItem>
             {courses.map((course) => (
               <MenuItem key={course._id} value={course._id}>
                 {course.name}
@@ -185,7 +185,7 @@ export default function Exercises() {
         <Card>
           <CardContent>
             <Typography color="text.secondary" align="center">
-              Chưa có bài tập nào
+              No exercises found
             </Typography>
           </CardContent>
         </Card>
@@ -296,7 +296,7 @@ export default function Exercises() {
                       }}
                     >
                       <Typography variant="caption" sx={{ fontWeight: 700 }}>
-                        Tiến độ
+                        Progress
                       </Typography>
                       <Typography
                         variant="caption"
@@ -341,7 +341,7 @@ export default function Exercises() {
                         display: 'block',
                       }}
                     >
-                      Trạng thái
+                      Status
                     </Typography>
                     <Typography
                       variant="body2"
@@ -353,7 +353,7 @@ export default function Exercises() {
                             : 'text.primary',
                       }}
                     >
-                      {sectionsCompletedCount}/{totalSectionsCount} Phần
+                      {sectionsCompletedCount}/{totalSectionsCount} Sections
                     </Typography>
                   </Box>
                 </AccordionSummary>
@@ -420,8 +420,8 @@ export default function Exercises() {
                                     'video-recording',
                                     'writing',
                                   ].includes(section.questionType)
-                                    ? 'Trạng thái'
-                                    : 'Điểm lần cuối'}
+                                    ? 'Status'
+                                    : 'Last score'}
                                 </Typography>
                                 <Typography
                                   variant="body2"
@@ -443,7 +443,7 @@ export default function Exercises() {
                                     'video-recording',
                                     'writing',
                                   ].includes(section.questionType)
-                                    ? 'Đã hoàn thành'
+                                    ? 'Done'
                                     : `${scorePercent}%`}
                                 </Typography>
                               </Box>
@@ -462,7 +462,7 @@ export default function Exercises() {
                                   variant="caption"
                                   color="text.secondary"
                                 >
-                                  Chưa làm
+                                  Not done
                                 </Typography>
                               )}
                               <Button
@@ -474,7 +474,7 @@ export default function Exercises() {
                                   fontWeight: 700,
                                 }}
                               >
-                                {isDone ? 'Làm lại' : 'Bắt đầu'}
+                                {isDone ? 'Retry' : 'Start'}
                               </Button>
                             </Box>
                           </Box>

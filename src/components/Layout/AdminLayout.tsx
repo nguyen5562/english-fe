@@ -51,14 +51,14 @@ const drawerWidth = 260;
 
 const adminMenuItems = [
   { text: 'Dashboard', icon: <DashboardIcon />, path: '/admin' },
-  { text: 'Quản lý khóa học', icon: <SchoolIcon />, path: '/admin/content' },
+  { text: 'Manage courses', icon: <SchoolIcon />, path: '/admin/content' },
   {
-    text: 'Quản lý bài tập',
+    text: 'Manage exercises',
     icon: <AssignmentIcon />,
     path: '/admin/exercises',
   },
-  { text: 'Quản lý quiz', icon: <QuizIcon />, path: '/admin/quizzes' },
-  { text: 'Quản lý người dùng', icon: <PeopleIcon />, path: '/admin/students' },
+  { text: 'Manage quizzes', icon: <QuizIcon />, path: '/admin/quizzes' },
+  { text: 'Manage users', icon: <PeopleIcon />, path: '/admin/students' },
 ];
 
 export default function AdminLayout() {
@@ -155,10 +155,10 @@ export default function AdminLayout() {
           // eslint-disable-next-line @typescript-eslint/no-explicit-any
           (e.response?.data as any)?.message ??
           e.response?.statusText ??
-          'Cập nhật thông tin thất bại';
+          'Update profile failed';
         setProfileError(String(msg));
       } else {
-        setProfileError('Cập nhật thông tin thất bại');
+        setProfileError('Update profile failed');
       }
     } finally {
       setProfileSaving(false);
@@ -186,12 +186,12 @@ export default function AdminLayout() {
       !passwordData.newPassword ||
       !passwordData.confirmPassword
     ) {
-      setPasswordError('Vui lòng điền đầy đủ thông tin');
+      setPasswordError('Please fill in all fields');
       return;
     }
 
     if (passwordData.newPassword !== passwordData.confirmPassword) {
-      setPasswordError('Mật khẩu xác nhận không khớp');
+      setPasswordError('Passwords do not match');
       return;
     }
 
@@ -208,17 +208,17 @@ export default function AdminLayout() {
         confirmPassword: '',
       });
       setPasswordError('');
-      toast.success('Đổi mật khẩu thành công!');
+      toast.success('Change password successfully!');
     } catch (e) {
       if (axios.isAxiosError(e)) {
         const msg =
           // eslint-disable-next-line @typescript-eslint/no-explicit-any
           (e.response?.data as any)?.message ??
           e.response?.statusText ??
-          'Đổi mật khẩu thất bại';
+          'Change password failed';
         setPasswordError(String(msg));
       } else {
-        setPasswordError('Đổi mật khẩu thất bại');
+        setPasswordError('Change password failed');
       }
     } finally {
       setPasswordSaving(false);
@@ -233,7 +233,7 @@ export default function AdminLayout() {
   const handleLogout = () => {
     handleMenuClose();
     logout();
-    toast.success('Đăng xuất thành công!');
+    toast.success('Logout successfully!');
     navigate('/login');
   };
 
@@ -248,7 +248,7 @@ export default function AdminLayout() {
             Admin Panel
           </Typography>
           <Typography variant="caption" sx={{ opacity: 0.8 }}>
-            Quản trị hệ thống
+            System administration
           </Typography>
         </Box>
       </Toolbar>
@@ -299,7 +299,7 @@ export default function AdminLayout() {
             <MenuIcon />
           </IconButton>
           <Typography variant="h6" noWrap component="div" sx={{ flexGrow: 1 }}>
-            Hệ thống Quản trị - Học Tiếng Anh Đại học
+            English Learning System - Admin Panel
           </Typography>
           <IconButton
             size="large"
@@ -369,25 +369,25 @@ export default function AdminLayout() {
               <ListItemIcon>
                 <ArrowBackIcon fontSize="small" />
               </ListItemIcon>
-              Về trang chủ
+              Back to main
             </MenuItem>
             <MenuItem onClick={handleProfileClick}>
               <ListItemIcon>
                 <AccountCircleIcon fontSize="small" />
               </ListItemIcon>
-              Thông tin cá nhân
+              Profile
             </MenuItem>
             <MenuItem onClick={handleChangePasswordClick}>
               <ListItemIcon>
                 <LockIcon fontSize="small" />
               </ListItemIcon>
-              Đổi mật khẩu
+              Change password
             </MenuItem>
             <MenuItem onClick={handleLogout}>
               <ListItemIcon>
                 <LogoutIcon fontSize="small" />
               </ListItemIcon>
-              Đăng xuất
+              Logout
             </MenuItem>
           </Menu>
         </Toolbar>
@@ -448,7 +448,7 @@ export default function AdminLayout() {
         maxWidth="sm"
         fullWidth
       >
-        <DialogTitle>Thông tin cá nhân</DialogTitle>
+        <DialogTitle>Profile</DialogTitle>
         <DialogContent>
           <Box sx={{ pt: 2 }}>
             {profileError && (
@@ -462,7 +462,7 @@ export default function AdminLayout() {
             )}
             <TextField
               fullWidth
-              label="Tên người dùng"
+              label="Username"
               value={formData.username}
               onChange={(e) =>
                 setFormData({ ...formData, username: e.target.value })
@@ -481,8 +481,8 @@ export default function AdminLayout() {
             />
             <TextField
               fullWidth
-              label="Vai trò"
-              value={user?.role === 'teacher' ? 'Giảng viên' : 'Sinh viên'}
+              label="Role"
+              value={user?.role === 'teacher' ? 'Teacher' : 'Student'}
               disabled
               margin="normal"
             />
@@ -490,14 +490,14 @@ export default function AdminLayout() {
         </DialogContent>
         <DialogActions>
           <Button onClick={handleProfileCancel} disabled={profileSaving}>
-            Hủy
+            Cancel
           </Button>
           <Button
             onClick={handleProfileSave}
             variant="contained"
             disabled={profileSaving}
           >
-            {profileSaving ? 'Đang lưu...' : 'Lưu'}
+            {profileSaving ? 'Saving...' : 'Save'}
           </Button>
         </DialogActions>
       </Dialog>
@@ -509,7 +509,7 @@ export default function AdminLayout() {
         maxWidth="sm"
         fullWidth
       >
-        <DialogTitle>Đổi mật khẩu</DialogTitle>
+        <DialogTitle>Change password</DialogTitle>
         <DialogContent>
           <Box sx={{ pt: 2 }}>
             {passwordError && (
@@ -523,7 +523,7 @@ export default function AdminLayout() {
             )}
             <TextField
               fullWidth
-              label="Mật khẩu cũ"
+              label="Old password"
               type="password"
               value={passwordData.oldPassword}
               onChange={(e) =>
@@ -536,7 +536,7 @@ export default function AdminLayout() {
             />
             <TextField
               fullWidth
-              label="Mật khẩu mới"
+              label="New password"
               type="password"
               value={passwordData.newPassword}
               onChange={(e) =>
@@ -549,7 +549,7 @@ export default function AdminLayout() {
             />
             <TextField
               fullWidth
-              label="Nhập lại mật khẩu mới"
+              label="Confirm new password"
               type="password"
               value={passwordData.confirmPassword}
               onChange={(e) =>
@@ -564,14 +564,14 @@ export default function AdminLayout() {
         </DialogContent>
         <DialogActions>
           <Button onClick={handleChangePasswordClose} disabled={passwordSaving}>
-            Hủy
+            Cancel
           </Button>
           <Button
             onClick={handleChangePasswordSave}
             variant="contained"
             disabled={passwordSaving}
           >
-            {passwordSaving ? 'Đang lưu...' : 'Lưu'}
+            {passwordSaving ? 'Saving...' : 'Save'}
           </Button>
         </DialogActions>
       </Dialog>

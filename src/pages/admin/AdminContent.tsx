@@ -100,7 +100,7 @@ function FilePicker({
       <Box sx={{ display: 'flex', gap: 1, alignItems: 'flex-start' }}>
         <TextField
           fullWidth
-          placeholder="Nhập URL hoặc chọn file"
+          placeholder="Enter URL or select file"
           value={value}
           onChange={(e) => onChange(e.target.value)}
           helperText={helperText}
@@ -131,7 +131,7 @@ function FilePicker({
             },
           }}
         >
-          Chọn file
+          Select file
         </Button>
       </Box>
     </Box>
@@ -188,10 +188,10 @@ export default function AdminContent() {
         const msg =
           (e.response?.data as { message?: string })?.message ??
           e.response?.statusText ??
-          'Không thể tải danh sách học phần';
+          'Failed to load course list';
         toast.error(String(msg));
       } else {
-        toast.error('Không thể tải danh sách học phần');
+        toast.error('Failed to load course list');
       }
     } finally {
       setLoading(false);
@@ -213,10 +213,10 @@ export default function AdminContent() {
         const msg =
           (e.response?.data as { message?: string })?.message ??
           e.response?.statusText ??
-          'Không thể tải danh sách bài học';
+          'Failed to load lesson list';
         toast.error(String(msg));
       } else {
-        toast.error('Không thể tải danh sách bài học');
+        toast.error('Failed to load lesson list');
       }
     } finally {
       setLoadingLessons((prev) => ({ ...prev, [courseId]: false }));
@@ -233,7 +233,7 @@ export default function AdminContent() {
     return (
       <Box>
         <Alert severity="error">
-          Bạn không có quyền truy cập trang này. Chỉ dành cho giảng viên.
+          You do not have permission to access this page. Only teachers can access this page.
         </Alert>
       </Box>
     );
@@ -258,7 +258,7 @@ export default function AdminContent() {
 
   const handleSaveCourse = async () => {
     if (!courseForm.name || !courseForm.code) {
-      toast.error('Vui lòng điền đầy đủ thông tin');
+      toast.error('Please fill in all information');
       return;
     }
 
@@ -274,18 +274,18 @@ export default function AdminContent() {
       setSelectedCourse(null);
       toast.success(
         selectedCourse
-          ? 'Đã cập nhật học phần thành công'
-          : 'Đã thêm học phần thành công',
+          ? 'Updated course successfully'
+          : 'Added course successfully',
       );
     } catch (e: unknown) {
       if (axios.isAxiosError(e)) {
         const msg =
           (e.response?.data as { message?: string })?.message ??
           e.response?.statusText ??
-          'Không thể lưu học phần';
+          'Failed to save course';
         toast.error(String(msg));
       } else {
-        toast.error('Không thể lưu học phần');
+        toast.error('Failed to save course');
       }
     } finally {
       setSaving(false);
@@ -294,10 +294,10 @@ export default function AdminContent() {
 
   const handleDeleteCourse = async (id: string) => {
     const confirmed = await confirm({
-      title: 'Xác nhận xóa học phần',
+      title: 'Confirm delete course',
       message:
-        'Bạn có chắc chắn muốn xóa học phần này? Tất cả bài học và tài liệu sẽ bị xóa.',
-      confirmText: 'Xóa',
+        'Are you sure you want to delete this course? All lessons and resources will be deleted.',
+      confirmText: 'Delete',
       confirmColor: 'error',
     });
     if (!confirmed) {
@@ -313,16 +313,16 @@ export default function AdminContent() {
         delete newMap[id];
         return newMap;
       });
-      toast.success('Đã xóa học phần thành công');
+      toast.success('Deleted course successfully');
     } catch (e: unknown) {
       if (axios.isAxiosError(e)) {
         const msg =
           (e.response?.data as { message?: string })?.message ??
           e.response?.statusText ??
-          'Không thể xóa học phần';
+          'Failed to delete course';
         toast.error(String(msg));
       } else {
-        toast.error('Không thể xóa học phần');
+        toast.error('Failed to delete course');
       }
     }
   };
@@ -344,7 +344,7 @@ export default function AdminContent() {
 
   const handleSaveLesson = async () => {
     if (!selectedCourse || !lessonForm.title) {
-      toast.error('Vui lòng điền đầy đủ thông tin');
+      toast.error('Please fill in all information');
       return;
     }
 
@@ -366,18 +366,18 @@ export default function AdminContent() {
       setSelectedLesson(null);
       toast.success(
         selectedLesson
-          ? 'Đã cập nhật bài học thành công'
-          : 'Đã thêm bài học thành công',
+          ? 'Updated lesson successfully'
+          : 'Added lesson successfully',
       );
     } catch (e: unknown) {
       if (axios.isAxiosError(e)) {
         const msg =
           (e.response?.data as { message?: string })?.message ??
           e.response?.statusText ??
-          'Không thể lưu bài học';
+          'Failed to save lesson';
         toast.error(String(msg));
       } else {
-        toast.error('Không thể lưu bài học');
+        toast.error('Failed to save lesson');
       }
     } finally {
       setSaving(false);
@@ -386,10 +386,10 @@ export default function AdminContent() {
 
   const handleDeleteLesson = async (courseId: string, lessonId: string) => {
     const confirmed = await confirm({
-      title: 'Xác nhận xóa bài học',
+      title: 'Confirm delete lesson',
       message:
-        'Bạn có chắc chắn muốn xóa bài học này? Tất cả slides, videos và tài liệu sẽ bị xóa.',
-      confirmText: 'Xóa',
+        'Are you sure you want to delete this lesson? All slides, videos and resources will be deleted.',
+      confirmText: 'Delete',
       confirmColor: 'error',
     });
     if (!confirmed) {
@@ -400,16 +400,16 @@ export default function AdminContent() {
       await lessonService.deleteLesson(lessonId);
       // Refresh lessons của course này
       await fetchLessonsForCourse(courseId, true);
-      toast.success('Đã xóa bài học thành công');
+      toast.success('Deleted lesson successfully');
     } catch (e: unknown) {
       if (axios.isAxiosError(e)) {
         const msg =
           (e.response?.data as { message?: string })?.message ??
           e.response?.statusText ??
-          'Không thể xóa bài học';
+          'Failed to delete lesson';
         toast.error(String(msg));
       } else {
-        toast.error('Không thể xóa bài học');
+        toast.error('Failed to delete lesson');
       }
     }
   };
@@ -429,7 +429,7 @@ export default function AdminContent() {
       !slideForm.title ||
       !slideForm.url
     ) {
-      toast.error('Vui lòng điền đầy đủ thông tin');
+      toast.error('Please fill in all information');
       return;
     }
 
@@ -443,16 +443,16 @@ export default function AdminContent() {
       // Refresh lessons của course này
       await fetchLessonsForCourse(selectedCourse._id, true);
       setOpenSlideDialog(false);
-      toast.success('Đã thêm slide thành công');
+      toast.success('Added slide successfully');
     } catch (e: unknown) {
       if (axios.isAxiosError(e)) {
         const msg =
           (e.response?.data as { message?: string })?.message ??
           e.response?.statusText ??
-          'Không thể thêm slide';
+          'Failed to add slide';
         toast.error(String(msg));
       } else {
-        toast.error('Không thể thêm slide');
+        toast.error('Failed to add slide');
       }
     } finally {
       setSaving(false);
@@ -465,9 +465,9 @@ export default function AdminContent() {
     slideId: string,
   ) => {
     const confirmed = await confirm({
-      title: 'Xác nhận xóa slide',
-      message: 'Bạn có chắc chắn muốn xóa slide này?',
-      confirmText: 'Xóa',
+      title: 'Confirm delete slide',
+      message: 'Are you sure you want to delete this slide?',
+      confirmText: 'Delete',
       confirmColor: 'error',
     });
     if (!confirmed) {
@@ -478,16 +478,16 @@ export default function AdminContent() {
       await lessonService.removeSlide(lessonId, slideId);
       // Refresh lessons của course này
       await fetchLessonsForCourse(courseId, true);
-      toast.success('Đã xóa slide thành công');
+      toast.success('Deleted slide successfully');
     } catch (e: unknown) {
       if (axios.isAxiosError(e)) {
         const msg =
           (e.response?.data as { message?: string })?.message ??
           e.response?.statusText ??
-          'Không thể xóa slide';
+          'Failed to delete slide';
         toast.error(String(msg));
       } else {
-        toast.error('Không thể xóa slide');
+        toast.error('Failed to delete slide');
       }
     }
   };
@@ -507,7 +507,7 @@ export default function AdminContent() {
       !videoForm.title ||
       !videoForm.url
     ) {
-      toast.error('Vui lòng điền đầy đủ thông tin');
+      toast.error('Please fill in all information');
       return;
     }
 
@@ -521,16 +521,16 @@ export default function AdminContent() {
       // Refresh lessons của course này
       await fetchLessonsForCourse(selectedCourse._id, true);
       setOpenVideoDialog(false);
-      toast.success('Đã thêm video thành công');
+      toast.success('Added video successfully');
     } catch (e: unknown) {
       if (axios.isAxiosError(e)) {
         const msg =
           (e.response?.data as { message?: string })?.message ??
           e.response?.statusText ??
-          'Không thể thêm video';
+          'Failed to add video';
         toast.error(String(msg));
       } else {
-        toast.error('Không thể thêm video');
+        toast.error('Failed to add video');
       }
     } finally {
       setSaving(false);
@@ -543,9 +543,9 @@ export default function AdminContent() {
     videoId: string,
   ) => {
     const confirmed = await confirm({
-      title: 'Xác nhận xóa video',
-      message: 'Bạn có chắc chắn muốn xóa video này?',
-      confirmText: 'Xóa',
+      title: 'Confirm delete video',
+      message: 'Are you sure you want to delete this video?',
+      confirmText: 'Delete',
       confirmColor: 'error',
     });
     if (!confirmed) {
@@ -556,16 +556,16 @@ export default function AdminContent() {
       await lessonService.removeVideo(lessonId, videoId);
       // Refresh lessons của course này
       await fetchLessonsForCourse(courseId, true);
-      toast.success('Đã xóa video thành công');
+      toast.success('Deleted video successfully');
     } catch (e: unknown) {
       if (axios.isAxiosError(e)) {
         const msg =
           (e.response?.data as { message?: string })?.message ??
           e.response?.statusText ??
-          'Không thể xóa video';
+          'Failed to delete video';
         toast.error(String(msg));
       } else {
-        toast.error('Không thể xóa video');
+        toast.error('Failed to delete video');
       }
     }
   };
@@ -585,7 +585,7 @@ export default function AdminContent() {
       !referenceForm.title ||
       !referenceForm.url
     ) {
-      toast.error('Vui lòng điền đầy đủ thông tin');
+      toast.error('Please fill in all information');
       return;
     }
 
@@ -599,16 +599,16 @@ export default function AdminContent() {
       // Refresh lessons của course này
       await fetchLessonsForCourse(selectedCourse._id, true);
       setOpenReferenceDialog(false);
-      toast.success('Đã thêm tài liệu thành công');
+      toast.success('Added reference successfully');
     } catch (e: unknown) {
       if (axios.isAxiosError(e)) {
         const msg =
           (e.response?.data as { message?: string })?.message ??
           e.response?.statusText ??
-          'Không thể thêm tài liệu';
+          'Failed to add reference';
         toast.error(String(msg));
       } else {
-        toast.error('Không thể thêm tài liệu');
+        toast.error('Failed to add reference');
       }
     } finally {
       setSaving(false);
@@ -621,9 +621,9 @@ export default function AdminContent() {
     referenceId: string,
   ) => {
     const confirmed = await confirm({
-      title: 'Xác nhận xóa tài liệu',
-      message: 'Bạn có chắc chắn muốn xóa tài liệu này?',
-      confirmText: 'Xóa',
+      title: 'Confirm delete reference',
+      message: 'Are you sure you want to delete this reference?',
+      confirmText: 'Delete',
       confirmColor: 'error',
     });
     if (!confirmed) {
@@ -634,16 +634,16 @@ export default function AdminContent() {
       await lessonService.removeReference(lessonId, referenceId);
       // Refresh lessons của course này
       await fetchLessonsForCourse(courseId, true);
-      toast.success('Đã xóa tài liệu thành công');
+      toast.success('Deleted reference successfully');
     } catch (e: unknown) {
       if (axios.isAxiosError(e)) {
         const msg =
           (e.response?.data as { message?: string })?.message ??
           e.response?.statusText ??
-          'Không thể xóa tài liệu';
+          'Failed to delete reference';
         toast.error(String(msg));
       } else {
-        toast.error('Không thể xóa tài liệu');
+        toast.error('Failed to delete reference');
       }
     }
   };
@@ -665,14 +665,14 @@ export default function AdminContent() {
               variant="h4"
               sx={{ fontWeight: 600, color: 'text.primary', mb: 0.5 }}
             >
-              Nội dung học tập
+              Courses
             </Typography>
             <Typography
               variant="body2"
               color="text.secondary"
               sx={{ fontWeight: 500 }}
             >
-              Quản lý danh sách khóa học, bài dạy và tài liệu đính kèm
+              Manage courses, lessons, and attachments
             </Typography>
           </Box>
         </Box>
@@ -691,7 +691,7 @@ export default function AdminContent() {
             '&:hover': { boxShadow: '0 6px 16px rgba(25, 118, 210, 0.4)' },
           }}
         >
-          Thêm Học phần mới
+          Add New Course
         </Button>
       </Box>
 
@@ -703,7 +703,7 @@ export default function AdminContent() {
         <Card>
           <CardContent>
             <Typography color="text.secondary" align="center">
-              Chưa có học phần nào. Hãy thêm học phần mới!
+              No courses found. Add a new course!
             </Typography>
           </CardContent>
         </Card>
@@ -767,7 +767,7 @@ export default function AdminContent() {
                       onClick={() => handleAddLesson(course)}
                       sx={{ mb: 2 }}
                     >
-                      Thêm Bài học
+                      Add New Lesson
                     </Button>
                   </Box>
 
@@ -779,7 +779,7 @@ export default function AdminContent() {
                     </Box>
                   ) : lessons.length === 0 ? (
                     <Alert severity="info">
-                      Chưa có bài học nào trong học phần này.
+                      No lessons found in this course.
                     </Alert>
                   ) : (
                     <Box>
@@ -850,7 +850,7 @@ export default function AdminContent() {
                                   startIcon={<AddIcon />}
                                   onClick={() => handleAddSlide(course, lesson)}
                                 >
-                                  Thêm Slide
+                                  Add New Slide
                                 </Button>
                               </Box>
                               {lesson.slides && lesson.slides.length > 0 ? (
@@ -885,7 +885,7 @@ export default function AdminContent() {
                                   color="text.secondary"
                                   sx={{ ml: 4 }}
                                 >
-                                  Chưa có slide nào
+                                  No slides found
                                 </Typography>
                               )}
                             </Box>
@@ -911,7 +911,7 @@ export default function AdminContent() {
                                   startIcon={<AddIcon />}
                                   onClick={() => handleAddVideo(course, lesson)}
                                 >
-                                  Thêm Video
+                                  Add New Video
                                 </Button>
                               </Box>
                               {lesson.videos && lesson.videos.length > 0 ? (
@@ -946,7 +946,7 @@ export default function AdminContent() {
                                   color="text.secondary"
                                   sx={{ ml: 4 }}
                                 >
-                                  Chưa có video nào
+                                  No videos found
                                 </Typography>
                               )}
                             </Box>
@@ -965,7 +965,7 @@ export default function AdminContent() {
                                   <DescriptionIcon
                                     sx={{ verticalAlign: 'middle', mr: 1 }}
                                   />
-                                  Tài liệu tham khảo (
+                                  References (
                                   {lesson.references?.length || 0})
                                 </Typography>
                                 <Button
@@ -975,7 +975,7 @@ export default function AdminContent() {
                                     handleAddReference(course, lesson)
                                   }
                                 >
-                                  Thêm Tài liệu
+                                  Add New Reference
                                 </Button>
                               </Box>
                               {lesson.references &&
@@ -1011,7 +1011,7 @@ export default function AdminContent() {
                                   color="text.secondary"
                                   sx={{ ml: 4 }}
                                 >
-                                  Chưa có tài liệu nào
+                                  No references found
                                 </Typography>
                               )}
                             </Box>
@@ -1035,7 +1035,7 @@ export default function AdminContent() {
         fullWidth
       >
         <DialogTitle>
-          {selectedCourse ? 'Sửa Học phần' : 'Thêm Học phần'}
+          {selectedCourse ? 'Edit Course' : 'Add New Course'}
         </DialogTitle>
         <DialogContent>
           <Grid container spacing={2} sx={{ mt: 1 }}>
@@ -1043,7 +1043,7 @@ export default function AdminContent() {
             <Grid item xs={12}>
               <TextField
                 fullWidth
-                label="Tên học phần"
+                label="Course Name"
                 value={courseForm.name}
                 onChange={(e) =>
                   setCourseForm({ ...courseForm, name: e.target.value })
@@ -1056,7 +1056,7 @@ export default function AdminContent() {
             <Grid item xs={12}>
               <TextField
                 fullWidth
-                label="Mã học phần"
+                label="Course Code"
                 value={courseForm.code}
                 onChange={(e) =>
                   setCourseForm({ ...courseForm, code: e.target.value })
@@ -1069,7 +1069,7 @@ export default function AdminContent() {
             <Grid item xs={12}>
               <TextField
                 fullWidth
-                label="Mô tả"
+                label="Description"
                 value={courseForm.description}
                 onChange={(e) =>
                   setCourseForm({ ...courseForm, description: e.target.value })
@@ -1083,14 +1083,14 @@ export default function AdminContent() {
         </DialogContent>
         <DialogActions>
           <Button onClick={() => setOpenCourseDialog(false)} disabled={saving}>
-            Hủy
+            Cancel
           </Button>
           <Button
             onClick={handleSaveCourse}
             variant="contained"
             disabled={saving}
           >
-            {saving ? 'Đang lưu...' : 'Lưu'}
+            {saving ? 'Saving...' : 'Save'}
           </Button>
         </DialogActions>
       </Dialog>
@@ -1103,7 +1103,7 @@ export default function AdminContent() {
         fullWidth
       >
         <DialogTitle>
-          {selectedLesson ? 'Sửa Bài học' : 'Thêm Bài học'}
+          {selectedLesson ? 'Edit Lesson' : 'Add New Lesson'}
         </DialogTitle>
         <DialogContent>
           <Grid container spacing={2} sx={{ mt: 1 }}>
@@ -1111,7 +1111,7 @@ export default function AdminContent() {
             <Grid item xs={12}>
               <TextField
                 fullWidth
-                label="Tiêu đề bài học"
+                label="Lesson Title"
                 value={lessonForm.title}
                 onChange={(e) =>
                   setLessonForm({ ...lessonForm, title: e.target.value })
@@ -1124,14 +1124,14 @@ export default function AdminContent() {
         </DialogContent>
         <DialogActions>
           <Button onClick={() => setOpenLessonDialog(false)} disabled={saving}>
-            Hủy
+            Cancel
           </Button>
           <Button
             onClick={handleSaveLesson}
             variant="contained"
             disabled={saving}
           >
-            {saving ? 'Đang lưu...' : 'Lưu'}
+            {saving ? 'Saving...' : 'Save'}
           </Button>
         </DialogActions>
       </Dialog>
@@ -1158,7 +1158,7 @@ export default function AdminContent() {
             fontSize: '1.5rem',
           }}
         >
-          Thêm Slide
+          Add New Slide
         </DialogTitle>
         <DialogContent sx={{ pt: 3 }}>
           <Grid container spacing={3}>
@@ -1172,11 +1172,11 @@ export default function AdminContent() {
                   color: 'text.primary',
                 }}
               >
-                Tiêu đề slide <span style={{ color: 'red' }}>*</span>
+                Slide Title <span style={{ color: 'red' }}>*</span>
               </Typography>
               <TextField
                 fullWidth
-                placeholder="Nhập tiêu đề slide"
+                placeholder="Enter slide title"
                 value={slideForm.title}
                 onChange={(e) =>
                   setSlideForm({ ...slideForm, title: e.target.value })
@@ -1194,8 +1194,8 @@ export default function AdminContent() {
               <FilePicker
                 value={slideForm.url}
                 onChange={(url: string) => setSlideForm({ ...slideForm, url })}
-                label="URL file PowerPoint (.pptx)"
-                helperText="Nhấn 'Chọn file' để mở file manager hoặc nhập URL trực tiếp"
+                label="PowerPoint URL"
+                helperText="Click 'Select file' to open file manager or enter URL directly"
                 disabled={saving}
               />
             </Grid>
@@ -1218,7 +1218,7 @@ export default function AdminContent() {
               px: 3,
             }}
           >
-            Hủy
+            Cancel
           </Button>
           <Button
             onClick={handleSaveSlide}
@@ -1231,7 +1231,7 @@ export default function AdminContent() {
               fontWeight: 500,
             }}
           >
-            {saving ? 'Đang lưu...' : 'Lưu'}
+            {saving ? 'Saving...' : 'Save'}
           </Button>
         </DialogActions>
       </Dialog>
@@ -1258,7 +1258,7 @@ export default function AdminContent() {
             fontSize: '1.5rem',
           }}
         >
-          Thêm Video
+          Add New Video
         </DialogTitle>
         <DialogContent sx={{ pt: 3 }}>
           <Grid container spacing={3}>
@@ -1272,11 +1272,11 @@ export default function AdminContent() {
                   color: 'text.primary',
                 }}
               >
-                Tiêu đề video <span style={{ color: 'red' }}>*</span>
+                Video Title <span style={{ color: 'red' }}>*</span>
               </Typography>
               <TextField
                 fullWidth
-                placeholder="Nhập tiêu đề video"
+                placeholder="Enter video title"
                 value={videoForm.title}
                 onChange={(e) =>
                   setVideoForm({ ...videoForm, title: e.target.value })
@@ -1294,8 +1294,8 @@ export default function AdminContent() {
               <FilePicker
                 value={videoForm.url}
                 onChange={(url: string) => setVideoForm({ ...videoForm, url })}
-                label="URL video"
-                helperText="Nhấn 'Chọn file' để mở file manager hoặc nhập URL trực tiếp"
+                label="Video URL"
+                helperText="Click 'Select file' to open file manager or enter URL directly"
                 disabled={saving}
               />
             </Grid>
@@ -1318,7 +1318,7 @@ export default function AdminContent() {
               px: 3,
             }}
           >
-            Hủy
+            Cancel
           </Button>
           <Button
             onClick={handleSaveVideo}
@@ -1331,7 +1331,7 @@ export default function AdminContent() {
               fontWeight: 500,
             }}
           >
-            {saving ? 'Đang lưu...' : 'Lưu'}
+            {saving ? 'Saving...' : 'Save'}
           </Button>
         </DialogActions>
       </Dialog>
@@ -1358,7 +1358,7 @@ export default function AdminContent() {
             fontSize: '1.5rem',
           }}
         >
-          Thêm Tài liệu tham khảo
+          Add New Reference
         </DialogTitle>
         <DialogContent sx={{ pt: 3 }}>
           <Grid container spacing={3}>
@@ -1372,11 +1372,11 @@ export default function AdminContent() {
                   color: 'text.primary',
                 }}
               >
-                Tiêu đề tài liệu <span style={{ color: 'red' }}>*</span>
+                Reference Title <span style={{ color: 'red' }}>*</span>
               </Typography>
               <TextField
                 fullWidth
-                placeholder="Nhập tiêu đề tài liệu"
+                placeholder="Enter reference title"
                 value={referenceForm.title}
                 onChange={(e) =>
                   setReferenceForm({ ...referenceForm, title: e.target.value })
@@ -1396,8 +1396,8 @@ export default function AdminContent() {
                 onChange={(url: string) =>
                   setReferenceForm({ ...referenceForm, url })
                 }
-                label="URL tài liệu"
-                helperText="Nhấn 'Chọn file' để mở file manager hoặc nhập URL trực tiếp"
+                label="Document URL"
+                helperText="Click 'Select file' to open file manager or enter URL directly"
                 disabled={saving}
               />
             </Grid>
@@ -1420,7 +1420,7 @@ export default function AdminContent() {
               px: 3,
             }}
           >
-            Hủy
+            Cancel
           </Button>
           <Button
             onClick={handleSaveReference}
@@ -1433,7 +1433,7 @@ export default function AdminContent() {
               fontWeight: 500,
             }}
           >
-            {saving ? 'Đang lưu...' : 'Lưu'}
+            {saving ? 'Saving...' : 'Save'}
           </Button>
         </DialogActions>
       </Dialog>

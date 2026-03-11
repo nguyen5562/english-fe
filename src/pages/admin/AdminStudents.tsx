@@ -47,8 +47,8 @@ import type { User } from '../../types';
 import type { CreateUserDto, UpdateUserDto } from '../../types/dto';
 
 const ROLE_OPTIONS = [
-  { value: 'student', label: 'Sinh viên' },
-  { value: 'teacher', label: 'Giáo viên' },
+  { value: 'student', label: 'Student' },
+  { value: 'teacher', label: 'Teacher' },
 ];
 
 export default function AdminStudents() {
@@ -89,10 +89,10 @@ export default function AdminStudents() {
         const msg =
           (e.response?.data as { message?: string })?.message ??
           e.response?.statusText ??
-          'Không thể tải danh sách người dùng';
+          'Failed to load user list';
         toast.error(String(msg));
       } else {
-        toast.error('Không thể tải danh sách người dùng');
+        toast.error('Failed to load user list');
       }
     } finally {
       setLoading(false);
@@ -119,13 +119,13 @@ export default function AdminStudents() {
       !addForm.email.trim() ||
       !addForm.password.trim()
     ) {
-      toast.error('Vui lòng nhập đủ username, email và mật khẩu');
+      toast.error('Please enter username, email and password');
       return;
     }
     try {
       setSaving(true);
       await userService.createUser(addForm);
-      toast.success('Đã thêm tài khoản');
+      toast.success('Added user successfully');
       setOpenAdd(false);
       fetchUsers();
     } catch (e: unknown) {
@@ -133,10 +133,10 @@ export default function AdminStudents() {
         const msg =
           (e.response?.data as { message?: string })?.message ??
           e.response?.statusText ??
-          'Không thể thêm tài khoản';
+          'Failed to add user';
         toast.error(String(msg));
       } else {
-        toast.error('Không thể thêm tài khoản');
+        toast.error('Failed to add user');
       }
     } finally {
       setSaving(false);
@@ -156,7 +156,7 @@ export default function AdminStudents() {
   const handleSaveEdit = async () => {
     if (!editingUser) return;
     if (!editForm.username.trim() || !editForm.email.trim()) {
-      toast.error('Vui lòng nhập username và email');
+      toast.error('Please enter username and email');
       return;
     }
     try {
@@ -173,7 +173,7 @@ export default function AdminStudents() {
         updateAuthUser(updated);
       }
 
-      toast.success('Đã cập nhật tài khoản');
+      toast.success('Updated user successfully');
       setOpenEdit(false);
       setEditingUser(null);
       fetchUsers();
@@ -182,10 +182,10 @@ export default function AdminStudents() {
         const msg =
           (e.response?.data as { message?: string })?.message ??
           e.response?.statusText ??
-          'Không thể cập nhật tài khoản';
+          'Failed to update user';
         toast.error(String(msg));
       } else {
-        toast.error('Không thể cập nhật tài khoản');
+        toast.error('Failed to update user');
       }
     } finally {
       setSaving(false);
@@ -194,26 +194,26 @@ export default function AdminStudents() {
 
   const handleDelete = async (u: User) => {
     const ok = await confirm({
-      title: 'Xác nhận xóa tài khoản',
-      message: `Bạn có chắc muốn xóa tài khoản "${u.username}" (${u.email})?`,
-      confirmText: 'Xóa',
+      title: 'Confirm delete user',
+      message: `Are you sure you want to delete user "${u.username}" (${u.email})?`,
+      confirmText: 'Delete',
       confirmColor: 'error',
     });
     if (!ok) return;
     try {
       setSaving(true);
       await userService.deleteUser(u._id);
-      toast.success('Đã xóa tài khoản');
+      toast.success('Deleted user successfully');
       fetchUsers();
     } catch (e: unknown) {
       if (axios.isAxiosError(e)) {
         const msg =
           (e.response?.data as { message?: string })?.message ??
           e.response?.statusText ??
-          'Không thể xóa tài khoản';
+          'Failed to delete user';
         toast.error(String(msg));
       } else {
-        toast.error('Không thể xóa tài khoản');
+        toast.error('Failed to delete user');
       }
     } finally {
       setSaving(false);
@@ -262,14 +262,14 @@ export default function AdminStudents() {
               variant="h4"
               sx={{ fontWeight: 600, color: 'text.primary', mb: 0.5 }}
             >
-              Người dùng
+              Users
             </Typography>
             <Typography
               variant="body2"
               color="text.secondary"
               sx={{ fontWeight: 500 }}
             >
-              Quản lý danh sách sinh viên & giáo viên trong hệ thống
+              Manage list of students & teachers in the system
             </Typography>
           </Box>
         </Box>
@@ -287,7 +287,7 @@ export default function AdminStudents() {
             '&:hover': { boxShadow: '0 6px 16px rgba(25, 118, 210, 0.4)' },
           }}
         >
-          Thêm người dùng mới
+          Add new user
         </Button>
       </Box>
 
@@ -295,19 +295,19 @@ export default function AdminStudents() {
       <Grid container spacing={3} sx={{ mb: 4 }}>
         {[
           {
-            label: 'Tổng số tài khoản',
+            label: 'Total users',
             value: stats.total,
             icon: <PeopleIcon />,
             color: 'primary.main',
           },
           {
-            label: 'Sinh viên',
+            label: 'Students',
             value: stats.students,
             icon: <SchoolIcon />,
             color: 'info.main',
           },
           {
-            label: 'Giáo viên',
+            label: 'Teachers',
             value: stats.teachers,
             icon: <PersonIcon />,
             color: 'secondary.main',
@@ -390,7 +390,7 @@ export default function AdminStudents() {
             }}
           >
             <TextField
-              placeholder="Tìm kiếm theo tên, email hoặc vai trò..."
+              placeholder="Search by name, email or role..."
               size="small"
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
@@ -425,14 +425,14 @@ export default function AdminStudents() {
                 textTransform: 'none',
               }}
             >
-              Bộ lọc
+              Filter
             </Button>
             <Typography
               variant="body2"
               color="text.secondary"
               sx={{ ml: 'auto', fontWeight: 600 }}
             >
-              Đang hiển thị {filteredUsers.length} kết quả
+              Showing {filteredUsers.length} results
             </Typography>
           </Box>
           <TableContainer>
@@ -442,19 +442,19 @@ export default function AdminStudents() {
                   <TableCell
                     sx={{ fontWeight: 700, color: 'text.secondary', pl: 3 }}
                   >
-                    NGƯỜI DÙNG
+                    USER
                   </TableCell>
                   <TableCell sx={{ fontWeight: 700, color: 'text.secondary' }}>
                     EMAIL
                   </TableCell>
                   <TableCell sx={{ fontWeight: 700, color: 'text.secondary' }}>
-                    VAI TRÒ
+                    ROLE
                   </TableCell>
                   <TableCell
                     align="right"
                     sx={{ fontWeight: 700, color: 'text.secondary', pr: 3 }}
                   >
-                    THAO TÁC
+                    ACTION
                   </TableCell>
                 </TableRow>
               </TableHead>
@@ -465,7 +465,7 @@ export default function AdminStudents() {
                       <Box sx={{ opacity: 0.5, textAlign: 'center' }}>
                         <PeopleIcon sx={{ fontSize: 48, mb: 1 }} />
                         <Typography variant="body1">
-                          Không tìm thấy người dùng nào
+                          No users found
                         </Typography>
                       </Box>
                     </TableCell>
@@ -534,7 +534,7 @@ export default function AdminStudents() {
                         />
                       </TableCell>
                       <TableCell align="right" sx={{ pr: 3 }}>
-                        <Tooltip title="Chỉnh sửa">
+                        <Tooltip title="Edit">
                           <IconButton
                             size="small"
                             onClick={() => handleOpenEdit(u)}
@@ -546,7 +546,7 @@ export default function AdminStudents() {
                             <EditIcon fontSize="small" />
                           </IconButton>
                         </Tooltip>
-                        <Tooltip title="Xóa tài khoản">
+                        <Tooltip title="Delete">
                           <IconButton
                             size="small"
                             color="error"
@@ -575,7 +575,7 @@ export default function AdminStudents() {
         maxWidth="sm"
         fullWidth
       >
-        <DialogTitle>Thêm tài khoản</DialogTitle>
+        <DialogTitle>Add new user</DialogTitle>
         <DialogContent>
           <TextField
             fullWidth
@@ -598,7 +598,7 @@ export default function AdminStudents() {
           />
           <TextField
             fullWidth
-            label="Mật khẩu"
+            label="Password"
             type="password"
             value={addForm.password}
             onChange={(e) =>
@@ -607,10 +607,10 @@ export default function AdminStudents() {
             sx={{ mt: 2 }}
           />
           <FormControl fullWidth sx={{ mt: 2 }}>
-            <InputLabel>Vai trò</InputLabel>
+            <InputLabel>Role</InputLabel>
             <Select
               value={addForm.role}
-              label="Vai trò"
+              label="Role"
               onChange={(e) =>
                 setAddForm((f) => ({ ...f, role: e.target.value }))
               }
@@ -624,9 +624,9 @@ export default function AdminStudents() {
           </FormControl>
         </DialogContent>
         <DialogActions>
-          <Button onClick={() => setOpenAdd(false)}>Hủy</Button>
+          <Button onClick={() => setOpenAdd(false)}>Cancel</Button>
           <Button variant="contained" onClick={handleSaveAdd} disabled={saving}>
-            {saving ? 'Đang lưu...' : 'Thêm'}
+            {saving ? 'Saving...' : 'Add'}
           </Button>
         </DialogActions>
       </Dialog>
@@ -640,7 +640,7 @@ export default function AdminStudents() {
         maxWidth="sm"
         fullWidth
       >
-        <DialogTitle>Sửa tài khoản</DialogTitle>
+        <DialogTitle>Edit user</DialogTitle>
         <DialogContent>
           <TextField
             fullWidth
@@ -662,10 +662,10 @@ export default function AdminStudents() {
             sx={{ mt: 2 }}
           />
           <FormControl fullWidth sx={{ mt: 2 }}>
-            <InputLabel>Vai trò</InputLabel>
+            <InputLabel>Role</InputLabel>
             <Select
               value={editForm.role}
-              label="Vai trò"
+              label="Role"
               onChange={(e) =>
                 setEditForm((f) => ({ ...f, role: e.target.value }))
               }
@@ -685,14 +685,14 @@ export default function AdminStudents() {
               setEditingUser(null);
             }}
           >
-            Hủy
+            Cancel
           </Button>
           <Button
             variant="contained"
             onClick={handleSaveEdit}
             disabled={saving}
           >
-            {saving ? 'Đang lưu...' : 'Lưu'}
+            {saving ? 'Saving...' : 'Save'}
           </Button>
         </DialogActions>
       </Dialog>

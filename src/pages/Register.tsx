@@ -32,12 +32,12 @@ export default function Register() {
 
   const handleRegister = async () => {
     if (!username || !email || !password || !confirmPassword) {
-      toast.error('Vui lòng điền đầy đủ thông tin');
+      toast.error('Please fill in all information');
       return;
     }
 
     if (password !== confirmPassword) {
-      toast.error('Mật khẩu xác nhận không khớp');
+      toast.error('Password does not match');
       return;
     }
 
@@ -50,7 +50,7 @@ export default function Register() {
     try {
       setLoading(true);
       await authService.register(dto);
-      toast.success('Đăng ký thành công! Đang chuyển đến trang đăng nhập...');
+      toast.success('Register success! Redirecting to login...');
       setTimeout(() => {
         navigate('/login');
       }, 1500);
@@ -59,10 +59,10 @@ export default function Register() {
         const msg =
           (e.response?.data as { message?: string })?.message ??
           e.response?.statusText ??
-          'Đăng ký thất bại';
+          'Register failed';
         toast.error(String(msg));
       } else {
-        toast.error('Đăng ký thất bại');
+        toast.error('Register failed');
       }
     } finally {
       setLoading(false);
@@ -96,7 +96,7 @@ export default function Register() {
           >
             <SchoolIcon sx={{ fontSize: 48, color: 'primary.main', mr: 2 }} />
             <Typography variant="h4" component="h1">
-              Đăng ký
+              Register
             </Typography>
           </Box>
 
@@ -105,7 +105,7 @@ export default function Register() {
               margin="normal"
               required
               fullWidth
-              label="Tên người dùng"
+              label="Username"
               value={username}
               onChange={(e) => setUsername(e.target.value)}
               autoFocus
@@ -127,7 +127,7 @@ export default function Register() {
               margin="normal"
               required
               fullWidth
-              label="Mật khẩu"
+              label="Password"
               type={showPassword ? 'text' : 'password'}
               value={password}
               onChange={(e) => setPassword(e.target.value)}
@@ -151,7 +151,7 @@ export default function Register() {
               margin="normal"
               required
               fullWidth
-              label="Xác nhận mật khẩu"
+              label="Confirm Password"
               type={showConfirmPassword ? 'text' : 'password'}
               value={confirmPassword}
               onChange={(e) => setConfirmPassword(e.target.value)}
@@ -181,16 +181,16 @@ export default function Register() {
               onClick={handleRegister}
               disabled={loading}
             >
-              {loading ? 'Đang đăng ký...' : 'Đăng ký'}
+              {loading ? 'Registering...' : 'Register'}
             </Button>
             <Box sx={{ textAlign: 'center', mt: 2 }}>
               <Typography variant="body2" color="text.secondary">
-                Đã có tài khoản?{' '}
+                Already have an account?{' '}
                 <Link
                   to="/login"
                   style={{ color: 'inherit', textDecoration: 'underline' }}
                 >
-                  Đăng nhập ngay
+                  Login now
                 </Link>
               </Typography>
             </Box>
