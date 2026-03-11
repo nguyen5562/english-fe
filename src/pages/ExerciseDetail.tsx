@@ -650,7 +650,7 @@ export default function ExerciseDetail() {
         {renderQuestionMedia(question)}
         {renderQuestionWordBankWithHandler()}
         <FormControl component="fieldset" fullWidth>
-          <FormLabel component="legend">{question.title}</FormLabel>
+          <FormLabel component="legend" sx={{ whiteSpace: 'pre-wrap' }}>{question.title}</FormLabel>
           <RadioGroup
             key={`${question._id}-rg-${retryKey}`}
             value={value}
@@ -750,7 +750,7 @@ export default function ExerciseDetail() {
                     key={index}
                     sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}
                   >
-                    <Typography component="span" variant="body1">
+                    <Typography component="span" variant="body1" sx={{ whiteSpace: 'pre-wrap' }}>
                       {part}
                     </Typography>
                     {index < parts.length - 1 && (
@@ -811,7 +811,7 @@ export default function ExerciseDetail() {
           <Box>
             {renderQuestionMedia(question)}
             {renderQuestionWordBankWithHandler()}
-            <Typography variant="body1" gutterBottom>
+            <Typography variant="body1" gutterBottom sx={{ whiteSpace: 'pre-wrap' }}>
               {question.title}
             </Typography>
             <TextField
@@ -852,7 +852,7 @@ export default function ExerciseDetail() {
           <Box>
             {renderQuestionMedia(question)}
             {renderQuestionWordBankWithHandler()}
-            <Typography variant="body1" gutterBottom>
+            <Typography variant="body1" gutterBottom sx={{ whiteSpace: 'pre-wrap' }}>
               {question.title}
             </Typography>
             <Typography variant="body2" color="text.secondary" sx={{ mb: 1 }}>
@@ -924,7 +924,7 @@ export default function ExerciseDetail() {
           <Box>
             {renderQuestionMedia(question)}
             {renderQuestionWordBankWithHandler()}
-            <Typography variant="body1" gutterBottom>
+            <Typography variant="body1" gutterBottom sx={{ whiteSpace: 'pre-wrap' }}>
               {question.title}
             </Typography>
             <Typography variant="body2" color="text.secondary" sx={{ mb: 1 }}>
@@ -1011,7 +1011,7 @@ export default function ExerciseDetail() {
           <Box>
             {renderQuestionMedia(question)}
             {renderQuestionWordBankWithHandler()}
-            <Typography variant="body1" gutterBottom>
+            <Typography variant="body1" gutterBottom sx={{ whiteSpace: 'pre-wrap' }}>
               {question.title}
             </Typography>
             <TextField
@@ -1032,7 +1032,7 @@ export default function ExerciseDetail() {
           <Box>
             {renderQuestionMedia(question)}
             {renderQuestionWordBankWithHandler()}
-            <Typography variant="body1" gutterBottom>
+            <Typography variant="body1" gutterBottom sx={{ whiteSpace: 'pre-wrap' }}>
               {question.title}
             </Typography>
             <Typography variant="body2" color="text.secondary" sx={{ mb: 1 }}>
@@ -1055,7 +1055,7 @@ export default function ExerciseDetail() {
           <Box>
             {renderQuestionMedia(question)}
             {renderQuestionWordBankWithHandler()}
-            <Typography variant="body1" gutterBottom>
+            <Typography variant="body1" gutterBottom sx={{ whiteSpace: 'pre-wrap' }}>
               {question.title}
             </Typography>
             <TextField
@@ -1100,7 +1100,7 @@ export default function ExerciseDetail() {
                   key={index}
                   sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}
                 >
-                  <Typography component="span">{part}</Typography>
+                  <Typography component="span" sx={{ whiteSpace: 'pre-wrap' }}>{part}</Typography>
                   {index < blanks.length - 1 && (
                     <TextField
                       key={`${question._id}-blank-${index}-${retryKey}`}
@@ -1160,7 +1160,7 @@ export default function ExerciseDetail() {
           <Box>
             {renderQuestionMedia(question)}
             {renderQuestionWordBankWithHandler()}
-            <Typography variant="body1" gutterBottom>
+            <Typography variant="body1" gutterBottom sx={{ whiteSpace: 'pre-wrap' }}>
               {question.title}
             </Typography>
             <TextField
@@ -1181,7 +1181,7 @@ export default function ExerciseDetail() {
           <Box>
             {renderQuestionMedia(question)}
             {renderQuestionWordBankWithHandler()}
-            <Typography variant="body1" gutterBottom>
+            <Typography variant="body1" gutterBottom sx={{ whiteSpace: 'pre-wrap' }}>
               {question.title}
             </Typography>
             <TextField
@@ -1287,7 +1287,7 @@ export default function ExerciseDetail() {
                             gap: 0.5,
                           }}
                         >
-                          <Typography component="span" variant="body1">
+                          <Typography component="span" variant="body1" sx={{ whiteSpace: 'pre-wrap' }}>
                             {part}
                           </Typography>
                           {index < parts.length - 1 &&
