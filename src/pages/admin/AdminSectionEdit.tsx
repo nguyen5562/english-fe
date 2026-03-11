@@ -580,7 +580,7 @@ export default function AdminSectionEdit() {
             <Select
               value={sectionForm.questionType}
               label="Question type"
-              disabled={!isNew}
+              disabled={!isNew && (currentSection?.questions?.length ?? 0) > 0}
               onChange={(e) =>
                 setSectionForm((f) => ({
                   ...f,
@@ -594,14 +594,22 @@ export default function AdminSectionEdit() {
                 </MenuItem>
               ))}
             </Select>
-            {!isNew && (
+            {!isNew && (currentSection?.questions?.length ?? 0) > 0 && (
               <Typography
                 variant="caption"
                 color="text.secondary"
                 sx={{ mt: 0.5 }}
               >
-                Question type is fixed after section creation; all questions in the section
-                use this type.
+                Question type cannot be changed once the section has questions.
+              </Typography>
+            )}
+            {!isNew && (currentSection?.questions?.length ?? 0) === 0 && (
+              <Typography
+                variant="caption"
+                color="warning.main"
+                sx={{ mt: 0.5 }}
+              >
+                You can still change the question type since there are no questions yet.
               </Typography>
             )}
           </FormControl>
