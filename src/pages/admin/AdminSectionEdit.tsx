@@ -34,6 +34,7 @@ import { exerciseService } from '../../services/exercise.service';
 import { courseService } from '../../services/course.service';
 import { useConfirm } from '../../components/ConfirmDialog';
 import { FilePicker } from '../../components/FilePicker';
+import { RichEditor } from '../../components/RichEditor';
 import { toast } from '../../utils/toast';
 import type { Exercise, Course, Section } from '../../types';
 import type { QuestionType, SectionType } from '../../types';
@@ -262,7 +263,7 @@ export default function AdminSectionEdit() {
         questionType: sectionForm.questionType,
         title: sectionForm.title.trim(),
         description: sectionForm.description.trim() || undefined,
-        passage: sectionForm.passage.trim() || undefined,
+        passage: sectionForm.passage || undefined,
         audioUrl: sectionForm.audioUrl.trim() || undefined,
         videoUrl: sectionForm.videoUrl.trim() || undefined,
         imageUrl: sectionForm.imageUrl.trim() || undefined,
@@ -626,20 +627,17 @@ export default function AdminSectionEdit() {
           />
           {/* Trường section theo kiểu câu hỏi (gen khác nhau) */}
           {SECTION_NEED_PASSAGE.includes(sectionForm.questionType) && (
-            <TextField
-              fullWidth
+            <RichEditor
               label={
                 sectionForm.questionType === 'paragraph-fill'
-                  ? 'Passage (use ____ for each blank)'
+                  ? 'Passage (type ____ for each blank)'
                   : 'Passage'
               }
               value={sectionForm.passage}
-              onChange={(e) =>
-                setSectionForm((f) => ({ ...f, passage: e.target.value }))
+              onChange={(val) =>
+                setSectionForm((f) => ({ ...f, passage: val }))
               }
-              multiline
-              rows={3}
-              sx={{ mb: 2 }}
+              placeholder="Enter passage content..."
             />
           )}
           <Box sx={{ mb: 2, display: 'flex', flexDirection: 'column', gap: 2 }}>
@@ -768,21 +766,20 @@ export default function AdminSectionEdit() {
             ?.label ?? sectionQuestionType}
         </DialogTitle>
         <DialogContent>
-          <TextField
-            fullWidth
-            label={
-              TYPES_FILL_BLANK.includes(sectionQuestionType)
-                ? 'Question content (use ____ for each blank)'
-                : 'Question content'
-            }
-            value={questionForm.title}
-            onChange={(e) =>
-              setQuestionForm((f) => ({ ...f, title: e.target.value }))
-            }
-            multiline={sectionQuestionType === 'writing'}
-            rows={sectionQuestionType === 'writing' ? 4 : 2}
-            sx={{ mt: 2 }}
-          />
+          <Box sx={{ mt: 2 }}>
+            <RichEditor
+              label={
+                TYPES_FILL_BLANK.includes(sectionQuestionType)
+                  ? 'Question content (type ____ for each blank)'
+                  : 'Question content'
+              }
+              value={questionForm.title}
+              onChange={(val) =>
+                setQuestionForm((f) => ({ ...f, title: val }))
+              }
+              placeholder="Enter question content..."
+            />
+          </Box>
           <TextField
             fullWidth
             type="number"

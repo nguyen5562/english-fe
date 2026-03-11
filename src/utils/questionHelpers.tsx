@@ -11,6 +11,7 @@ import {
 } from '@mui/material';
 import { API_ROUTES, API_URL } from '../const/apiConfig';
 import type { Question, Section } from '../types';
+import { parseHTML } from './htmlParser';
 
 // Map sectionType to label and color (used for Chips in detail view)
 export const sectionTypeMap: Record<
@@ -154,11 +155,10 @@ export const renderSectionMedia = (section: Section) => {
             borderRadius: 1,
             border: '1px solid',
             borderColor: 'grey.300',
-            whiteSpace: 'pre-wrap',
             mb: 1,
           }}
         >
-          <Typography variant="body1">{section.passage}</Typography>
+          <Typography variant="body1">{parseHTML(section.passage)}</Typography>
         </Box>
       )}
     </Box>
@@ -224,8 +224,10 @@ export const renderMultipleChoice = (
   const qType = (question as any).type;
   return (
     <FormControl component="fieldset" fullWidth>
-      <FormLabel component="legend" sx={{ whiteSpace: 'pre-wrap' }}>
-        {question.title}
+      <FormLabel component="legend">
+        <Box component="span" sx={{ '& p': { margin: 0 }, '& *': { display: 'inline' } }}>
+          {parseHTML(question.title)}
+        </Box>
       </FormLabel>
       <RadioGroup
         key={
@@ -306,8 +308,8 @@ export const renderTextInput = (
   },
 ) => (
   <>
-    <Typography variant="body1" gutterBottom sx={{ whiteSpace: 'pre-wrap' }}>
-      {question.title}
+    <Typography variant="body1" gutterBottom>
+      {parseHTML(question.title)}
     </Typography>
     <TextField
       key={

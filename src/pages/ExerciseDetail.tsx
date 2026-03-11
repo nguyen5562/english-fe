@@ -48,6 +48,7 @@ import {
   resolveUrl,
 } from '../utils/questionHelpers';
 import { toast } from '../utils/toast';
+import { parseHTML, parseHTMLWithBlanks } from '../utils/htmlParser';
 import type { SectionAttemptDto } from '../types/dto';
 
 export default function ExerciseDetail() {
@@ -650,8 +651,10 @@ export default function ExerciseDetail() {
         {renderQuestionMedia(question)}
         {renderQuestionWordBankWithHandler()}
         <FormControl component="fieldset" fullWidth>
-          <FormLabel component="legend" sx={{ whiteSpace: 'pre-wrap' }}>
-            {question.title}
+          <FormLabel component="legend">
+            <Box component="span" sx={{ '& p': { margin: 0 }, '& *': { display: 'inline' } }}>
+              {parseHTML(question.title)}
+            </Box>
           </FormLabel>
           <RadioGroup
             key={`${question._id}-rg-${retryKey}`}
@@ -730,10 +733,7 @@ export default function ExerciseDetail() {
 
       case 'dropdown-choice': {
         // Hiển thị câu hỏi với dropdown (Select) thay vì radio buttons
-        // question.title chứa câu hỏi với chỗ trống, cần parse để tìm vị trí dropdown
-        const parts = question.title.split('____');
-        const hasBlank = parts.length > 1;
-        const blanksCount = parts.length - 1;
+        const blanksCount = (question.title.match(/____/g) || []).length;
         const isPerBlankOptions =
           question.options && question.options.length === blanksCount;
 
@@ -741,100 +741,65 @@ export default function ExerciseDetail() {
           ? (answers[question._id] as string[])
           : typeof answers[question._id] === 'string' && answers[question._id]
             ? [(answers[question._id] as string)]
-            : Array(parts.length - 1).fill('');
+            : Array(blanksCount).fill('');
 
         return (
           <Box>
             {renderQuestionMedia(question)}
             {renderQuestionWordBankWithHandler()}
-            {hasBlank ? (
-              <Box
-                sx={{
-                  display: 'flex',
-                  flexWrap: 'wrap',
-                  alignItems: 'center',
-                  gap: 1,
-                }}
-              >
-                {parts.map((part, index) => (
-                  <Box
-                    key={index}
-                    sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}
-                  >
-                    <Typography
-                      component="span"
-                      variant="body1"
-                      sx={{ whiteSpace: 'pre-wrap' }}
-                    >
-                      {part}
-                    </Typography>
-                    {index < parts.length - 1 && (
-                      <FormControl size="small" sx={{ minWidth: 120 }}>
-                        <Select
-                          key={`${question._id}-${index}-${retryKey}`}
-                          value={answerArray[index] || ''}
-                          onChange={(e) => {
-                            const newArray = [...answerArray];
-                            newArray[index] = e.target.value;
-                            handleAnswerChange(question._id, newArray);
-                          }}
-                          displayEmpty
-                          disabled={viewingSaved}
-                        >
-                          <MenuItem value="" disabled>
-                            <em></em>
-                          </MenuItem>
-                          {(() => {
-                            let currentOptions: string[] = [];
-                            if (isPerBlankOptions) {
-                              currentOptions = question.options![index]
-                                .split('|')
-                                .map((o) => o.trim())
-                                .filter(Boolean);
-                              if (
-                                currentOptions.length === 1 &&
-                                currentOptions[0].includes(',')
-                              ) {
-                                currentOptions = question.options![index]
-                                  .split(',')
-                                  .map((o) => o.trim())
-                                  .filter(Boolean);
-                              }
-                            } else {
-                              currentOptions = question.options ?? [];
-                            }
-                            return currentOptions.map((opt, optIndex) => (
-                              <MenuItem key={optIndex} value={opt}>
-                                {opt}
-                              </MenuItem>
-                            ));
-                          })()}
-                        </Select>
-                      </FormControl>
-                    )}
-                  </Box>
-                ))}
-              </Box>
-            ) : (
-              <FormControl fullWidth>
-                <InputLabel>{question.title}</InputLabel>
-                <Select
-                  key={`${question._id}-${retryKey}`}
-                  value={value || ''}
-                  onChange={(e) =>
-                    handleAnswerChange(question._id, e.target.value)
+            <Box
+              sx={{
+                display: 'flex',
+                flexWrap: 'wrap',
+                alignItems: 'center',
+                gap: 1,
+              }}
+            >
+              {parseHTMLWithBlanks(question.title, (blankIndex) => {
+                let currentOptions: string[] = [];
+                if (isPerBlankOptions) {
+                  currentOptions = question.options![blankIndex]
+                    .split('|')
+                    .map((o) => o.trim())
+                    .filter(Boolean);
+                  if (
+                    currentOptions.length === 1 &&
+                    currentOptions[0].includes(',')
+                  ) {
+                    currentOptions = question.options![blankIndex]
+                      .split(',')
+                      .map((o) => o.trim())
+                      .filter(Boolean);
                   }
-                  label={question.title}
-                  disabled={viewingSaved}
-                >
-                  {question.options?.map((option, optIndex) => (
-                    <MenuItem key={optIndex} value={option}>
-                      {option}
-                    </MenuItem>
-                  ))}
-                </Select>
-              </FormControl>
-            )}
+                } else {
+                  currentOptions = question.options ?? [];
+                }
+                return (
+                  <FormControl size="small" sx={{ minWidth: 120 }} key={blankIndex}>
+                    <Select
+                      key={`${question._id}-${blankIndex}-${retryKey}`}
+                      value={answerArray[blankIndex] || ''}
+                      onChange={(e) => {
+                        const newArray = [...answerArray];
+                        newArray[blankIndex] = e.target.value;
+                        handleAnswerChange(question._id, newArray);
+                      }}
+                      displayEmpty
+                      disabled={viewingSaved}
+                    >
+                      <MenuItem value="" disabled>
+                        <em></em>
+                      </MenuItem>
+                      {currentOptions.map((opt, optIndex) => (
+                        <MenuItem key={optIndex} value={opt}>
+                          {opt}
+                        </MenuItem>
+                      ))}
+                    </Select>
+                  </FormControl>
+                );
+              })}
+            </Box>
           </Box>
         );
       }
@@ -851,9 +816,8 @@ export default function ExerciseDetail() {
             <Typography
               variant="body1"
               gutterBottom
-              sx={{ whiteSpace: 'pre-wrap' }}
             >
-              {question.title}
+              {parseHTML(question.title)}
             </Typography>
             <TextField
               key={`${question._id}-${retryKey}`}
@@ -896,9 +860,8 @@ export default function ExerciseDetail() {
             <Typography
               variant="body1"
               gutterBottom
-              sx={{ whiteSpace: 'pre-wrap' }}
             >
-              {question.title}
+              {parseHTML(question.title)}
             </Typography>
             <Typography variant="body2" color="text.secondary" sx={{ mb: 1 }}>
               Listen to the sample and record your pronunciation again.
@@ -972,9 +935,8 @@ export default function ExerciseDetail() {
             <Typography
               variant="body1"
               gutterBottom
-              sx={{ whiteSpace: 'pre-wrap' }}
             >
-              {question.title}
+              {parseHTML(question.title)}
             </Typography>
             <Typography variant="body2" color="text.secondary" sx={{ mb: 1 }}>
               Record your video answer.
@@ -1063,9 +1025,8 @@ export default function ExerciseDetail() {
             <Typography
               variant="body1"
               gutterBottom
-              sx={{ whiteSpace: 'pre-wrap' }}
             >
-              {question.title}
+              {parseHTML(question.title)}
             </Typography>
             <TextField
               key={`${question._id}-${retryKey}`}
@@ -1088,9 +1049,8 @@ export default function ExerciseDetail() {
             <Typography
               variant="body1"
               gutterBottom
-              sx={{ whiteSpace: 'pre-wrap' }}
             >
-              {question.title}
+              {parseHTML(question.title)}
             </Typography>
             <Typography variant="body2" color="text.secondary" sx={{ mb: 1 }}>
               Write the correct sentence.
@@ -1115,9 +1075,8 @@ export default function ExerciseDetail() {
             <Typography
               variant="body1"
               gutterBottom
-              sx={{ whiteSpace: 'pre-wrap' }}
             >
-              {question.title}
+              {parseHTML(question.title)}
             </Typography>
             <TextField
               key={`${question._id}-${retryKey}`}
@@ -1134,14 +1093,12 @@ export default function ExerciseDetail() {
 
       case 'fill-blank': {
         // Nghe và điền từ vào chỗ trống - mỗi câu có nhiều chỗ trống
-        // question.title chứa template với ____, correctAnswer là mảng các từ
-        // Mỗi câu hỏi có thể có audioUrl riêng
-        const blanks = question.title.split('____');
+        const blanks = (question.title.match(/____/g) || []).length;
         const answerArray = Array.isArray(answers[question._id])
           ? (answers[question._id] as string[])
           : typeof answers[question._id] === 'string' && answers[question._id]
             ? (answers[question._id] as string).split(',').map((s) => s.trim())
-            : Array(blanks.length - 1).fill('');
+            : Array(blanks).fill('');
 
         return (
           <Box>
@@ -1156,33 +1113,23 @@ export default function ExerciseDetail() {
                 mb: 2,
               }}
             >
-              {blanks.map((part, index) => (
-                <Box
-                  key={index}
-                  sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}
-                >
-                  <Typography component="span" sx={{ whiteSpace: 'pre-wrap' }}>
-                    {part}
-                  </Typography>
-                  {index < blanks.length - 1 && (
-                    <TextField
-                      key={`${question._id}-blank-${index}-${retryKey}`}
-                      size="small"
-                      value={answerArray[index] || ''}
-                      onChange={(e) => {
-                        const newArray = [...answerArray];
-                        newArray[index] = e.target.value;
-                        setAnswers((prev) => ({
-                          ...prev,
-                          [question._id]: newArray,
-                        }));
-                      }}
-                      sx={{ width: 100 }}
-                      placeholder="..."
-                      disabled={viewingSaved}
-                    />
-                  )}
-                </Box>
+              {parseHTMLWithBlanks(question.title, (blankIndex) => (
+                <TextField
+                  key={`${question._id}-blank-${blankIndex}-${retryKey}`}
+                  size="small"
+                  value={answerArray[blankIndex] || ''}
+                  onChange={(e) => {
+                    const newArray = [...answerArray];
+                    newArray[blankIndex] = e.target.value;
+                    setAnswers((prev) => ({
+                      ...prev,
+                      [question._id]: newArray,
+                    }));
+                  }}
+                  sx={{ width: 100 }}
+                  placeholder="..."
+                  disabled={viewingSaved}
+                />
               ))}
             </Box>
           </Box>
@@ -1226,9 +1173,8 @@ export default function ExerciseDetail() {
             <Typography
               variant="body1"
               gutterBottom
-              sx={{ whiteSpace: 'pre-wrap' }}
             >
-              {question.title}
+              {parseHTML(question.title)}
             </Typography>
             <TextField
               key={`${question._id}-${retryKey}`}
@@ -1251,9 +1197,8 @@ export default function ExerciseDetail() {
             <Typography
               variant="body1"
               gutterBottom
-              sx={{ whiteSpace: 'pre-wrap' }}
             >
-              {question.title}
+              {parseHTML(question.title)}
             </Typography>
             <TextField
               key={`${question._id}-${retryKey}`}
@@ -1335,62 +1280,26 @@ export default function ExerciseDetail() {
                   border: '1px solid',
                   borderColor: 'grey.300',
                   mb: 2,
+                  lineHeight: 2.2,
                 }}
               >
-                {(() => {
-                  // Parse passage để tìm các chỗ trống và thay thế bằng input fields
-                  const parts = currentSection.passage.split('____');
+                {parseHTMLWithBlanks(currentSection.passage, (blankIndex) => {
+                  const q = currentSection.questions[blankIndex];
+                  if (!q) return null;
                   return (
-                    <Box
-                      sx={{
-                        display: 'flex',
-                        flexWrap: 'wrap',
-                        alignItems: 'center',
-                        gap: 0.5,
-                      }}
-                    >
-                      {parts.map((part, index) => (
-                        <Box
-                          key={index}
-                          sx={{
-                            display: 'flex',
-                            alignItems: 'center',
-                            gap: 0.5,
-                          }}
-                        >
-                          <Typography
-                            component="span"
-                            variant="body1"
-                            sx={{ whiteSpace: 'pre-wrap' }}
-                          >
-                            {part}
-                          </Typography>
-                          {index < parts.length - 1 &&
-                            currentSection.questions[index] && (
-                              <TextField
-                                key={`${currentSection.questions[index]._id}-${retryKey}`}
-                                size="small"
-                                value={
-                                  (answers[
-                                    currentSection.questions[index]._id
-                                  ] as string) || ''
-                                }
-                                onChange={(e) =>
-                                  handleAnswerChange(
-                                    currentSection.questions[index]._id,
-                                    e.target.value,
-                                  )
-                                }
-                                sx={{ width: 120, '& input': { py: 0.5 } }}
-                                placeholder="..."
-                                disabled={viewingSaved}
-                              />
-                            )}
-                        </Box>
-                      ))}
-                    </Box>
+                    <TextField
+                      key={`${q._id}-${retryKey}`}
+                      size="small"
+                      value={(answers[q._id] as string) || ''}
+                      onChange={(e) =>
+                        handleAnswerChange(q._id, e.target.value)
+                      }
+                      sx={{ width: 120, '& input': { py: 0.5 } }}
+                      placeholder="..."
+                      disabled={viewingSaved}
+                    />
                   );
-                })()}
+                })}
               </Box>
             ) : (
               <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>

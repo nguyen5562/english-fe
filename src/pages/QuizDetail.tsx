@@ -18,7 +18,6 @@ import {
   Select,
   MenuItem,
   FormControl,
-  InputLabel,
   TextField,
   FormControlLabel,
   FormLabel,
@@ -46,6 +45,7 @@ import {
 } from '../utils/questionHelpers';
 import { toast } from '../utils/toast';
 import { useUIStore } from '../store/ui.store';
+import { parseHTML, parseHTMLWithBlanks } from '../utils/htmlParser';
 
 export default function QuizDetail() {
   const { id } = useParams<{ id: string }>();
@@ -304,8 +304,10 @@ export default function QuizDetail() {
         {renderQuestionMedia(question)}
         {renderQuestionWordBank(question)}
         <FormControl component="fieldset" fullWidth>
-          <FormLabel component="legend" sx={{ whiteSpace: 'pre-wrap' }}>
-            {question.title}
+          <FormLabel component="legend">
+            <Box component="span" sx={{ '& p': { margin: 0 }, '& *': { display: 'inline' } }}>
+              {parseHTML(question.title)}
+            </Box>
           </FormLabel>
           <RadioGroup
             value={value}
@@ -387,9 +389,10 @@ export default function QuizDetail() {
                     <FormControl component="fieldset" fullWidth>
                       <FormLabel
                         component="legend"
-                        sx={{ whiteSpace: 'pre-wrap' }}
                       >
-                        {question.title}
+                        <Box component="span" sx={{ '& p': { margin: 0 }, '& *': { display: 'inline' } }}>
+                          {parseHTML(question.title)}
+                        </Box>
                       </FormLabel>
                       <RadioGroup
                         value={value}
@@ -414,9 +417,8 @@ export default function QuizDetail() {
                     <Typography
                       variant="body1"
                       gutterBottom
-                      sx={{ whiteSpace: 'pre-wrap' }}
                     >
-                      {question.title}
+                      {parseHTML(question.title)}
                     </Typography>
                     <TextField
                       fullWidth
@@ -444,9 +446,8 @@ export default function QuizDetail() {
             <Typography
               variant="body1"
               gutterBottom
-              sx={{ whiteSpace: 'pre-wrap' }}
             >
-              {question.title}
+              {parseHTML(question.title)}
             </Typography>
             <TextField
               fullWidth
@@ -461,12 +462,12 @@ export default function QuizDetail() {
           </Box>
         );
       case 'fill-blank': {
-        const blanks = question.title.split('____');
+        const blanks = (question.title.match(/____/g) || []).length;
         const answerArray = Array.isArray(answerValue)
           ? answerValue
           : typeof answerValue === 'string' && answerValue
             ? answerValue.split(',').map((s) => s.trim())
-            : Array(blanks.length - 1).fill('');
+            : Array(blanks).fill('');
         return (
           <Box sx={{ mb: 3 }}>
             {questionNumber}
@@ -480,29 +481,19 @@ export default function QuizDetail() {
                 gap: 1,
               }}
             >
-              {blanks.map((part, idx) => (
-                <Box
-                  key={idx}
-                  sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}
-                >
-                  <Typography component="span" sx={{ whiteSpace: 'pre-wrap' }}>
-                    {part}
-                  </Typography>
-                  {idx < blanks.length - 1 && (
-                    <TextField
-                      size="small"
-                      value={answerArray[idx] ?? ''}
-                      onChange={(e) => {
-                        const next = [...answerArray];
-                        next[idx] = e.target.value;
-                        handleAnswerChange(question._id, next);
-                      }}
-                      sx={{ width: 100 }}
-                      placeholder="..."
-                      disabled={disabled}
-                    />
-                  )}
-                </Box>
+              {parseHTMLWithBlanks(question.title, (blankIndex) => (
+                <TextField
+                  size="small"
+                  value={answerArray[blankIndex] ?? ''}
+                  onChange={(e) => {
+                    const next = [...answerArray];
+                    next[blankIndex] = e.target.value;
+                    handleAnswerChange(question._id, next);
+                  }}
+                  sx={{ width: 100 }}
+                  placeholder="..."
+                  disabled={disabled}
+                />
               ))}
             </Box>
           </Box>
@@ -528,9 +519,7 @@ export default function QuizDetail() {
           </Box>
         );
       case 'dropdown-choice': {
-        const parts = question.title.split('____');
-        const hasBlank = parts.length > 1;
-        const blanksCount = parts.length - 1;
+        const blanksCount = (question.title.match(/____/g) || []).length;
         const isPerBlankOptions =
           question.options && question.options.length === blanksCount;
 
@@ -538,99 +527,65 @@ export default function QuizDetail() {
           ? (answers[question._id] as string[])
           : typeof answers[question._id] === 'string' && answers[question._id]
             ? [(answers[question._id] as string)]
-            : Array(parts.length - 1).fill('');
+            : Array(blanksCount).fill('');
 
         return (
           <Box sx={{ mb: 3 }}>
             {questionNumber}
             {renderQuestionMedia(question)}
             {renderQuestionWordBank(question)}
-            {hasBlank ? (
-              <Box
-                sx={{
-                  display: 'flex',
-                  flexWrap: 'wrap',
-                  alignItems: 'center',
-                  gap: 1,
-                }}
-              >
-                {parts.map((part, idx) => (
-                  <Box
-                    key={idx}
-                    sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}
-                  >
-                    <Typography
-                      component="span"
-                      variant="body1"
-                      sx={{ whiteSpace: 'pre-wrap' }}
-                    >
-                      {part}
-                    </Typography>
-                    {idx < parts.length - 1 && (
-                      <FormControl size="small" sx={{ minWidth: 120 }}>
-                        <Select
-                          value={answerArray[idx] || ''}
-                          onChange={(e) => {
-                            const newArray = [...answerArray];
-                            newArray[idx] = e.target.value;
-                            handleAnswerChange(question._id, newArray);
-                          }}
-                          displayEmpty
-                          disabled={disabled}
-                        >
-                          <MenuItem value="" disabled>
-                            <em></em>
-                          </MenuItem>
-                          {(() => {
-                            let currentOptions: string[] = [];
-                            if (isPerBlankOptions) {
-                              currentOptions = question.options![idx]
-                                .split('|')
-                                .map((o) => o.trim())
-                                .filter(Boolean);
-                              if (
-                                currentOptions.length === 1 &&
-                                currentOptions[0].includes(',')
-                              ) {
-                                currentOptions = question.options![idx]
-                                  .split(',')
-                                  .map((o) => o.trim())
-                                  .filter(Boolean);
-                              }
-                            } else {
-                              currentOptions = question.options ?? [];
-                            }
-                            return currentOptions.map((opt, i) => (
-                              <MenuItem key={i} value={opt}>
-                                {opt}
-                              </MenuItem>
-                            ));
-                          })()}
-                        </Select>
-                      </FormControl>
-                    )}
-                  </Box>
-                ))}
-              </Box>
-            ) : (
-              <FormControl fullWidth>
-                <InputLabel>{question.title}</InputLabel>
-                <Select
-                  value={value || ''}
-                  onChange={(e) =>
-                    handleAnswerChange(question._id, e.target.value)
+            <Box
+              sx={{
+                display: 'flex',
+                flexWrap: 'wrap',
+                alignItems: 'center',
+                gap: 1,
+              }}
+            >
+              {parseHTMLWithBlanks(question.title, (blankIndex) => {
+                let currentOptions: string[] = [];
+                if (isPerBlankOptions) {
+                  currentOptions = question.options![blankIndex]
+                    .split('|')
+                    .map((o) => o.trim())
+                    .filter(Boolean);
+                  if (
+                    currentOptions.length === 1 &&
+                    currentOptions[0].includes(',')
+                  ) {
+                    currentOptions = question.options![blankIndex]
+                      .split(',')
+                      .map((o) => o.trim())
+                      .filter(Boolean);
                   }
-                  label={question.title}
-                  disabled={disabled}
-                >
-                  {(question.options ?? []).map((opt, i) => (
-                    <MenuItem key={i} value={opt}>
-                      {opt}
-                    </MenuItem>
-                  ))}
-                </Select>
-              </FormControl>
-            )}
+                } else {
+                  currentOptions = question.options ?? [];
+                }
+                return (
+                  <FormControl size="small" sx={{ minWidth: 120 }} key={blankIndex}>
+                    <Select
+                      value={answerArray[blankIndex] || ''}
+                      onChange={(e) => {
+                        const newArray = [...answerArray];
+                        newArray[blankIndex] = e.target.value;
+                        handleAnswerChange(question._id, newArray);
+                      }}
+                      displayEmpty
+                      disabled={disabled}
+                    >
+                      <MenuItem value="" disabled>
+                        <em></em>
+                      </MenuItem>
+                      {currentOptions.map((opt, i) => (
+                        <MenuItem key={i} value={opt}>
+                          {opt}
+                        </MenuItem>
+                      ))}
+                    </Select>
+                  </FormControl>
+                );
+              })}
+            </Box>
           </Box>
         );
       }
@@ -644,9 +599,8 @@ export default function QuizDetail() {
             <Typography
               variant="body1"
               gutterBottom
-              sx={{ whiteSpace: 'pre-wrap' }}
             >
-              {question.title}
+              {parseHTML(question.title)}
             </Typography>
             <Typography variant="body2" color="text.secondary" sx={{ mb: 1 }}>
               Enter your answer (description or content)
@@ -671,9 +625,8 @@ export default function QuizDetail() {
             <Typography
               variant="body1"
               gutterBottom
-              sx={{ whiteSpace: 'pre-wrap' }}
             >
-              {question.title}
+              {parseHTML(question.title)}
             </Typography>
             <TextField
               fullWidth
