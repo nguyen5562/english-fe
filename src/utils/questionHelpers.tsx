@@ -224,7 +224,9 @@ export const renderMultipleChoice = (
   const qType = (question as any).type;
   return (
     <FormControl component="fieldset" fullWidth>
-      <FormLabel component="legend" sx={{ whiteSpace: 'pre-wrap' }}>{question.title}</FormLabel>
+      <FormLabel component="legend" sx={{ whiteSpace: 'pre-wrap' }}>
+        {question.title}
+      </FormLabel>
       <RadioGroup
         key={
           retryKey !== undefined ? `${question._id}-rg-${retryKey}` : undefined

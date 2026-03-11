@@ -41,11 +41,10 @@ import type { SectionDto, QuestionDto } from '../../types/dto';
 
 const TYPES_WITH_OPTIONS: QuestionType[] = [
   'multiple-choice',
-  'dropdown-choice',
   'picture-choice',
   'reading-mcq',
 ];
-const TYPES_FILL_BLANK: QuestionType[] = ['fill-blank'];
+const TYPES_FILL_BLANK: QuestionType[] = ['fill-blank', 'dropdown-choice'];
 const TYPES_SINGLE_ANSWER: QuestionType[] = [
   'fill-sentence',
   'word-order',
@@ -848,13 +847,18 @@ export default function AdminQuizSectionEdit() {
           )}
 
           {/* Các đáp án (trắc nghiệm / dropdown / picture / reading-mcq): thêm từng đáp án, mỗi đáp án có thể là text hoặc file */}
-          {TYPES_WITH_OPTIONS.includes(sectionQuestionType) && (
+          {(TYPES_WITH_OPTIONS.includes(sectionQuestionType) || sectionQuestionType === 'dropdown-choice') && (
             <>
               <Divider sx={{ my: 2 }} />
               <Typography variant="subtitle2" sx={{ mb: 1 }}>
                 Answers (click &quot;Add answer&quot; then enter text or select
                 file)
               </Typography>
+              {sectionQuestionType === 'dropdown-choice' && (
+                <Typography variant="caption" color="text.secondary" sx={{ mb: 2, display: 'block' }}>
+                  Hint: Using multiple blanks? Add options for each blank in order. Use | or , to separate options within the same blank. E.g.: am | is | are
+                </Typography>
+              )}
               {optionsList.map((opt, idx) => (
                 <Box
                   key={idx}
@@ -914,37 +918,41 @@ export default function AdminQuizSectionEdit() {
               >
                 Add answer
               </Button>
-              <Typography variant="subtitle2" sx={{ mt: 1, mb: 1 }}>
-                Correct answer
-              </Typography>
-              <FormControl fullWidth size="small" sx={{ mb: 2 }}>
-                <InputLabel>Select from the answers above</InputLabel>
-                <Select
-                  value={
-                    optionsList.includes(correctAnswerSingle)
-                      ? correctAnswerSingle
-                      : ''
-                  }
-                  label="Select from the answers above"
-                  onChange={(e) => setCorrectAnswerSingle(e.target.value)}
-                >
-                  <MenuItem value="">— Select —</MenuItem>
-                  {optionsList.filter(Boolean).map((opt, i) => (
-                    <MenuItem key={i} value={opt}>
-                      {opt.length > 50 ? opt.slice(0, 50) + '…' : opt}
-                    </MenuItem>
-                  ))}
-                </Select>
-              </FormControl>
-              <FilePicker
-                label="Or enter URL / select file as correct answer"
-                value={
-                  optionsList.includes(correctAnswerSingle)
-                    ? ''
-                    : correctAnswerSingle
-                }
-                onChange={(url) => setCorrectAnswerSingle(url)}
-              />
+              {!TYPES_FILL_BLANK.includes(sectionQuestionType) && (
+                <>
+                  <Typography variant="subtitle2" sx={{ mt: 1, mb: 1 }}>
+                    Correct answer
+                  </Typography>
+                  <FormControl fullWidth size="small" sx={{ mb: 2 }}>
+                    <InputLabel>Select from the answers above</InputLabel>
+                    <Select
+                      value={
+                        optionsList.includes(correctAnswerSingle)
+                          ? correctAnswerSingle
+                          : ''
+                      }
+                      label="Select from the answers above"
+                      onChange={(e) => setCorrectAnswerSingle(e.target.value)}
+                    >
+                      <MenuItem value="">— Select —</MenuItem>
+                      {optionsList.filter(Boolean).map((opt, i) => (
+                        <MenuItem key={i} value={opt}>
+                          {opt.length > 50 ? opt.slice(0, 50) + '…' : opt}
+                        </MenuItem>
+                      ))}
+                    </Select>
+                  </FormControl>
+                  <FilePicker
+                    label="Or enter URL / select file as correct answer"
+                    value={
+                      optionsList.includes(correctAnswerSingle)
+                        ? ''
+                        : correctAnswerSingle
+                    }
+                    onChange={(url) => setCorrectAnswerSingle(url)}
+                  />
+                </>
+              )}
             </>
           )}
 

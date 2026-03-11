@@ -41,11 +41,10 @@ import type { SectionDto, QuestionDto } from '../../types/dto';
 
 const TYPES_WITH_OPTIONS: QuestionType[] = [
   'multiple-choice',
-  'dropdown-choice',
   'picture-choice',
   'reading-mcq',
 ];
-const TYPES_FILL_BLANK: QuestionType[] = ['fill-blank'];
+const TYPES_FILL_BLANK: QuestionType[] = ['fill-blank', 'dropdown-choice'];
 const TYPES_SINGLE_ANSWER: QuestionType[] = [
   'fill-sentence',
   'word-order',
@@ -359,7 +358,11 @@ export default function AdminSectionEdit() {
         base.correctAnswer = [correctAnswerSingle.trim()];
     } else if (TYPES_FILL_BLANK.includes(sectionQuestionType)) {
       const correct = correctAnswerList.map((s) => s.trim()).filter(Boolean);
-      if (correct.length) base.correctAnswer = correct;
+      base.correctAnswer = correct;
+      if (sectionQuestionType === 'dropdown-choice') {
+        const opts = optionsList.map((s) => s.trim()).filter(Boolean);
+        if (opts.length) base.options = opts;
+      }
     } else {
       if (correctAnswerSingle.trim())
         base.correctAnswer = [correctAnswerSingle.trim()];
@@ -383,7 +386,7 @@ export default function AdminSectionEdit() {
     }
     if (
       TYPES_FILL_BLANK.includes(sectionQuestionType) &&
-      !dto.correctAnswer?.length
+      (!dto.correctAnswer || dto.correctAnswer.length === 0)
     ) {
       toast.error('Please add at least one correct answer');
       return;
@@ -850,13 +853,18 @@ export default function AdminSectionEdit() {
           )}
 
           {/* Các đáp án (trắc nghiệm / dropdown / picture / reading-mcq): thêm từng đáp án, mỗi đáp án có thể là text hoặc file */}
-          {TYPES_WITH_OPTIONS.includes(sectionQuestionType) && (
+          {(TYPES_WITH_OPTIONS.includes(sectionQuestionType) || sectionQuestionType === 'dropdown-choice') && (
             <>
               <Divider sx={{ my: 2 }} />
               <Typography variant="subtitle2" sx={{ mb: 1 }}>
                 Options (click &quot;Add option&quot; then enter text or select
                 file)
               </Typography>
+              {sectionQuestionType === 'dropdown-choice' && (
+                <Typography variant="caption" color="text.secondary" sx={{ mb: 2, display: 'block' }}>
+                  Hint: Using multiple blanks? Add options for each blank in order. Use | or , to separate options within the same blank. E.g.: am | is | are
+                </Typography>
+              )}
               {optionsList.map((opt, idx) => (
                 <Box
                   key={idx}
@@ -916,9 +924,11 @@ export default function AdminSectionEdit() {
               >
                 Add option
               </Button>
-              <Typography variant="subtitle2" sx={{ mt: 1, mb: 1 }}>
-                Correct answer
-              </Typography>
+              {!TYPES_FILL_BLANK.includes(sectionQuestionType) && (
+                <>
+                  <Typography variant="subtitle2" sx={{ mt: 1, mb: 1 }}>
+                    Correct answer
+                  </Typography>
               <FormControl fullWidth size="small" sx={{ mb: 2 }}>
                 <InputLabel>Select from options above</InputLabel>
                 <Select
@@ -947,6 +957,8 @@ export default function AdminSectionEdit() {
                 }
                 onChange={(url) => setCorrectAnswerSingle(url)}
               />
+                </>
+              )}
             </>
           )}
 

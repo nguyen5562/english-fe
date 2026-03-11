@@ -650,7 +650,9 @@ export default function ExerciseDetail() {
         {renderQuestionMedia(question)}
         {renderQuestionWordBankWithHandler()}
         <FormControl component="fieldset" fullWidth>
-          <FormLabel component="legend" sx={{ whiteSpace: 'pre-wrap' }}>{question.title}</FormLabel>
+          <FormLabel component="legend" sx={{ whiteSpace: 'pre-wrap' }}>
+            {question.title}
+          </FormLabel>
           <RadioGroup
             key={`${question._id}-rg-${retryKey}`}
             value={value}
@@ -731,6 +733,15 @@ export default function ExerciseDetail() {
         // question.title chứa câu hỏi với chỗ trống, cần parse để tìm vị trí dropdown
         const parts = question.title.split('____');
         const hasBlank = parts.length > 1;
+        const blanksCount = parts.length - 1;
+        const isPerBlankOptions =
+          question.options && question.options.length === blanksCount;
+
+        const answerArray = Array.isArray(answers[question._id])
+          ? (answers[question._id] as string[])
+          : typeof answers[question._id] === 'string' && answers[question._id]
+            ? [(answers[question._id] as string)]
+            : Array(parts.length - 1).fill('');
 
         return (
           <Box>
@@ -750,28 +761,54 @@ export default function ExerciseDetail() {
                     key={index}
                     sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}
                   >
-                    <Typography component="span" variant="body1" sx={{ whiteSpace: 'pre-wrap' }}>
+                    <Typography
+                      component="span"
+                      variant="body1"
+                      sx={{ whiteSpace: 'pre-wrap' }}
+                    >
                       {part}
                     </Typography>
                     {index < parts.length - 1 && (
                       <FormControl size="small" sx={{ minWidth: 120 }}>
                         <Select
                           key={`${question._id}-${index}-${retryKey}`}
-                          value={value || ''}
-                          onChange={(e) =>
-                            handleAnswerChange(question._id, e.target.value)
-                          }
+                          value={answerArray[index] || ''}
+                          onChange={(e) => {
+                            const newArray = [...answerArray];
+                            newArray[index] = e.target.value;
+                            handleAnswerChange(question._id, newArray);
+                          }}
                           displayEmpty
                           disabled={viewingSaved}
                         >
                           <MenuItem value="" disabled>
                             <em></em>
                           </MenuItem>
-                          {question.options?.map((option, optIndex) => (
-                            <MenuItem key={optIndex} value={option}>
-                              {option}
-                            </MenuItem>
-                          ))}
+                          {(() => {
+                            let currentOptions: string[] = [];
+                            if (isPerBlankOptions) {
+                              currentOptions = question.options![index]
+                                .split('|')
+                                .map((o) => o.trim())
+                                .filter(Boolean);
+                              if (
+                                currentOptions.length === 1 &&
+                                currentOptions[0].includes(',')
+                              ) {
+                                currentOptions = question.options![index]
+                                  .split(',')
+                                  .map((o) => o.trim())
+                                  .filter(Boolean);
+                              }
+                            } else {
+                              currentOptions = question.options ?? [];
+                            }
+                            return currentOptions.map((opt, optIndex) => (
+                              <MenuItem key={optIndex} value={opt}>
+                                {opt}
+                              </MenuItem>
+                            ));
+                          })()}
                         </Select>
                       </FormControl>
                     )}
@@ -811,7 +848,11 @@ export default function ExerciseDetail() {
           <Box>
             {renderQuestionMedia(question)}
             {renderQuestionWordBankWithHandler()}
-            <Typography variant="body1" gutterBottom sx={{ whiteSpace: 'pre-wrap' }}>
+            <Typography
+              variant="body1"
+              gutterBottom
+              sx={{ whiteSpace: 'pre-wrap' }}
+            >
               {question.title}
             </Typography>
             <TextField
@@ -852,7 +893,11 @@ export default function ExerciseDetail() {
           <Box>
             {renderQuestionMedia(question)}
             {renderQuestionWordBankWithHandler()}
-            <Typography variant="body1" gutterBottom sx={{ whiteSpace: 'pre-wrap' }}>
+            <Typography
+              variant="body1"
+              gutterBottom
+              sx={{ whiteSpace: 'pre-wrap' }}
+            >
               {question.title}
             </Typography>
             <Typography variant="body2" color="text.secondary" sx={{ mb: 1 }}>
@@ -924,7 +969,11 @@ export default function ExerciseDetail() {
           <Box>
             {renderQuestionMedia(question)}
             {renderQuestionWordBankWithHandler()}
-            <Typography variant="body1" gutterBottom sx={{ whiteSpace: 'pre-wrap' }}>
+            <Typography
+              variant="body1"
+              gutterBottom
+              sx={{ whiteSpace: 'pre-wrap' }}
+            >
               {question.title}
             </Typography>
             <Typography variant="body2" color="text.secondary" sx={{ mb: 1 }}>
@@ -1011,7 +1060,11 @@ export default function ExerciseDetail() {
           <Box>
             {renderQuestionMedia(question)}
             {renderQuestionWordBankWithHandler()}
-            <Typography variant="body1" gutterBottom sx={{ whiteSpace: 'pre-wrap' }}>
+            <Typography
+              variant="body1"
+              gutterBottom
+              sx={{ whiteSpace: 'pre-wrap' }}
+            >
               {question.title}
             </Typography>
             <TextField
@@ -1032,7 +1085,11 @@ export default function ExerciseDetail() {
           <Box>
             {renderQuestionMedia(question)}
             {renderQuestionWordBankWithHandler()}
-            <Typography variant="body1" gutterBottom sx={{ whiteSpace: 'pre-wrap' }}>
+            <Typography
+              variant="body1"
+              gutterBottom
+              sx={{ whiteSpace: 'pre-wrap' }}
+            >
               {question.title}
             </Typography>
             <Typography variant="body2" color="text.secondary" sx={{ mb: 1 }}>
@@ -1055,7 +1112,11 @@ export default function ExerciseDetail() {
           <Box>
             {renderQuestionMedia(question)}
             {renderQuestionWordBankWithHandler()}
-            <Typography variant="body1" gutterBottom sx={{ whiteSpace: 'pre-wrap' }}>
+            <Typography
+              variant="body1"
+              gutterBottom
+              sx={{ whiteSpace: 'pre-wrap' }}
+            >
               {question.title}
             </Typography>
             <TextField
@@ -1100,7 +1161,9 @@ export default function ExerciseDetail() {
                   key={index}
                   sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}
                 >
-                  <Typography component="span" sx={{ whiteSpace: 'pre-wrap' }}>{part}</Typography>
+                  <Typography component="span" sx={{ whiteSpace: 'pre-wrap' }}>
+                    {part}
+                  </Typography>
                   {index < blanks.length - 1 && (
                     <TextField
                       key={`${question._id}-blank-${index}-${retryKey}`}
@@ -1160,7 +1223,11 @@ export default function ExerciseDetail() {
           <Box>
             {renderQuestionMedia(question)}
             {renderQuestionWordBankWithHandler()}
-            <Typography variant="body1" gutterBottom sx={{ whiteSpace: 'pre-wrap' }}>
+            <Typography
+              variant="body1"
+              gutterBottom
+              sx={{ whiteSpace: 'pre-wrap' }}
+            >
               {question.title}
             </Typography>
             <TextField
@@ -1181,7 +1248,11 @@ export default function ExerciseDetail() {
           <Box>
             {renderQuestionMedia(question)}
             {renderQuestionWordBankWithHandler()}
-            <Typography variant="body1" gutterBottom sx={{ whiteSpace: 'pre-wrap' }}>
+            <Typography
+              variant="body1"
+              gutterBottom
+              sx={{ whiteSpace: 'pre-wrap' }}
+            >
               {question.title}
             </Typography>
             <TextField
@@ -1217,8 +1288,8 @@ export default function ExerciseDetail() {
               {exercise.title}
             </Typography>
             <Typography variant="body2" color="text.secondary">
-              Section {currentSectionIndex + 1} / {exercise.sections.length} · Total
-              number of questions: {allQuestions.length}
+              Section {currentSectionIndex + 1} / {exercise.sections.length} ·
+              Total number of questions: {allQuestions.length}
             </Typography>
           </Box>
 
@@ -1287,7 +1358,11 @@ export default function ExerciseDetail() {
                             gap: 0.5,
                           }}
                         >
-                          <Typography component="span" variant="body1" sx={{ whiteSpace: 'pre-wrap' }}>
+                          <Typography
+                            component="span"
+                            variant="body1"
+                            sx={{ whiteSpace: 'pre-wrap' }}
+                          >
                             {part}
                           </Typography>
                           {index < parts.length - 1 &&
@@ -1466,8 +1541,8 @@ export default function ExerciseDetail() {
                 Your exercise has been saved.
               </Typography>
               <Alert severity="info" sx={{ mt: 2 }}>
-                Your exercise (audio, video, ...) will be saved and manually graded
-                later.
+                Your exercise (audio, video, ...) will be saved and manually
+                graded later.
               </Alert>
             </Box>
           )}

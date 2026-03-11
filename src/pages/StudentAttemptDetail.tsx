@@ -450,42 +450,58 @@ export default function StudentAttemptDetail() {
                                 {question.options &&
                                   question.options.length > 0 && (
                                     <Box sx={{ mb: 2, pl: 2 }}>
-                                      {question.options.map(
-                                        (option: string, optIdx: number) => {
-                                          const isCorrectOption =
-                                            question.correctAnswer?.includes(
-                                              option,
-                                            );
-                                          const isStudentChoice =
-                                            studentAnswer?.answer?.includes(
-                                              option,
-                                            );
+                                      {(() => {
+                                        const effectiveType = (question as any).type || section.questionType;
+                                        const blanksCount = (question.title || '').split('____').length - 1;
+                                        const isPerBlankOptions =
+                                          effectiveType === 'dropdown-choice' &&
+                                          question.options.length === blanksCount;
 
-                                          return (
-                                            <Typography
-                                              key={optIdx}
-                                              variant="body2"
-                                              sx={{
-                                                color: 'text.secondary',
-                                                fontWeight: isCorrectOption
-                                                  ? 600
-                                                  : 400,
-                                                bgcolor:
-                                                  isStudentChoice &&
-                                                  !isCorrectOption
-                                                    ? 'error.lighter'
-                                                    : 'transparent',
-                                                p: 0.5,
-                                                borderRadius: 0.5,
-                                              }}
-                                            >
-                                              {String.fromCharCode(65 + optIdx)}
-                                              . {option}
-                                              {isCorrectOption && ' ✓'}
+                                        if (isPerBlankOptions) {
+                                          return question.options.map((optString: string, optIdx: number) => (
+                                            <Typography key={optIdx} variant="body2" sx={{ color: 'text.secondary', mb: 0.5 }}>
+                                              <strong>Blank {optIdx + 1} options:</strong> {optString}
                                             </Typography>
-                                          );
-                                        },
-                                      )}
+                                          ));
+                                        }
+
+                                        return question.options.map(
+                                          (option: string, optIdx: number) => {
+                                            const isCorrectOption =
+                                              question.correctAnswer?.includes(
+                                                option,
+                                              );
+                                            const isStudentChoice =
+                                              studentAnswer?.answer?.includes(
+                                                option,
+                                              );
+
+                                            return (
+                                              <Typography
+                                                key={optIdx}
+                                                variant="body2"
+                                                sx={{
+                                                  color: 'text.secondary',
+                                                  fontWeight: isCorrectOption
+                                                    ? 600
+                                                    : 400,
+                                                  bgcolor:
+                                                    isStudentChoice &&
+                                                    !isCorrectOption
+                                                      ? 'error.lighter'
+                                                      : 'transparent',
+                                                  p: 0.5,
+                                                  borderRadius: 0.5,
+                                                }}
+                                              >
+                                                {String.fromCharCode(65 + optIdx)}
+                                                . {option}
+                                                {isCorrectOption && ' ✓'}
+                                              </Typography>
+                                            );
+                                          },
+                                        );
+                                      })()}
                                     </Box>
                                   )}
 
@@ -594,8 +610,8 @@ export default function StudentAttemptDetail() {
                                         mt: 1,
                                       }}
                                     >
-                                      * Question type {section.questionType}{' '}
-                                      is not automatically graded
+                                      * Question type {section.questionType} is
+                                      not automatically graded
                                     </Typography>
                                   )}
                                 </Box>
@@ -754,42 +770,58 @@ export default function StudentAttemptDetail() {
                               {question.options &&
                                 question.options.length > 0 && (
                                   <Box sx={{ mb: 2, pl: 2 }}>
-                                    {question.options.map(
-                                      (option: string, optIdx: number) => {
-                                        const isCorrectOption =
-                                          question.correctAnswer?.includes(
-                                            option,
-                                          );
-                                        const isStudentChoice =
-                                          studentAnswer?.answer?.includes(
-                                            option,
-                                          );
+                                    {(() => {
+                                      const effectiveType = (question as any).type || section.questionType;
+                                      const blanksCount = (question.title || '').split('____').length - 1;
+                                      const isPerBlankOptions =
+                                        effectiveType === 'dropdown-choice' &&
+                                        question.options.length === blanksCount;
 
-                                        return (
-                                          <Typography
-                                            key={optIdx}
-                                            variant="body2"
-                                            sx={{
-                                              color: 'text.secondary',
-                                              fontWeight: isCorrectOption
-                                                ? 600
-                                                : 400,
-                                              bgcolor:
-                                                isStudentChoice &&
-                                                !isCorrectOption
-                                                  ? 'error.lighter'
-                                                  : 'transparent',
-                                              p: 0.5,
-                                              borderRadius: 0.5,
-                                            }}
-                                          >
-                                            {String.fromCharCode(65 + optIdx)}.{' '}
-                                            {option}
-                                            {isCorrectOption && ' ✓'}
+                                      if (isPerBlankOptions) {
+                                        return question.options.map((optString: string, optIdx: number) => (
+                                          <Typography key={optIdx} variant="body2" sx={{ color: 'text.secondary', mb: 0.5 }}>
+                                            <strong>Blank {optIdx + 1} options:</strong> {optString}
                                           </Typography>
-                                        );
-                                      },
-                                    )}
+                                        ));
+                                      }
+
+                                      return question.options.map(
+                                        (option: string, optIdx: number) => {
+                                          const isCorrectOption =
+                                            question.correctAnswer?.includes(
+                                              option,
+                                            );
+                                          const isStudentChoice =
+                                            studentAnswer?.answer?.includes(
+                                              option,
+                                            );
+
+                                          return (
+                                            <Typography
+                                              key={optIdx}
+                                              variant="body2"
+                                              sx={{
+                                                color: 'text.secondary',
+                                                fontWeight: isCorrectOption
+                                                  ? 600
+                                                  : 400,
+                                                bgcolor:
+                                                  isStudentChoice &&
+                                                  !isCorrectOption
+                                                    ? 'error.lighter'
+                                                    : 'transparent',
+                                                p: 0.5,
+                                                borderRadius: 0.5,
+                                              }}
+                                            >
+                                              {String.fromCharCode(65 + optIdx)}.{' '}
+                                              {option}
+                                              {isCorrectOption && ' ✓'}
+                                            </Typography>
+                                          );
+                                        },
+                                      );
+                                    })()}
                                   </Box>
                                 )}
 
@@ -898,7 +930,8 @@ export default function StudentAttemptDetail() {
                                       mt: 1,
                                     }}
                                   >
-                                    * Question type {section.questionType} is not automatically graded
+                                    * Question type {section.questionType} is
+                                    not automatically graded
                                   </Typography>
                                 )}
                               </Box>

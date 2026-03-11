@@ -304,7 +304,9 @@ export default function QuizDetail() {
         {renderQuestionMedia(question)}
         {renderQuestionWordBank(question)}
         <FormControl component="fieldset" fullWidth>
-          <FormLabel component="legend" sx={{ whiteSpace: 'pre-wrap' }}>{question.title}</FormLabel>
+          <FormLabel component="legend" sx={{ whiteSpace: 'pre-wrap' }}>
+            {question.title}
+          </FormLabel>
           <RadioGroup
             value={value}
             onChange={(e) => handleAnswerChange(question._id, e.target.value)}
@@ -383,7 +385,12 @@ export default function QuizDetail() {
               ? (() => {
                   return (
                     <FormControl component="fieldset" fullWidth>
-                      <FormLabel component="legend" sx={{ whiteSpace: 'pre-wrap' }}>{question.title}</FormLabel>
+                      <FormLabel
+                        component="legend"
+                        sx={{ whiteSpace: 'pre-wrap' }}
+                      >
+                        {question.title}
+                      </FormLabel>
                       <RadioGroup
                         value={value}
                         onChange={(e) =>
@@ -404,7 +411,11 @@ export default function QuizDetail() {
                 })()
               : (() => (
                   <>
-                    <Typography variant="body1" gutterBottom sx={{ whiteSpace: 'pre-wrap' }}>
+                    <Typography
+                      variant="body1"
+                      gutterBottom
+                      sx={{ whiteSpace: 'pre-wrap' }}
+                    >
                       {question.title}
                     </Typography>
                     <TextField
@@ -430,7 +441,11 @@ export default function QuizDetail() {
             {questionNumber}
             {renderQuestionMedia(question)}
             {renderQuestionWordBank(question)}
-            <Typography variant="body1" gutterBottom sx={{ whiteSpace: 'pre-wrap' }}>
+            <Typography
+              variant="body1"
+              gutterBottom
+              sx={{ whiteSpace: 'pre-wrap' }}
+            >
               {question.title}
             </Typography>
             <TextField
@@ -470,7 +485,9 @@ export default function QuizDetail() {
                   key={idx}
                   sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}
                 >
-                  <Typography component="span" sx={{ whiteSpace: 'pre-wrap' }}>{part}</Typography>
+                  <Typography component="span" sx={{ whiteSpace: 'pre-wrap' }}>
+                    {part}
+                  </Typography>
                   {idx < blanks.length - 1 && (
                     <TextField
                       size="small"
@@ -513,6 +530,16 @@ export default function QuizDetail() {
       case 'dropdown-choice': {
         const parts = question.title.split('____');
         const hasBlank = parts.length > 1;
+        const blanksCount = parts.length - 1;
+        const isPerBlankOptions =
+          question.options && question.options.length === blanksCount;
+
+        const answerArray = Array.isArray(answers[question._id])
+          ? (answers[question._id] as string[])
+          : typeof answers[question._id] === 'string' && answers[question._id]
+            ? [(answers[question._id] as string)]
+            : Array(parts.length - 1).fill('');
+
         return (
           <Box sx={{ mb: 3 }}>
             {questionNumber}
@@ -532,27 +559,53 @@ export default function QuizDetail() {
                     key={idx}
                     sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}
                   >
-                    <Typography component="span" variant="body1" sx={{ whiteSpace: 'pre-wrap' }}>
+                    <Typography
+                      component="span"
+                      variant="body1"
+                      sx={{ whiteSpace: 'pre-wrap' }}
+                    >
                       {part}
                     </Typography>
                     {idx < parts.length - 1 && (
                       <FormControl size="small" sx={{ minWidth: 120 }}>
                         <Select
-                          value={value || ''}
-                          onChange={(e) =>
-                            handleAnswerChange(question._id, e.target.value)
-                          }
+                          value={answerArray[idx] || ''}
+                          onChange={(e) => {
+                            const newArray = [...answerArray];
+                            newArray[idx] = e.target.value;
+                            handleAnswerChange(question._id, newArray);
+                          }}
                           displayEmpty
                           disabled={disabled}
                         >
                           <MenuItem value="" disabled>
                             <em></em>
                           </MenuItem>
-                          {(question.options ?? []).map((opt, i) => (
-                            <MenuItem key={i} value={opt}>
-                              {opt}
-                            </MenuItem>
-                          ))}
+                          {(() => {
+                            let currentOptions: string[] = [];
+                            if (isPerBlankOptions) {
+                              currentOptions = question.options![idx]
+                                .split('|')
+                                .map((o) => o.trim())
+                                .filter(Boolean);
+                              if (
+                                currentOptions.length === 1 &&
+                                currentOptions[0].includes(',')
+                              ) {
+                                currentOptions = question.options![idx]
+                                  .split(',')
+                                  .map((o) => o.trim())
+                                  .filter(Boolean);
+                              }
+                            } else {
+                              currentOptions = question.options ?? [];
+                            }
+                            return currentOptions.map((opt, i) => (
+                              <MenuItem key={i} value={opt}>
+                                {opt}
+                              </MenuItem>
+                            ));
+                          })()}
                         </Select>
                       </FormControl>
                     )}
@@ -588,7 +641,11 @@ export default function QuizDetail() {
             {questionNumber}
             {renderQuestionMedia(question)}
             {renderQuestionWordBank(question)}
-            <Typography variant="body1" gutterBottom sx={{ whiteSpace: 'pre-wrap' }}>
+            <Typography
+              variant="body1"
+              gutterBottom
+              sx={{ whiteSpace: 'pre-wrap' }}
+            >
               {question.title}
             </Typography>
             <Typography variant="body2" color="text.secondary" sx={{ mb: 1 }}>
@@ -611,7 +668,11 @@ export default function QuizDetail() {
             {questionNumber}
             {renderQuestionMedia(question)}
             {renderQuestionWordBank(question)}
-            <Typography variant="body1" gutterBottom sx={{ whiteSpace: 'pre-wrap' }}>
+            <Typography
+              variant="body1"
+              gutterBottom
+              sx={{ whiteSpace: 'pre-wrap' }}
+            >
               {question.title}
             </Typography>
             <TextField
@@ -864,8 +925,9 @@ export default function QuizDetail() {
                   </Typography>
                 )}
                 <Typography variant="body2" color="text.secondary">
-                  Section {currentSectionIndex + 1} / {quiz.sections?.length ?? 0}{' '}
-                  · {currentSection.questions?.length ?? 0} questions
+                  Section {currentSectionIndex + 1} /{' '}
+                  {quiz.sections?.length ?? 0} ·{' '}
+                  {currentSection.questions?.length ?? 0} questions
                 </Typography>
               </Box>
 
@@ -994,9 +1056,9 @@ export default function QuizDetail() {
         <DialogTitle>Confirm exit</DialogTitle>
         <DialogContent>
           <Typography>
-            You are currently in the process of taking the quiz. If you exit now,
-            the system will automatically submit your answers. Are you sure you
-            want to submit and exit?
+            You are currently in the process of taking the quiz. If you exit
+            now, the system will automatically submit your answers. Are you sure
+            you want to submit and exit?
           </Typography>
         </DialogContent>
         <DialogActions>
