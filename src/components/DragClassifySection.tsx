@@ -85,7 +85,7 @@ export function DragClassifySection({
 
   const playAudio = (url: string) => {
     audioRef.current?.pause();
-    const a = new Audio(url);
+    const a = new Audio(resolveUrl(url));
     audioRef.current = a;
     a.play().catch(() => {});
   };
