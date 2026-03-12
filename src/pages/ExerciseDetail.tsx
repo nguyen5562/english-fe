@@ -21,7 +21,8 @@ import {
   Divider,
   Select,
   MenuItem,
-  InputLabel,
+  Checkbox,
+  FormGroup,
 } from '@mui/material';
 import {
   ArrowBack as ArrowBackIcon,
@@ -49,6 +50,7 @@ import {
 } from '../utils/questionHelpers';
 import { toast } from '../utils/toast';
 import { parseHTML, parseHTMLWithBlanks } from '../utils/htmlParser';
+import { DragClassifySection } from '../components/DragClassifySection';
 import type { SectionAttemptDto } from '../types/dto';
 
 export default function ExerciseDetail() {
@@ -630,7 +632,9 @@ export default function ExerciseDetail() {
     question: Question,
     sectionQuestionType?: QuestionType,
   ) => {
-    const value = (answers[question._id] ?? '') as string;
+    const rawValue = answers[question._id];
+    const value = Array.isArray(rawValue) ? rawValue[0] ?? '' : (rawValue ?? '') as string;
+    const values = Array.isArray(rawValue) ? rawValue : (rawValue ? [String(rawValue)] : []);
 
     const questionType: QuestionType | undefined =
       (question as Question & { type?: QuestionType }).type ??
@@ -646,80 +650,123 @@ export default function ExerciseDetail() {
       });
     };
 
-    const renderMultipleChoice = () => (
-      <Box>
-        {renderQuestionMedia(question)}
-        {renderQuestionWordBankWithHandler()}
-        <FormControl component="fieldset" fullWidth>
-          <FormLabel component="legend">
-            <Box component="span" sx={{ '& p': { margin: 0 }, '& *': { display: 'inline' } }}>
-              {parseHTML(question.title)}
-            </Box>
-          </FormLabel>
-          <RadioGroup
-            key={`${question._id}-rg-${retryKey}`}
-            value={value}
-            onChange={(e) => handleAnswerChange(question._id, e.target.value)}
-            sx={{
-              flexDirection:
-                questionType === 'picture-choice' ? 'row' : 'column',
-              flexWrap: 'wrap',
-              gap: questionType === 'picture-choice' ? 2 : 0,
-            }}
-          >
-            {question.options?.map((option, index) => (
-              <FormControlLabel
-                key={index}
-                value={option}
-                labelPlacement={
-                  questionType === 'picture-choice' ? 'top' : 'end'
-                }
-                control={
-                  <Radio
-                    key={`${question._id}-${index}-${retryKey}`}
-                    disabled={viewingSaved}
+    const renderMultipleChoice = () => {
+      const isMultiple = (question.correctAnswer?.length ?? 0) > 1;
+
+      const handleToggleOption = (option: string) => {
+        let next: string[];
+        if (values.includes(option)) {
+          next = values.filter((v) => v !== option);
+        } else {
+          next = [...values, option];
+        }
+        handleAnswerChange(question._id, next);
+      };
+
+      return (
+        <Box>
+          {renderQuestionMedia(question)}
+          {renderQuestionWordBankWithHandler()}
+          <FormControl component="fieldset" fullWidth>
+            <FormLabel component="legend">
+              <Box component="span" sx={{ '& p': { margin: 0 }, '& *': { display: 'inline' } }}>
+                {parseHTML(question.title)}
+              </Box>
+            </FormLabel>
+            
+            {isMultiple ? (
+              <FormGroup
+                sx={{
+                  flexDirection: questionType === 'picture-choice' ? 'row' : 'column',
+                  flexWrap: 'wrap',
+                  gap: questionType === 'picture-choice' ? 2 : 0,
+                  mt: 1
+                }}
+              >
+                {question.options?.map((option, index) => (
+                  <FormControlLabel
+                    key={index}
+                    control={
+                      <Checkbox
+                        checked={values.includes(option)}
+                        onChange={() => handleToggleOption(option)}
+                        disabled={viewingSaved}
+                        size="small"
+                      />
+                    }
+                    label={
+                      questionType === 'picture-choice' ? (
+                        <Box
+                          component="img"
+                          src={resolveUrl(option)}
+                          alt={`Option ${index + 1}`}
+                          sx={{
+                            width: '180px', height: '140px', objectFit: 'cover',
+                            border: values.includes(option) ? '3px solid #1976d2' : '1px solid #ddd',
+                            borderRadius: 2, transition: 'all 0.2s',
+                            '&:hover': { transform: 'scale(1.02)', borderColor: 'primary.main' },
+                          }}
+                        />
+                      ) : (
+                        option
+                      )
+                    }
+                  />
+                ))}
+              </FormGroup>
+            ) : (
+              <RadioGroup
+                key={`${question._id}-rg-${retryKey}`}
+                value={value}
+                onChange={(e) => handleAnswerChange(question._id, e.target.value)}
+                sx={{
+                  flexDirection: questionType === 'picture-choice' ? 'row' : 'column',
+                  flexWrap: 'wrap',
+                  gap: questionType === 'picture-choice' ? 2 : 0,
+                }}
+              >
+                {question.options?.map((option, index) => (
+                  <FormControlLabel
+                    key={index}
+                    value={option}
+                    labelPlacement={questionType === 'picture-choice' ? 'top' : 'end'}
+                    control={
+                      <Radio
+                        key={`${question._id}-${index}-${retryKey}`}
+                        disabled={viewingSaved}
+                        sx={{ mt: questionType === 'picture-choice' ? 1 : 0 }}
+                      />
+                    }
+                    label={
+                      questionType === 'picture-choice' ? (
+                        <Box
+                          component="img"
+                          src={resolveUrl(option)}
+                          alt={`Option ${index + 1}`}
+                          sx={{
+                            width: '180px', height: '140px', objectFit: 'cover',
+                            border: value === option ? '3px solid #1976d2' : '1px solid #ddd',
+                            borderRadius: 2, transition: 'all 0.2s',
+                            '&:hover': { transform: 'scale(1.02)', borderColor: 'primary.main' },
+                          }}
+                        />
+                      ) : (
+                        option
+                      )
+                    }
                     sx={{
-                      mt: questionType === 'picture-choice' ? 1 : 0,
+                      ml: questionType === 'picture-choice' ? 0 : undefined,
+                      mr: questionType === 'picture-choice' ? 0 : 2,
+                      alignItems: 'center',
                     }}
                   />
-                }
-                label={
-                  questionType === 'picture-choice' ? (
-                    <Box
-                      component="img"
-                      src={resolveUrl(option)}
-                      alt={`Option ${index + 1}`}
-                      sx={{
-                        width: '180px',
-                        height: '140px',
-                        objectFit: 'cover',
-                        border:
-                          value === option
-                            ? '3px solid #1976d2'
-                            : '1px solid #ddd',
-                        borderRadius: 2,
-                        transition: 'all 0.2s',
-                        '&:hover': {
-                          transform: 'scale(1.02)',
-                          borderColor: 'primary.main',
-                        },
-                      }}
-                    />
-                  ) : (
-                    option
-                  )
-                }
-                sx={{
-                  ml: questionType === 'picture-choice' ? 0 : undefined,
-                  mr: questionType === 'picture-choice' ? 0 : 2,
-                  alignItems: 'center',
-                }}
-              />
-            ))}
-          </RadioGroup>
-        </FormControl>
-      </Box>
-    );
+                ))}
+              </RadioGroup>
+            )}
+          </FormControl>
+        </Box>
+      );
+    };
 
     switch (questionType) {
       case 'multiple-choice':
@@ -1267,11 +1314,29 @@ export default function ExerciseDetail() {
             )}
 
             {renderSectionMedia(currentSection)}
-            {renderSectionWordBank(currentSection)}
+            {currentSection.questionType !== 'drag-classify' && renderSectionWordBank(currentSection)}
 
-            {/* Hiển thị đặc biệt cho paragraph-fill: passage với input fields inline */}
-            {currentSection.questionType === 'paragraph-fill' &&
-            currentSection.passage ? (
+            {/* Drag-classify: render toàn bộ section một lần dưới dạng bảng cột */}
+            {currentSection.questionType === 'drag-classify' ? (
+              <DragClassifySection
+                key={`${currentSection._id}-${retryKey}`}
+                section={currentSection}
+                answers={
+                  Object.fromEntries(
+                    Object.entries(answers).map(([k, v]) => [
+                      k,
+                      Array.isArray(v) ? v[0] ?? '' : (v as string),
+                    ]),
+                  ) as Record<string, string>
+                }
+                onChange={(newAnswers) =>
+                  setAnswers((prev) => ({ ...prev, ...newAnswers }))
+                }
+                showResult={showResult || viewingSaved}
+                disabled={viewingSaved}
+              />
+            ) : currentSection.questionType === 'paragraph-fill' &&
+              currentSection.passage ? (
               <Box
                 sx={{
                   p: 2,

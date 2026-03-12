@@ -21,6 +21,8 @@ import {
   DialogActions,
   CircularProgress,
   Divider,
+  Checkbox,
+  FormControlLabel,
 } from '@mui/material';
 import {
   ArrowBack as ArrowBackIcon,
@@ -58,7 +60,8 @@ const TYPES_NEED_AUDIO: QuestionType[] = [
   'pronunciation',
   'picture-choice',
   'fill-blank',
-  'multiple-choice'
+  'multiple-choice',
+  'drag-classify',
 ];
 const TYPES_NEED_VIDEO: QuestionType[] = ['video-recording', 'picture-choice'];
 const TYPES_NEED_IMAGE: QuestionType[] = ['picture-choice', 'multiple-choice'];
@@ -70,6 +73,7 @@ const SECTION_NEED_PASSAGE: QuestionType[] = [
   'fill-blank',
 ];
 const SECTION_NEED_WORD_BANK: QuestionType[] = ['word-bank', 'paragraph-fill'];
+const SECTION_NEED_CATEGORIES: QuestionType[] = ['drag-classify'];
 
 const SECTION_TYPE_OPTIONS: { value: SectionType; label: string }[] = [
   { value: 'grammar', label: 'Grammar' },
@@ -95,6 +99,7 @@ const QUESTION_TYPE_OPTIONS: { value: QuestionType; label: string }[] = [
   { value: 'pronunciation', label: 'Pronunciation' },
   { value: 'writing', label: 'Writing' },
   { value: 'video-recording', label: 'Video recording' },
+  { value: 'drag-classify', label: 'Drag & classify' },
 ];
 
 export default function AdminQuizSectionEdit() {
@@ -351,8 +356,19 @@ export default function AdminQuizSectionEdit() {
     if (TYPES_WITH_OPTIONS.includes(sectionQuestionType)) {
       const opts = optionsList.map((s) => s.trim()).filter(Boolean);
       if (opts.length) base.options = opts;
-      if (correctAnswerSingle.trim())
-        base.correctAnswer = [correctAnswerSingle.trim()];
+
+      const mcqTypes = ['multiple-choice', 'reading-mcq', 'picture-choice'];
+      if (mcqTypes.includes(sectionQuestionType)) {
+         const correct = correctAnswerList.map((s) => s.trim()).filter(Boolean);
+         if (correct.length > 0) {
+           base.correctAnswer = correct;
+         } else if (correctAnswerSingle.trim()) {
+           base.correctAnswer = [correctAnswerSingle.trim()];
+         }
+      } else {
+        if (correctAnswerSingle.trim())
+          base.correctAnswer = [correctAnswerSingle.trim()];
+      }
     } else if (TYPES_FILL_BLANK.includes(sectionQuestionType)) {
       const correct = correctAnswerList.map((s) => s.trim()).filter(Boolean);
       if (correct.length) base.correctAnswer = correct;
@@ -677,6 +693,23 @@ export default function AdminQuizSectionEdit() {
               rows={2}
             />
           )}
+          {SECTION_NEED_CATEGORIES.includes(sectionForm.questionType) && (
+            <TextField
+              fullWidth
+              label="Categories / Groups — LEAVE EMPTY for Audio-match mode"
+              value={sectionForm.wordBankStr}
+              onChange={(e) =>
+                setSectionForm((f) => ({ ...f, wordBankStr: e.target.value }))
+              }
+              multiline
+              rows={2}
+              helperText={
+                sectionForm.wordBankStr.trim()
+                  ? '✅ Dạng 1 (phân cột): mỗi category là 1 cột. VD: IN, ON, AT. Mỗi câu hỏi = 1 từ cần xếp vào cột.'
+                  : '✅ Dạng 2 (audio match): để trống. Mỗi câu hỏi = 1 ô audio (nhập Audio URL + Correct category = từ đúng). Word bank tự tạo từ các đáp án.'
+              }
+            />
+          )}
         </CardContent>
       </Card>
 
@@ -769,18 +802,33 @@ export default function AdminQuizSectionEdit() {
         </DialogTitle>
         <DialogContent>
           <Box sx={{ mt: 2 }}>
-            <RichEditor
-              label={
-                TYPES_FILL_BLANK.includes(sectionQuestionType)
-                  ? 'Question content (type ____ for each blank)'
-                  : 'Question content'
-              }
-              value={questionForm.title}
-              onChange={(val) =>
-                setQuestionForm((f) => ({ ...f, title: val }))
-              }
-              placeholder="Enter question content..."
-            />
+            {sectionQuestionType === 'drag-classify' ? (
+              <TextField
+                fullWidth
+                label={sectionForm.wordBankStr.trim() ? "Item label (text to drag)" : "Label (optional for audio mode)"}
+                value={questionForm.title}
+                onChange={(e) =>
+                  setQuestionForm((f) => ({ ...f, title: e.target.value }))
+                }
+                placeholder={sectionForm.wordBankStr.trim() ? "e.g. home, a park, Madrid..." : "e.g. Item 1 (or leave empty)"}
+                helperText={sectionForm.wordBankStr.trim() 
+                  ? "Mode 1 (Classify): This is the text displayed on the draggable piece." 
+                  : "Mode 2 (Audio Match): Usually left empty. If filled, it appears below the speaker icon."}
+              />
+            ) : (
+              <RichEditor
+                label={
+                  TYPES_FILL_BLANK.includes(sectionQuestionType)
+                    ? 'Question content (type ____ for each blank)'
+                    : 'Question content'
+                }
+                value={questionForm.title}
+                onChange={(val) =>
+                  setQuestionForm((f) => ({ ...f, title: val }))
+                }
+                placeholder="Enter question content..."
+              />
+            )}
           </Box>
           <TextField
             fullWidth
@@ -923,39 +971,79 @@ export default function AdminQuizSectionEdit() {
               >
                 Add answer
               </Button>
-              {!TYPES_FILL_BLANK.includes(sectionQuestionType) && (
+              {!TYPES_FILL_BLANK.includes(sectionQuestionType) && !['drag-classify'].includes(sectionQuestionType) && (
                 <>
                   <Typography variant="subtitle2" sx={{ mt: 1, mb: 1 }}>
-                    Correct answer
+                    Correct answer(s)
                   </Typography>
-                  <FormControl fullWidth size="small" sx={{ mb: 2 }}>
-                    <InputLabel>Select from the answers above</InputLabel>
-                    <Select
-                      value={
-                        optionsList.includes(correctAnswerSingle)
-                          ? correctAnswerSingle
-                          : ''
-                      }
-                      label="Select from the answers above"
-                      onChange={(e) => setCorrectAnswerSingle(e.target.value)}
-                    >
-                      <MenuItem value="">— Select —</MenuItem>
-                      {optionsList.filter(Boolean).map((opt, i) => (
-                        <MenuItem key={i} value={opt}>
-                          {opt.length > 50 ? opt.slice(0, 50) + '…' : opt}
-                        </MenuItem>
-                      ))}
-                    </Select>
-                  </FormControl>
-                  <FilePicker
-                    label="Or enter URL / select file as correct answer"
-                    value={
-                      optionsList.includes(correctAnswerSingle)
-                        ? ''
-                        : correctAnswerSingle
-                    }
-                    onChange={(url) => setCorrectAnswerSingle(url)}
-                  />
+                  {['multiple-choice', 'reading-mcq', 'picture-choice'].includes(sectionQuestionType) ? (
+                    <Box sx={{ mt: 1 }}>
+                      <Typography variant="caption" color="text.secondary" sx={{ mb: 1, display: 'block' }}>
+                        Tích chọn tất cả các đáp án đúng bên dưới:
+                      </Typography>
+                      {optionsList.filter(Boolean).map((opt, i) => {
+                        const isChecked = Array.isArray(correctAnswerList) 
+                          ? correctAnswerList.includes(opt)
+                          : correctAnswerSingle === opt;
+                        
+                        return (
+                          <FormControlLabel
+                            key={i}
+                            control={
+                              <Checkbox
+                                size="small"
+                                checked={isChecked}
+                                onChange={(e) => {
+                                  if (e.target.checked) {
+                                    setCorrectAnswerList(prev => [...prev, opt]);
+                                    setCorrectAnswerSingle(opt); 
+                                  } else {
+                                    setCorrectAnswerList(prev => prev.filter(a => a !== opt));
+                                  }
+                                }}
+                              />
+                            }
+                            label={opt.length > 50 ? opt.slice(0, 50) + '…' : opt}
+                            sx={{ display: 'block' }}
+                          />
+                        );
+                      })}
+                      <Typography variant="caption" color="primary" sx={{ mt: 1, display: 'block' }}>
+                         Lưu ý: Nếu bạn chọn từ 2 đáp án trở lên, câu hỏi sẽ tự động hiển thị dạng Checkbox (chọn nhiều).
+                      </Typography>
+                    </Box>
+                  ) : (
+                    <>
+                      <FormControl fullWidth size="small" sx={{ mb: 2 }}>
+                        <InputLabel>Select from the answers above</InputLabel>
+                        <Select
+                          value={
+                            optionsList.includes(correctAnswerSingle)
+                              ? correctAnswerSingle
+                              : ''
+                          }
+                          label="Select from the answers above"
+                          onChange={(e) => setCorrectAnswerSingle(e.target.value)}
+                        >
+                          <MenuItem value="">— Select —</MenuItem>
+                          {optionsList.filter(Boolean).map((opt, i) => (
+                            <MenuItem key={i} value={opt}>
+                              {opt.length > 50 ? opt.slice(0, 50) + '…' : opt}
+                            </MenuItem>
+                          ))}
+                        </Select>
+                      </FormControl>
+                      <FilePicker
+                        label="Or enter URL / select file as correct answer"
+                        value={
+                          optionsList.includes(correctAnswerSingle)
+                            ? ''
+                            : correctAnswerSingle
+                        }
+                        onChange={(url) => setCorrectAnswerSingle(url)}
+                      />
+                    </>
+                  )}
                 </>
               )}
             </>
@@ -1051,6 +1139,34 @@ export default function AdminQuizSectionEdit() {
                 value={correctAnswerSingle}
                 onChange={(url) => setCorrectAnswerSingle(url)}
               />
+            </>
+          )}
+
+          {/* Drag-classify: chọn category đúng cho item này */}
+          {sectionQuestionType === 'drag-classify' && (
+            <>
+              <Divider sx={{ my: 2 }} />
+              <Typography variant="subtitle2" sx={{ mb: 1 }}>
+                {sectionForm.wordBankStr.trim() ? "Correct category / Group name" : "Correct word or Image (for word bank)"}
+              </Typography>
+              <TextField
+                fullWidth
+                size="small"
+                placeholder={sectionForm.wordBankStr.trim() ? "e.g. IN" : "e.g. take"}
+                value={correctAnswerSingle}
+                onChange={(e) => setCorrectAnswerSingle(e.target.value)}
+                sx={{ mb: 1 }}
+                helperText={sectionForm.wordBankStr.trim()
+                  ? "Must match one of the categories defined in the section above."
+                  : "This word or image will appear in the bank for students to drag into this audio slot."}
+              />
+              {!sectionForm.wordBankStr.trim() && (
+                <FilePicker
+                  label="Select image as answer (for Audio-match mode)"
+                  value={correctAnswerSingle}
+                  onChange={(url) => setCorrectAnswerSingle(url)}
+                />
+              )}
             </>
           )}
         </DialogContent>

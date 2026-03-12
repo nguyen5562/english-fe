@@ -57,7 +57,8 @@ export type QuestionType =
   | 'paragraph-fill'
   | 'fill-blank'
   | 'dropdown-choice'
-  | 'video-recording';
+  | 'video-recording'
+  | 'drag-classify';
 
 export type SectionType =
   | 'grammar'
