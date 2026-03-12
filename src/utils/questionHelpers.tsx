@@ -8,6 +8,7 @@ import {
   Radio,
   FormControlLabel,
   TextField,
+  Paper,
 } from '@mui/material';
 import { API_ROUTES, API_URL } from '../const/apiConfig';
 import type { Question, Section } from '../types';
@@ -57,31 +58,57 @@ export function resolveUrl(url?: string): string | undefined {
 export const renderQuestionMedia = (question: Question) => (
   <>
     {question.imageUrl && (
-      <Box sx={{ mb: 2 }}>
+      <Box sx={{ mb: 3, display: 'flex', justifyContent: 'center' }}>
         <Box
           component="img"
           src={resolveUrl(question.imageUrl)}
           alt={question.title}
-          sx={{ maxWidth: '100%', borderRadius: 1 }}
+          sx={{ 
+            maxWidth: '100%', 
+            maxHeight: '400px',
+            borderRadius: 3,
+            boxShadow: '0 8px 24px rgba(0,0,0,0.12)',
+            objectFit: 'contain'
+          }}
         />
       </Box>
     )}
     {question.audioUrl && (
-      <Box sx={{ mb: 2 }}>
-        <audio controls src={resolveUrl(question.audioUrl)}>
+      <Box sx={{ mb: 3, width: '100%', display: 'flex' }}>
+        <Box
+          component="audio"
+          controls
+          src={resolveUrl(question.audioUrl)}
+          sx={{
+            width: '100%',
+            maxWidth: '500px',
+            height: '48px',
+            borderRadius: '24px',
+            boxShadow: '0 4px 12px rgba(0,0,0,0.08)',
+            backgroundColor: '#f8fafc',
+          }}
+        >
           Trình duyệt của bạn không hỗ trợ audio.
-        </audio>
+        </Box>
       </Box>
     )}
     {question.videoUrl && (
-      <Box sx={{ mb: 2 }}>
-        <video
+      <Box sx={{ mb: 3, display: 'flex', justifyContent: 'center' }}>
+        <Box
+          component="video"
           controls
           src={resolveUrl(question.videoUrl)}
-          style={{ width: '100%', maxWidth: '800px', borderRadius: '8px' }}
+          sx={{ 
+            width: '100%', 
+            maxWidth: '800px', 
+            borderRadius: 3,
+            boxShadow: '0 12px 32px rgba(0,0,0,0.15)',
+            overflow: 'hidden',
+            backgroundColor: '#000'
+          }}
         >
           Trình duyệt của bạn không hỗ trợ video.
-        </video>
+        </Box>
       </Box>
     )}
   </>
@@ -95,13 +122,30 @@ export const renderQuestionWordBank = (
   if (!question.wordBank || question.wordBank.length === 0) return null;
 
   return (
-    <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1, mb: 2 }}>
+    <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1.5, mb: 3, p: 2, bgcolor: '#f1f5f9', borderRadius: 3, border: '1px dashed #cbd5e1' }}>
       {question.wordBank.map((word) => (
         <Chip
           key={word}
           label={word}
           clickable={!!onWordClick}
           onClick={onWordClick ? () => onWordClick(word) : undefined}
+          color="primary"
+          variant={onWordClick ? "outlined" : "filled"}
+          sx={{
+            fontWeight: 600,
+            fontSize: '0.95rem',
+            py: 1,
+            px: 0.5,
+            transition: 'all 0.2s cubic-bezier(0.4, 0, 0.2, 1)',
+            backdropFilter: 'blur(8px)',
+            boxShadow: onWordClick ? '0 2px 4px rgba(25, 118, 210, 0.1)' : 'none',
+            '&:hover': onWordClick ? {
+              transform: 'translateY(-2px) scale(1.02)',
+              boxShadow: '0 6px 12px rgba(25, 118, 210, 0.2)',
+              backgroundColor: 'primary.main',
+              color: 'primary.contrastText'
+            } : {},
+          }}
         />
       ))}
     </Box>
@@ -120,46 +164,75 @@ export const renderSectionMedia = (section: Section) => {
   }
 
   return (
-    <Box sx={{ mb: 2 }}>
+    <Box sx={{ mb: 4 }}>
+      {section.imageUrl && (
+        <Box sx={{ mb: 3, display: 'flex', justifyContent: 'center' }}>
+          <Box
+            component="img"
+            src={resolveUrl(section.imageUrl)}
+            alt={section.title}
+            sx={{ maxWidth: '100%', maxHeight: '400px', borderRadius: 3, boxShadow: '0 8px 24px rgba(0,0,0,0.12)', objectFit: 'contain' }}
+          />
+        </Box>
+      )}
       {section.audioUrl && (
-        <Box sx={{ mb: 1 }}>
-          <audio controls src={resolveUrl(section.audioUrl)}>
+        <Box sx={{ mb: 3, display: 'flex' }}>
+          <Box
+            component="audio"
+            controls
+            src={resolveUrl(section.audioUrl)}
+            sx={{
+              width: '100%',
+              maxWidth: '500px',
+              height: '48px',
+              borderRadius: '24px',
+              boxShadow: '0 4px 12px rgba(0,0,0,0.08)',
+              backgroundColor: '#f8fafc',
+            }}
+          >
             Trình duyệt của bạn không hỗ trợ audio.
-          </audio>
+          </Box>
         </Box>
       )}
       {section.videoUrl && (
-        <Box sx={{ mb: 1 }}>
-          <video
+        <Box sx={{ mb: 3, display: 'flex', justifyContent: 'center' }}>
+          <Box
+            component="video"
             controls
             src={resolveUrl(section.videoUrl)}
-            style={{ width: '100%', maxWidth: '800px', borderRadius: '8px' }}
+            sx={{ width: '100%', maxWidth: '800px', borderRadius: 3, boxShadow: '0 12px 32px rgba(0,0,0,0.15)', overflow: 'hidden', backgroundColor: '#000' }}
           >
             Trình duyệt của bạn không hỗ trợ video.
-          </video>
+          </Box>
         </Box>
-      )}
-      {section.imageUrl && (
-        <Box
-          component="img"
-          src={resolveUrl(section.imageUrl)}
-          alt={section.title}
-          sx={{ maxWidth: '100%', borderRadius: 1 }}
-        />
       )}
       {section.passage && section.questionType !== 'paragraph-fill' && (
-        <Box
+        <Paper
+          elevation={0}
           sx={{
-            p: 1,
-            bgcolor: 'grey.50',
-            borderRadius: 1,
+            p: 4,
+            bgcolor: '#f8fafc',
+            borderRadius: 4,
             border: '1px solid',
-            borderColor: 'grey.300',
-            mb: 1,
+            borderColor: '#e2e8f0',
+            mb: 2,
+            boxShadow: 'inset 0 2px 4px rgba(0,10,20,0.02), 0 4px 12px rgba(0,0,0,0.02)',
+            transform: 'translateZ(0)',
           }}
         >
-          <Typography variant="body1">{parseHTML(section.passage)}</Typography>
-        </Box>
+          <Typography 
+            variant="body1" 
+            sx={{ 
+              lineHeight: 1.9, 
+              color: '#334155',
+              fontSize: '1.05rem',
+              letterSpacing: '0.01em',
+              '& p': { mb: 2, '&:last-child': { mb: 0 } }
+            }}
+          >
+            {parseHTML(section.passage)}
+          </Typography>
+        </Paper>
       )}
     </Box>
   );
@@ -170,9 +243,19 @@ export const renderSectionWordBank = (section: Section) => {
   if (!section.wordBank || section.wordBank.length === 0) return null;
 
   return (
-    <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1, mb: 2 }}>
+    <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1.5, mb: 3, p: 2.5, bgcolor: '#f8fafc', borderRadius: 3, border: '1px dashed #94a3b8' }}>
       {section.wordBank.map((word) => (
-        <Chip key={word} label={word} />
+        <Chip 
+          key={word} 
+          label={word} 
+          color="secondary"
+          variant="filled"
+          sx={{
+            fontWeight: 600,
+            fontSize: '0.95rem',
+            boxShadow: '0 2px 4px rgba(156, 39, 176, 0.15)',
+          }}
+        />
       ))}
     </Box>
   );
