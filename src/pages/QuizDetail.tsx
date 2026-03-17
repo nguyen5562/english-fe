@@ -320,7 +320,7 @@ export default function QuizDetail() {
           {renderQuestionWordBank(question)}
           <FormControl component="fieldset" fullWidth>
             <FormLabel component="legend">
-              <Box component="span" sx={{ '& p': { margin: 0 }, '& *': { display: 'inline' } }}>
+              <Box component="div" sx={{ '& p': { margin: 0 }, '& *': { display: 'inline' } }}>
                 {parseHTML(question.title)}
               </Box>
             </FormLabel>
@@ -435,7 +435,7 @@ export default function QuizDetail() {
                       <FormLabel
                         component="legend"
                       >
-                        <Box component="span" sx={{ '& p': { margin: 0 }, '& *': { display: 'inline' } }}>
+                        <Box component="div" sx={{ '& p': { margin: 0 }, '& *': { display: 'inline' } }}>
                           {parseHTML(question.title)}
                         </Box>
                       </FormLabel>
@@ -460,8 +460,10 @@ export default function QuizDetail() {
               : (() => (
                   <>
                     <Typography
+                      component="div"
                       variant="body1"
                       gutterBottom
+                      sx={{ mb: 1 }}
                     >
                       {parseHTML(question.title)}
                     </Typography>
@@ -489,8 +491,10 @@ export default function QuizDetail() {
             {renderQuestionMedia(question)}
             {renderQuestionWordBank(question)}
             <Typography
+              component="div"
               variant="body1"
               gutterBottom
+              sx={{ mb: 1 }}
             >
               {parseHTML(question.title)}
             </Typography>
@@ -642,8 +646,10 @@ export default function QuizDetail() {
             {renderQuestionMedia(question)}
             {renderQuestionWordBank(question)}
             <Typography
+              component="div"
               variant="body1"
               gutterBottom
+              sx={{ mb: 1 }}
             >
               {parseHTML(question.title)}
             </Typography>
@@ -668,8 +674,10 @@ export default function QuizDetail() {
             {renderQuestionMedia(question)}
             {renderQuestionWordBank(question)}
             <Typography
+              component="div"
               variant="body1"
               gutterBottom
+              sx={{ mb: 1 }}
             >
               {parseHTML(question.title)}
             </Typography>

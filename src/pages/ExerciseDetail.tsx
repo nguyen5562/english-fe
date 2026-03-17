@@ -669,7 +669,7 @@ export default function ExerciseDetail() {
           {renderQuestionWordBankWithHandler()}
           <FormControl component="fieldset" fullWidth>
             <FormLabel component="legend">
-              <Box component="span" sx={{ '& p': { margin: 0 }, '& *': { display: 'inline' } }}>
+              <Box component="div" sx={{ '& p': { margin: 0 }, '& *': { display: 'inline' } }}>
                 {parseHTML(question.title)}
               </Box>
             </FormLabel>
@@ -861,8 +861,10 @@ export default function ExerciseDetail() {
             {renderQuestionMedia(question)}
             {renderQuestionWordBankWithHandler()}
             <Typography
+              component="div"
               variant="body1"
               gutterBottom
+              sx={{ mb: 1 }}
             >
               {parseHTML(question.title)}
             </Typography>
@@ -905,8 +907,10 @@ export default function ExerciseDetail() {
             {renderQuestionMedia(question)}
             {renderQuestionWordBankWithHandler()}
             <Typography
+              component="div"
               variant="body1"
               gutterBottom
+              sx={{ mb: 1 }}
             >
               {parseHTML(question.title)}
             </Typography>
@@ -980,8 +984,10 @@ export default function ExerciseDetail() {
             {renderQuestionMedia(question)}
             {renderQuestionWordBankWithHandler()}
             <Typography
+              component="div"
               variant="body1"
               gutterBottom
+              sx={{ mb: 1 }}
             >
               {parseHTML(question.title)}
             </Typography>
@@ -1070,8 +1076,10 @@ export default function ExerciseDetail() {
             {renderQuestionMedia(question)}
             {renderQuestionWordBankWithHandler()}
             <Typography
+              component="div"
               variant="body1"
               gutterBottom
+              sx={{ mb: 1 }}
             >
               {parseHTML(question.title)}
             </Typography>
@@ -1094,8 +1102,10 @@ export default function ExerciseDetail() {
             {renderQuestionMedia(question)}
             {renderQuestionWordBankWithHandler()}
             <Typography
+              component="div"
               variant="body1"
               gutterBottom
+              sx={{ mb: 1 }}
             >
               {parseHTML(question.title)}
             </Typography>
@@ -1120,8 +1130,10 @@ export default function ExerciseDetail() {
             {renderQuestionMedia(question)}
             {renderQuestionWordBankWithHandler()}
             <Typography
+              component="div"
               variant="body1"
               gutterBottom
+              sx={{ mb: 1 }}
             >
               {parseHTML(question.title)}
             </Typography>
@@ -1218,8 +1230,10 @@ export default function ExerciseDetail() {
             {renderQuestionMedia(question)}
             {renderQuestionWordBankWithHandler()}
             <Typography
+              component="div"
               variant="body1"
               gutterBottom
+              sx={{ mb: 1 }}
             >
               {parseHTML(question.title)}
             </Typography>
@@ -1242,8 +1256,10 @@ export default function ExerciseDetail() {
             {renderQuestionMedia(question)}
             {renderQuestionWordBankWithHandler()}
             <Typography
+              component="div"
               variant="body1"
               gutterBottom
+              sx={{ mb: 1 }}
             >
               {parseHTML(question.title)}
             </Typography>

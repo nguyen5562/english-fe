@@ -11,8 +11,10 @@ import DOMPurify from 'dompurify';
 export function parseHTMLWithBlanks(html: string, renderBlank?: (index: number) => React.ReactNode): React.ReactNode {
   if (!html) return null;
 
+  // Replace non-breaking spaces with normal spaces to allow natural line wrapping
+  const normalizedHtml = html.replace(/&nbsp;/g, ' ').replace(/\u00A0/g, ' ');
   // Sanitize HTML to prevent XSS
-  const cleanHtml = DOMPurify.sanitize(html, {
+  const cleanHtml = DOMPurify.sanitize(normalizedHtml, {
     ALLOWED_TAGS: ['b', 'i', 'u', 'strong', 'em', 'p', 'br', 'ul', 'ol', 'li', 'span', 'div', 'h1', 'h2', 'h3', 'h4', 'h5', 'h6', 'blockquote', 'a'],
     ALLOWED_ATTR: ['href', 'target', 'style', 'class'],
   });
@@ -62,7 +64,8 @@ export function parseHTMLWithBlanks(html: string, renderBlank?: (index: number) 
  */
 export function parseHTML(html: string): React.ReactNode {
   if (!html) return null;
-  const cleanHtml = DOMPurify.sanitize(html, {
+  const normalizedHtml = html.replace(/&nbsp;/g, ' ').replace(/\u00A0/g, ' ');
+  const cleanHtml = DOMPurify.sanitize(normalizedHtml, {
     ALLOWED_TAGS: ['b', 'i', 'u', 'strong', 'em', 'p', 'br', 'ul', 'ol', 'li', 'span', 'div', 'h1', 'h2', 'h3', 'h4', 'h5', 'h6', 'blockquote', 'a'],
     ALLOWED_ATTR: ['href', 'target', 'style', 'class'],
   });

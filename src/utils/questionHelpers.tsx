@@ -218,10 +218,12 @@ export const renderSectionMedia = (section: Section) => {
             mb: 2,
             boxShadow: 'inset 0 2px 4px rgba(0,10,20,0.02), 0 4px 12px rgba(0,0,0,0.02)',
             transform: 'translateZ(0)',
+            overflowX: 'auto',
           }}
         >
           <Typography 
-            variant="body1" 
+            variant="body1"
+            component="div"
             sx={{ 
               lineHeight: 1.9, 
               color: '#334155',
@@ -308,7 +310,7 @@ export const renderMultipleChoice = (
   return (
     <FormControl component="fieldset" fullWidth>
       <FormLabel component="legend">
-        <Box component="span" sx={{ '& p': { margin: 0 }, '& *': { display: 'inline' } }}>
+        <Box component="div" sx={{ '& p': { margin: 0 }, '& *': { display: 'inline' } }}>
           {parseHTML(question.title)}
         </Box>
       </FormLabel>
@@ -391,7 +393,7 @@ export const renderTextInput = (
   },
 ) => (
   <>
-    <Typography variant="body1" gutterBottom>
+    <Typography component="div" variant="body1" gutterBottom sx={{ mb: 1 }}>
       {parseHTML(question.title)}
     </Typography>
     <TextField
