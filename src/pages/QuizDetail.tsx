@@ -524,10 +524,7 @@ export default function QuizDetail() {
             {renderQuestionWordBank(question)}
             <Box
               sx={{
-                display: 'flex',
-                flexWrap: 'wrap',
-                alignItems: 'center',
-                gap: 1,
+                lineHeight: 2.2,
               }}
             >
               {parseHTMLWithBlanks(question.title, (blankIndex) => (
@@ -585,10 +582,7 @@ export default function QuizDetail() {
             {renderQuestionWordBank(question)}
             <Box
               sx={{
-                display: 'flex',
-                flexWrap: 'wrap',
-                alignItems: 'center',
-                gap: 1,
+                lineHeight: 2.2,
               }}
             >
               {parseHTMLWithBlanks(question.title, (blankIndex) => {

@@ -796,10 +796,7 @@ export default function ExerciseDetail() {
             {renderQuestionWordBankWithHandler()}
             <Box
               sx={{
-                display: 'flex',
-                flexWrap: 'wrap',
-                alignItems: 'center',
-                gap: 1,
+                lineHeight: 2.2,
               }}
             >
               {parseHTMLWithBlanks(question.title, (blankIndex) => {
@@ -1165,11 +1162,8 @@ export default function ExerciseDetail() {
             {renderQuestionWordBankWithHandler()}
             <Box
               sx={{
-                display: 'flex',
-                flexWrap: 'wrap',
-                alignItems: 'center',
-                gap: 1,
                 mb: 2,
+                lineHeight: 2.2,
               }}
             >
               {parseHTMLWithBlanks(question.title, (blankIndex) => (
