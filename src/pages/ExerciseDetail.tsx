@@ -27,6 +27,7 @@ import {
 import {
   ArrowBack as ArrowBackIcon,
   CheckCircle as CheckCircleIcon,
+  Cancel as CancelIcon,
 } from '@mui/icons-material';
 import axios from 'axios';
 import { exerciseService } from '../services/exercise.service';
@@ -509,10 +510,21 @@ export default function ExerciseDetail() {
         : userAnswer != null
           ? [String(userAnswer)]
           : [];
-      const correct =
-        userArr.length === correctAnswer.length &&
-        JSON.stringify([...userArr].sort()) ===
-          JSON.stringify([...correctAnswer].sort());
+
+      const qType = (question as any).type || section.questionType;
+      const orderMatters = [
+        'fill-blank',
+        'dropdown-choice',
+        'listening',
+        'paragraph-fill',
+        'fill-sentence',
+      ].includes(qType);
+
+      const correct = orderMatters
+        ? JSON.stringify(userArr) === JSON.stringify(correctAnswer)
+        : userArr.length === correctAnswer.length &&
+          JSON.stringify([...userArr].sort()) ===
+            JSON.stringify([...correctAnswer].sort());
       results[question._id] = { graded: true, correct, correctAnswer };
     });
 
@@ -830,6 +842,55 @@ export default function ExerciseDetail() {
                       }}
                       displayEmpty
                       disabled={viewingSaved}
+                      sx={{
+                        '& .MuiOutlinedInput-notchedOutline': {
+                          borderColor:
+                            viewingSaved && checkedResults[question._id]?.graded
+                              ? answerArray[blankIndex] ===
+                                (
+                                  checkedResults[question._id]
+                                    .correctAnswer as string[]
+                                )?.[blankIndex]
+                                ? 'success.main'
+                                : 'error.main'
+                              : undefined,
+                          borderWidth:
+                            viewingSaved && checkedResults[question._id]?.graded
+                              ? '2px'
+                              : undefined,
+                        },
+                        bgcolor:
+                          viewingSaved && checkedResults[question._id]?.graded
+                            ? answerArray[blankIndex] ===
+                              (
+                                checkedResults[question._id]
+                                  .correctAnswer as string[]
+                              )?.[blankIndex]
+                              ? 'rgba(56, 142, 60, 0.08)'
+                              : 'rgba(211, 47, 47, 0.08)'
+                            : undefined,
+                        '& .MuiSelect-select': {
+                          display: 'flex',
+                          alignItems: 'center',
+                          gap: 1,
+                        },
+                      }}
+                      renderValue={(v) => (
+                        <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
+                          {v || <em>Select...</em>}
+                          {viewingSaved && checkedResults[question._id]?.graded && (
+                            answerArray[blankIndex] ===
+                            (
+                              checkedResults[question._id]
+                                .correctAnswer as string[]
+                            )?.[blankIndex] ? (
+                              <CheckCircleIcon color="success" sx={{ fontSize: 16 }} />
+                            ) : (
+                              <CancelIcon color="error" sx={{ fontSize: 16 }} />
+                            )
+                          )}
+                        </Box>
+                      )}
                     >
                       <MenuItem value="" disabled>
                         <em></em>
@@ -1179,9 +1240,66 @@ export default function ExerciseDetail() {
                       [question._id]: newArray,
                     }));
                   }}
-                  sx={{ width: 100 }}
+                  sx={{
+                    width: 100,
+                    '& .MuiOutlinedInput-root': {
+                      bgcolor:
+                        viewingSaved && checkedResults[question._id]?.graded
+                          ? answerArray[blankIndex] ===
+                            (
+                              checkedResults[question._id]
+                                .correctAnswer as string[]
+                            )?.[blankIndex]
+                            ? 'rgba(56, 142, 60, 0.08)'
+                            : 'rgba(211, 47, 47, 0.08)'
+                          : 'transparent',
+                      '& fieldset': {
+                        borderColor:
+                          viewingSaved && checkedResults[question._id]?.graded
+                            ? answerArray[blankIndex] ===
+                              (
+                                checkedResults[question._id]
+                                  .correctAnswer as string[]
+                              )?.[blankIndex]
+                              ? 'success.main'
+                              : 'error.main'
+                            : undefined,
+                        borderWidth:
+                          viewingSaved && checkedResults[question._id]?.graded
+                            ? '2px'
+                            : undefined,
+                      },
+                    },
+                  }}
+                  InputProps={{
+                    endAdornment: viewingSaved && checkedResults[question._id]?.graded ? (
+                      answerArray[blankIndex] ===
+                      (
+                        checkedResults[question._id].correctAnswer as string[]
+                      )?.[blankIndex] ? (
+                        <CheckCircleIcon color="success" sx={{ fontSize: 18, mr: -0.5 }} />
+                      ) : (
+                        <CancelIcon color="error" sx={{ fontSize: 18, mr: -0.5 }} />
+                      )
+                    ) : null,
+                  }}
                   placeholder="..."
                   disabled={viewingSaved}
+                  title={
+                    viewingSaved &&
+                    checkedResults[question._id]?.graded &&
+                    answerArray[blankIndex] !==
+                      (
+                        checkedResults[question._id].correctAnswer as string[]
+                      )?.[blankIndex]
+                      ? `Correct: ${
+                          (
+                            checkedResults[question._id]
+                              .correctAnswer as string[]
+                          )?.[blankIndex]
+                        }`
+                      : ''
+                  }
                 />
               ))}
             </Box>
@@ -1206,8 +1324,47 @@ export default function ExerciseDetail() {
               variant="outlined"
               value={value}
               onChange={(e) => handleAnswerChange(question._id, e.target.value)}
+              InputProps={{
+                endAdornment:
+                  viewingSaved && checkedResults[question._id]?.graded ? (
+                    checkedResults[question._id].correct ? (
+                      <CheckCircleIcon color="success" sx={{ fontSize: 18, mr: -0.5 }} />
+                    ) : (
+                      <CancelIcon color="error" sx={{ fontSize: 18, mr: -0.5 }} />
+                    )
+                  ) : null,
+              }}
               placeholder="Enter the word to fill in"
               disabled={viewingSaved}
+              sx={{
+                '& .MuiOutlinedInput-root': {
+                  bgcolor:
+                    viewingSaved && checkedResults[question._id]?.graded
+                      ? checkedResults[question._id].correct
+                        ? 'rgba(56, 142, 60, 0.08)'
+                        : 'rgba(211, 47, 47, 0.08)'
+                      : 'transparent',
+                  '& fieldset': {
+                    borderColor:
+                      viewingSaved && checkedResults[question._id]?.graded
+                        ? checkedResults[question._id].correct
+                          ? 'success.main'
+                          : 'error.main'
+                        : undefined,
+                    borderWidth:
+                      viewingSaved && checkedResults[question._id]?.graded
+                        ? '2px'
+                        : undefined,
+                  },
+                },
+              }}
+              title={
+                viewingSaved &&
+                checkedResults[question._id]?.graded &&
+                !checkedResults[question._id].correct
+                  ? `Correct: ${checkedResults[question._id].correctAnswer}`
+                  : ''
+              }
             />
           </Box>
         );
@@ -1361,6 +1518,10 @@ export default function ExerciseDetail() {
                 {parseHTMLWithBlanks(currentSection.passage, (blankIndex) => {
                   const q = currentSection.questions[blankIndex];
                   if (!q) return null;
+                  const result = checkedResults[q._id];
+                  const isCorrect = result?.graded && result.correct;
+                  const isWrong = result?.graded && !result.correct;
+
                   return (
                     <TextField
                       key={`${q._id}-${retryKey}`}
@@ -1369,9 +1530,39 @@ export default function ExerciseDetail() {
                       onChange={(e) =>
                         handleAnswerChange(q._id, e.target.value)
                       }
-                      sx={{ width: 120, '& input': { py: 0.5 } }}
+                      sx={{
+                        width: 120,
+                        '& input': { py: 0.5 },
+                        '& .MuiOutlinedInput-root': {
+                          bgcolor: isCorrect
+                            ? 'rgba(56, 142, 60, 0.08)'
+                            : isWrong
+                              ? 'rgba(211, 47, 47, 0.08)'
+                              : 'transparent',
+                          '& fieldset': {
+                            borderColor: isCorrect
+                              ? 'success.main'
+                              : isWrong
+                                ? 'error.main'
+                                : undefined,
+                            borderWidth: isCorrect || isWrong ? '2px' : '1px',
+                          },
+                        },
+                      }}
+                      InputProps={{
+                        endAdornment: isCorrect ? (
+                          <CheckCircleIcon color="success" sx={{ fontSize: 18, mr: -0.5 }} />
+                        ) : isWrong ? (
+                          <CancelIcon color="error" sx={{ fontSize: 18, mr: -0.5 }} />
+                        ) : null,
+                      }}
                       placeholder="..."
                       disabled={viewingSaved}
+                      title={
+                        isWrong
+                          ? `Correct: ${result.correctAnswer}`
+                          : ''
+                      }
                     />
                   );
                 })}
@@ -1412,23 +1603,57 @@ export default function ExerciseDetail() {
                       {renderQuestion(question, currentSection.questionType)}
 
                       {result && (
-                        <Box sx={{ mt: 1 }}>
+                        <Box sx={{ mt: 1, pt: 1, borderTop: result.graded ? '1px dashed' : 'none', borderColor: 'divider' }}>
                           {result.graded ? (
-                            result.correct ? (
+                            <>
                               <Typography
                                 variant="body2"
-                                sx={{ color: 'success.main' }}
+                                sx={{
+                                  fontWeight: 'bold',
+                                  color: result.correct ? 'success.main' : 'error.main',
+                                  display: 'flex',
+                                  alignItems: 'center',
+                                  gap: 0.5,
+                                }}
                               >
-                                Correct
+                                {result.correct ? <CheckCircleIcon fontSize="small" /> : <CancelIcon fontSize="small" />}
+                                {result.correct ? 'Correct' : 'Incorrect'}
                               </Typography>
-                            ) : (
-                              <Typography
-                                variant="body2"
-                                sx={{ color: 'error.main' }}
-                              >
-                                Wrong
-                              </Typography>
-                            )
+                              {!result.correct && (
+                                <Box sx={{ mt: 1 }}>
+                                  <Typography
+                                    variant="caption"
+                                    color="text.secondary"
+                                    sx={{ fontWeight: 'bold', textTransform: 'uppercase' }}
+                                  >
+                                    Correct answer:
+                                  </Typography>
+                                  {currentSection.questionType === 'picture-choice' || (question as any).type === 'picture-choice' ? (
+                                    <Box sx={{ display: 'flex', gap: 1, mt: 0.5 }}>
+                                      {(result.correctAnswer as string[] || []).map((url, i) => (
+                                        <Box
+                                          key={i}
+                                          component="img"
+                                          src={resolveUrl(url)}
+                                          alt={`Correct ${i + 1}`}
+                                          sx={{
+                                            width: 100,
+                                            height: 80,
+                                            objectFit: 'cover',
+                                            borderRadius: 1,
+                                            border: '1px solid #ddd',
+                                          }}
+                                        />
+                                      ))}
+                                    </Box>
+                                  ) : (
+                                    <Typography variant="body2" sx={{ color: 'text.primary', mt: 0.5 }}>
+                                      {(Array.isArray(result.correctAnswer) ? result.correctAnswer : [result.correctAnswer]).join('; ')}
+                                    </Typography>
+                                  )}
+                                </Box>
+                              )}
+                            </>
                           ) : (
                             <Typography variant="body2" color="text.secondary">
                               Saved

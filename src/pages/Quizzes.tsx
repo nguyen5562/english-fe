@@ -20,6 +20,7 @@ import {
   AccessTime as AccessTimeIcon,
   PlayArrow as PlayArrowIcon,
   CheckCircle as CheckCircleIcon,
+  Visibility as VisibilityIcon,
 } from '@mui/icons-material';
 import axios from 'axios';
 import { quizService } from '../services/quiz.service';
@@ -338,7 +339,7 @@ export default function Quizzes() {
 
                     <Button
                       variant="contained"
-                      startIcon={<PlayArrowIcon />}
+                      startIcon={attempt ? <VisibilityIcon /> : <PlayArrowIcon />}
                       fullWidth
                       onClick={() => navigate(`/quizzes/${quiz._id}`)}
                       // disabled={attempt != null}
@@ -355,7 +356,7 @@ export default function Quizzes() {
                         },
                       }}
                     >
-                      {attempt ? 'Reattempt' : 'Start'}
+                      {attempt ? 'View results' : 'Start'}
                     </Button>
                   </Box>
                 </Card>

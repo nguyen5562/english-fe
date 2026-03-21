@@ -29,6 +29,7 @@ import {
 import {
   ArrowBack as ArrowBackIcon,
   CheckCircle as CheckCircleIcon,
+  Cancel as CancelIcon,
   Timer as TimerIcon,
 } from '@mui/icons-material';
 import axios from 'axios';
@@ -536,9 +537,57 @@ export default function QuizDetail() {
                     next[blankIndex] = e.target.value;
                     handleAnswerChange(question._id, next);
                   }}
-                  sx={{ width: 100 }}
+                  sx={{
+                    width: 100,
+                    '& .MuiOutlinedInput-root': {
+                      bgcolor:
+                        showResult && (question.correctAnswer?.length ?? 0) > 0
+                          ? answerArray[blankIndex] ===
+                            (question.correctAnswer as string[])?.[blankIndex]
+                            ? 'rgba(56, 142, 60, 0.08)'
+                            : 'rgba(211, 47, 47, 0.08)'
+                          : 'transparent',
+                      '& fieldset': {
+                        borderColor:
+                          showResult && (question.correctAnswer?.length ?? 0) > 0
+                            ? answerArray[blankIndex] ===
+                              (question.correctAnswer as string[])?.[blankIndex]
+                              ? 'success.main'
+                              : 'error.main'
+                            : undefined,
+                        borderWidth: showResult ? '2px' : '1px',
+                      },
+                    },
+                  }}
+                  InputProps={{
+                    endAdornment:
+                      showResult && (question.correctAnswer?.length ?? 0) > 0 ? (
+                        answerArray[blankIndex] ===
+                        (question.correctAnswer as string[])?.[blankIndex] ? (
+                          <CheckCircleIcon
+                            color="success"
+                            sx={{ fontSize: 18, mr: -0.5 }}
+                          />
+                        ) : (
+                          <CancelIcon
+                            color="error"
+                            sx={{ fontSize: 18, mr: -0.5 }}
+                          />
+                        )
+                      ) : null,
+                  }}
                   placeholder="..."
                   disabled={disabled}
+                  title={
+                    showResult &&
+                    (question.correctAnswer?.length ?? 0) > 0 &&
+                    answerArray[blankIndex] !==
+                      (question.correctAnswer as string[])?.[blankIndex]
+                      ? `Correct: ${
+                          (question.correctAnswer as string[])?.[blankIndex]
+                        }`
+                      : ''
+                  }
                 />
               ))}
             </Box>
@@ -559,8 +608,47 @@ export default function QuizDetail() {
               size="small"
               value={value}
               onChange={(e) => handleAnswerChange(question._id, e.target.value)}
+              InputProps={{
+                endAdornment:
+                  showResult && (question.correctAnswer?.length ?? 0) > 0 ? (
+                    value === (question.correctAnswer as string[])?.[0] ? (
+                      <CheckCircleIcon
+                        color="success"
+                        sx={{ fontSize: 18, mr: -0.5 }}
+                      />
+                    ) : (
+                      <CancelIcon color="error" sx={{ fontSize: 18, mr: -0.5 }} />
+                    )
+                  ) : null,
+              }}
               placeholder="Enter the word to fill in the blank"
               disabled={disabled}
+              sx={{
+                '& .MuiOutlinedInput-root': {
+                  bgcolor:
+                    showResult && (question.correctAnswer?.length ?? 0) > 0
+                      ? value === (question.correctAnswer as string[])?.[0]
+                        ? 'rgba(56, 142, 60, 0.08)'
+                        : 'rgba(211, 47, 47, 0.08)'
+                      : 'transparent',
+                  '& fieldset': {
+                    borderColor:
+                      showResult && (question.correctAnswer?.length ?? 0) > 0
+                        ? value === (question.correctAnswer as string[])?.[0]
+                          ? 'success.main'
+                          : 'error.main'
+                        : undefined,
+                    borderWidth: showResult ? '2px' : '1px',
+                  },
+                },
+              }}
+              title={
+                showResult &&
+                (question.correctAnswer?.length ?? 0) > 0 &&
+                value !== (question.correctAnswer as string[])?.[0]
+                  ? `Correct: ${(question.correctAnswer as string[])?.[0]}`
+                  : ''
+              }
             />
           </Box>
         );
@@ -615,6 +703,52 @@ export default function QuizDetail() {
                       }}
                       displayEmpty
                       disabled={disabled}
+                      sx={{
+                        '& .MuiOutlinedInput-notchedOutline': {
+                          borderColor:
+                            showResult && (question.correctAnswer?.length ?? 0) > 0
+                              ? answerArray[blankIndex] ===
+                                (
+                                  question.correctAnswer as string[]
+                                )?.[blankIndex]
+                                ? 'success.main'
+                                : 'error.main'
+                              : undefined,
+                          borderWidth: showResult ? '2px' : '1px',
+                        },
+                        bgcolor:
+                          showResult && (question.correctAnswer?.length ?? 0) > 0
+                            ? answerArray[blankIndex] ===
+                              (
+                                question.correctAnswer as string[]
+                              )?.[blankIndex]
+                              ? 'rgba(56, 142, 60, 0.08)'
+                              : 'rgba(211, 47, 47, 0.08)'
+                            : 'transparent',
+                        '& .MuiSelect-select': {
+                          display: 'flex',
+                          alignItems: 'center',
+                          gap: 1,
+                        },
+                      }}
+                      renderValue={(v) => (
+                        <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
+                          {v || <em>Select...</em>}
+                          {showResult &&
+                            (question.correctAnswer?.length ?? 0) > 0 &&
+                            (answerArray[blankIndex] ===
+                            (
+                              question.correctAnswer as string[]
+                            )?.[blankIndex] ? (
+                              <CheckCircleIcon
+                                color="success"
+                                sx={{ fontSize: 16 }}
+                              />
+                            ) : (
+                              <CancelIcon color="error" sx={{ fontSize: 16 }} />
+                            ))}
+                        </Box>
+                      )}
                     >
                       <MenuItem value="" disabled>
                         <em></em>
@@ -721,6 +855,21 @@ export default function QuizDetail() {
         : val != null && val !== ''
           ? [String(val)]
           : [];
+
+      const qType =
+        (question as Question & { type?: QuestionType }).type ??
+        section.questionType;
+      const orderMatters = [
+        'fill-blank',
+        'dropdown-choice',
+        'listening',
+        'paragraph-fill',
+        'fill-sentence',
+      ].includes(qType || '');
+
+      if (orderMatters) {
+        return JSON.stringify(userArr) === JSON.stringify(correctArr);
+      }
 
       // Sort both arrays for checking set equality (ignoring order)
       const sortedUser = [...userArr].sort();
@@ -974,6 +1123,72 @@ export default function QuizDetail() {
                     showResult={showResult}
                     disabled={showResult || submitting}
                   />
+                ) : currentSection.questionType === 'paragraph-fill' &&
+                  currentSection.passage ? (
+                  <Box
+                    sx={{
+                      p: 2,
+                      bgcolor: 'grey.50',
+                      borderRadius: 1,
+                      border: '1px solid',
+                      borderColor: 'grey.300',
+                      mb: 2,
+                      lineHeight: 2.2,
+                    }}
+                  >
+                    {parseHTMLWithBlanks(currentSection.passage, (blankIndex) => {
+                      const q = currentSection.questions![blankIndex];
+                      if (!q) return null;
+                      
+                      const answerArray = answers[q._id];
+                      const val = Array.isArray(answerArray) ? answerArray[0] : (answerArray ?? '') as string;
+                      const correctArr = q.correctAnswer || [];
+                      const isCorrect = showResult && correctArr.length > 0 && val === correctArr[0];
+                      const isWrong = showResult && correctArr.length > 0 && val !== correctArr[0];
+
+                      return (
+                        <TextField
+                          key={q._id}
+                          size="small"
+                          value={val}
+                          onChange={(e) => handleAnswerChange(q._id, e.target.value)}
+                          sx={{
+                            width: 120,
+                            '& input': { py: 0.5 },
+                            '& .MuiOutlinedInput-root': {
+                              bgcolor: isCorrect
+                                ? 'rgba(56, 142, 60, 0.08)'
+                                : isWrong
+                                  ? 'rgba(211, 47, 47, 0.08)'
+                                  : 'transparent',
+                              '& fieldset': {
+                                borderColor: isCorrect
+                                  ? 'success.main'
+                                  : isWrong
+                                    ? 'error.main'
+                                    : undefined,
+                                borderWidth: isCorrect || isWrong ? '2px' : '1px',
+                              },
+                            },
+                          }}
+                          InputProps={{
+                            endAdornment: isCorrect ? (
+                              <CheckCircleIcon color="success" sx={{ fontSize: 18, mr: -0.5 }} />
+                            ) : isWrong ? (
+                              <CancelIcon color="error" sx={{ fontSize: 18, mr: -0.5 }} />
+                            ) : null,
+                          }}
+                          placeholder="..."
+                          disabled={showResult || submitting}
+                          title={
+                            isWrong
+                              ? `Correct: ${correctArr.join(' / ')}`
+                              : ''
+                          }
+                        />
+                      );
+                    })}
+                  </Box>
                 ) : (
                   (currentSection.questions ?? []).map((question, index) =>
                     renderQuestion(question, currentSection, index),
