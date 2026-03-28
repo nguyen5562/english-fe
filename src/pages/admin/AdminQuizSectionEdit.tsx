@@ -71,6 +71,7 @@ const SECTION_NEED_PASSAGE: QuestionType[] = [
   'reading-mcq',
   'paragraph-fill',
   'fill-blank',
+  'word-order'
 ];
 const SECTION_NEED_WORD_BANK: QuestionType[] = ['word-bank', 'paragraph-fill'];
 const SECTION_NEED_CATEGORIES: QuestionType[] = ['drag-classify'];
