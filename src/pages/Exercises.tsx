@@ -28,14 +28,16 @@ import axios from 'axios';
 import { useAuthStore } from '../store/auth.store';
 import { exerciseService } from '../services/exercise.service';
 import { courseService } from '../services/course.service';
+import { unitService } from '../services/unit.service';
 import { exerciseAttemptService } from '../services/exercise-attempt.service';
 import { toast } from '../utils/toast';
 
-import type { Exercise, Course, ExerciseAttempt } from '../types';
+import type { Exercise, Course, ExerciseAttempt, Unit } from '../types';
 
 export default function Exercises() {
   const [exercises, setExercises] = useState<Exercise[]>([]);
   const [courses, setCourses] = useState<Course[]>([]);
+  const [units, setUnits] = useState<Unit[]>([]);
   const [exerciseAttempts, setExerciseAttempts] = useState<ExerciseAttempt[]>(
     [],
   );
@@ -48,12 +50,14 @@ export default function Exercises() {
     const fetchData = async () => {
       try {
         setLoading(true);
-        const [exercisesData, coursesData] = await Promise.all([
+        const [exercisesData, coursesData, unitsData] = await Promise.all([
           exerciseService.getAllExercise(),
           courseService.getAllCourse(),
+          unitService.getAllUnits(),
         ]);
         setExercises(exercisesData);
         setCourses(coursesData);
+        setUnits(unitsData);
 
         // Fetch exercise attempts if user is logged in
         if (user?._id) {
@@ -189,10 +193,30 @@ export default function Exercises() {
             </Typography>
           </CardContent>
         </Card>
-      ) : (
-        <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
-          {filteredExercises.map((exercise) => {
-            const sectionAttemptInfo = (exercise.sections ?? []).map(
+      ) : (() => {
+        const grouped = filteredExercises.reduce((acc, ex) => {
+          const uid = ex.unitId || 'unassigned';
+          if (!acc[uid]) acc[uid] = [];
+          acc[uid].push(ex);
+          return acc;
+        }, {} as Record<string, Exercise[]>);
+
+        const validUnits = units.filter(u => grouped[u._id]).sort((a,b) => (a.order || 0) - (b.order || 0));
+        const orderKeys = [...validUnits.map(u => u._id)];
+        if (grouped['unassigned']) orderKeys.push('unassigned');
+
+        return (
+          <Box sx={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
+            {orderKeys.map((unitId) => {
+              const unitInfo = units.find(u => u._id === unitId);
+              const unitExercises = grouped[unitId];
+              return (
+                <Box key={unitId} sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+                  <Typography variant="h6" sx={{ fontWeight: 700, color: 'primary.main', borderBottom: '2px solid', borderColor: '#e0e0e0', pb: 1, mt: 1 }}>
+                    {unitInfo ? unitInfo.title : 'General Exercises (Unassigned)'}
+                  </Typography>
+                  {unitExercises.map((exercise) => {
+                    const sectionAttemptInfo = (exercise.sections ?? []).map(
               (section) => getLastAttemptForSection(exercise._id, section._id),
             );
 
@@ -486,8 +510,12 @@ export default function Exercises() {
               </Accordion>
             );
           })}
+                </Box>
+              );
+            })}
         </Box>
-      )}
+        );
+      })()}
     </Box>
   );
 }

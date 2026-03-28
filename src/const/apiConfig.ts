@@ -17,4 +17,5 @@ export const API_ROUTES = {
   QUIZ_ATTEMPT: '/quiz-attempt',
   FILE_MANAGER: '/file-manager',
   RESOURCES: '/resources',
+  UNIT: '/unit',
 };

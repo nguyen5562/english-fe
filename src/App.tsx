@@ -18,6 +18,7 @@ import StudentAttemptDetail from './pages/StudentAttemptDetail';
 import AdminLayout from './components/Layout/AdminLayout';
 import AdminDashboard from './pages/admin/AdminDashboard';
 import AdminContent from './pages/admin/AdminContent';
+import AdminUnits from './pages/admin/AdminUnits';
 import AdminExercises from './pages/admin/AdminExercises';
 import AdminExerciseEdit from './pages/admin/AdminExerciseEdit';
 import AdminSectionEdit from './pages/admin/AdminSectionEdit';
@@ -94,6 +95,7 @@ function App() {
           >
             <Route index element={<AdminDashboard />} />
             <Route path="content" element={<AdminContent />} />
+            <Route path="units" element={<AdminUnits />} />
             <Route path="exercises" element={<AdminExercises />} />
             <Route path="exercises/:id" element={<AdminExerciseEdit />} />
             <Route

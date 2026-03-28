@@ -83,10 +83,20 @@ export type Section = {
   questions: Question[];
 };
 
+// Unit
+export type Unit = {
+  _id: string;
+  courseId: string;
+  title: string;
+  description: string | null;
+  order: number;
+};
+
 // Exercise
 export type Exercise = {
   _id: string;
   courseId: string;
+  unitId?: string;
   title: string;
   description: string | null;
   sections: Section[];

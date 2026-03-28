@@ -36,6 +36,16 @@ export type UpdateLessonDto = Partial<
   Omit<Lesson, '_id' | 'slides' | 'videos' | 'references'>
 >;
 
+// Unit
+export type CreateUnitDto = {
+  courseId: string;
+  title: string;
+  description?: string;
+  order?: number;
+};
+
+export type UpdateUnitDto = Partial<CreateUnitDto>;
+
 // Exercise
 export type CreateExerciseDto = Omit<Exercise, '_id' | 'sections'>;
 

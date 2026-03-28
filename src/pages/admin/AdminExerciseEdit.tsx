@@ -32,9 +32,10 @@ import {
 import axios from 'axios';
 import { exerciseService } from '../../services/exercise.service';
 import { courseService } from '../../services/course.service';
+import { unitService } from '../../services/unit.service';
 import { useConfirm } from '../../components/ConfirmDialog';
 import { toast } from '../../utils/toast';
-import type { Exercise, Course } from '../../types';
+import type { Exercise, Course, Unit } from '../../types';
 
 export default function AdminExerciseEdit() {
   const { id } = useParams<{ id: string }>();
@@ -42,6 +43,7 @@ export default function AdminExerciseEdit() {
   const { confirm, ConfirmDialog } = useConfirm();
   const [exercise, setExercise] = useState<Exercise | null>(null);
   const [courses, setCourses] = useState<Course[]>([]);
+  const [units, setUnits] = useState<Unit[]>([]);
   const [loading, setLoading] = useState(true);
   const [deleting, setDeleting] = useState(false);
   const [editDialogOpen, setEditDialogOpen] = useState(false);
@@ -49,6 +51,7 @@ export default function AdminExerciseEdit() {
     title: '',
     description: '',
     courseId: '',
+    unitId: '',
   });
   const [saving, setSaving] = useState(false);
 
@@ -59,15 +62,18 @@ export default function AdminExerciseEdit() {
     Promise.all([
       exerciseService.getExerciseById(id),
       courseService.getAllCourse(),
+      unitService.getAllUnits(),
     ])
-      .then(([exData, coData]) => {
+      .then(([exData, coData, unData]) => {
         if (!cancelled) {
           setExercise(exData);
           setCourses(coData);
+          setUnits(unData);
           setEditData({
             title: exData.title,
             description: exData.description || '',
             courseId: exData.courseId,
+            unitId: exData.unitId || '',
           });
         }
       })
@@ -121,7 +127,10 @@ export default function AdminExerciseEdit() {
     if (!id || !exercise) return;
     try {
       setSaving(true);
-      const updated = await exerciseService.updateExercise(id, editData);
+      const updated = await exerciseService.updateExercise(id, {
+        ...editData,
+        unitId: editData.unitId || undefined,
+      });
       setExercise(updated);
       setEditDialogOpen(false);
       toast.success('Updated exercise information successfully');
@@ -321,12 +330,29 @@ export default function AdminExerciseEdit() {
                 value={editData.courseId}
                 label="Course"
                 onChange={(e) =>
-                  setEditData({ ...editData, courseId: e.target.value })
+                  setEditData({ ...editData, courseId: e.target.value, unitId: '' })
                 }
               >
                 {courses.map((c) => (
                   <MenuItem key={c._id} value={c._id}>
                     {c.name}
+                  </MenuItem>
+                ))}
+              </Select>
+            </FormControl>
+            <FormControl fullWidth>
+              <InputLabel>Unit (Optional)</InputLabel>
+              <Select
+                value={editData.unitId}
+                label="Unit (Optional)"
+                onChange={(e) =>
+                  setEditData({ ...editData, unitId: e.target.value })
+                }
+              >
+                <MenuItem value="">-- No Unit --</MenuItem>
+                {units.filter(u => u.courseId === editData.courseId).map((u) => (
+                  <MenuItem key={u._id} value={u._id}>
+                    {u.title}
                   </MenuItem>
                 ))}
               </Select>

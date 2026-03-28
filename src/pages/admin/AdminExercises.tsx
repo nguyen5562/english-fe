@@ -29,10 +29,11 @@ import {
 import axios from 'axios';
 import { exerciseService } from '../../services/exercise.service';
 import { courseService } from '../../services/course.service';
+import { unitService } from '../../services/unit.service';
 import { useConfirm } from '../../components/ConfirmDialog';
 import { toast } from '../../utils/toast';
 
-import type { Exercise, Course } from '../../types';
+import type { Exercise, Course, Unit } from '../../types';
 import type { CreateExerciseDto } from '../../types/dto';
 
 export default function AdminExercises() {
@@ -40,16 +41,19 @@ export default function AdminExercises() {
   const { confirm, ConfirmDialog } = useConfirm();
   const [exercises, setExercises] = useState<Exercise[]>([]);
   const [courses, setCourses] = useState<Course[]>([]);
+  const [units, setUnits] = useState<Unit[]>([]);
   const [loading, setLoading] = useState(false);
   const [openAddExercise, setOpenAddExercise] = useState(false);
   const [saving, setSaving] = useState(false);
 
   const [addForm, setAddForm] = useState<{
     courseId: string;
+    unitId: string;
     title: string;
     description: string;
   }>({
     courseId: '',
+    unitId: '',
     title: '',
     description: '',
   });
@@ -57,12 +61,14 @@ export default function AdminExercises() {
   const fetchData = async () => {
     try {
       setLoading(true);
-      const [exData, coData] = await Promise.all([
+      const [exData, coData, unData] = await Promise.all([
         exerciseService.getAllExercise(),
         courseService.getAllCourse(),
+        unitService.getAllUnits(),
       ]);
       setExercises(exData);
       setCourses(coData);
+      setUnits(unData);
     } catch (e: unknown) {
       if (axios.isAxiosError(e)) {
         const msg =
@@ -108,7 +114,7 @@ export default function AdminExercises() {
   };
 
   const handleAddExercise = () => {
-    setAddForm({ courseId: courses[0]?._id ?? '', title: '', description: '' });
+    setAddForm({ courseId: courses[0]?._id ?? '', unitId: '', title: '', description: '' });
     setOpenAddExercise(true);
   };
 
@@ -121,6 +127,7 @@ export default function AdminExercises() {
       setSaving(true);
       const dto: CreateExerciseDto = {
         courseId: addForm.courseId,
+        unitId: addForm.unitId || undefined,
         title: addForm.title.trim(),
         description: addForm.description.trim() || null,
       };
@@ -147,6 +154,8 @@ export default function AdminExercises() {
   const handleEdit = (exercise: Exercise) => {
     navigate(`/admin/exercises/${exercise._id}`);
   };
+
+  const addFormCourseUnits = units.filter(u => u.courseId === addForm.courseId);
 
   return (
     <Box>
@@ -178,22 +187,23 @@ export default function AdminExercises() {
             </Typography>
           </Box>
         </Box>
-        <Button
-          variant="contained"
-          startIcon={<AddIcon />}
-          onClick={handleAddExercise}
-          sx={{
-            borderRadius: 2.5,
-            px: 3,
-            py: 1.2,
-            textTransform: 'none',
-            // fontWeight: 700,
-            boxShadow: '0 4px 12px rgba(25, 118, 210, 0.3)',
-            '&:hover': { boxShadow: '0 6px 16px rgba(25, 118, 210, 0.4)' },
-          }}
-        >
-          Add New Exercise
-        </Button>
+          <Box sx={{ display: 'flex', gap: 2 }}>
+            <Button
+              variant="contained"
+              startIcon={<AddIcon />}
+              onClick={handleAddExercise}
+              sx={{
+                borderRadius: 2.5,
+                px: 3,
+                py: 1.2,
+                textTransform: 'none',
+                boxShadow: '0 4px 12px rgba(25, 118, 210, 0.3)',
+                '&:hover': { boxShadow: '0 6px 16px rgba(25, 118, 210, 0.4)' },
+              }}
+            >
+              Add New Exercise
+            </Button>
+          </Box>
       </Box>
 
       {loading ? (
@@ -278,7 +288,8 @@ export default function AdminExercises() {
                         sx={{ fontWeight: 500, display: 'block' }}
                       >
                         {courses.find((c) => c._id === exercise.courseId)
-                          ?.name ?? 'N/A'}
+                          ?.name ?? 'N/A'} 
+                        {exercise.unitId && ` - ${units.find(u => u._id === exercise.unitId)?.title}`}
                       </Typography>
                     </Box>
                   </Box>
@@ -430,12 +441,29 @@ export default function AdminExercises() {
               value={addForm.courseId}
               label="Course"
               onChange={(e) =>
-                setAddForm((f) => ({ ...f, courseId: e.target.value }))
+                setAddForm((f) => ({ ...f, courseId: e.target.value, unitId: '' }))
               }
             >
               {courses.map((c) => (
                 <MenuItem key={c._id} value={c._id}>
                   {c.name}
+                </MenuItem>
+              ))}
+            </Select>
+          </FormControl>
+          <FormControl fullWidth sx={{ mt: 2 }}>
+            <InputLabel>Unit (Optional)</InputLabel>
+            <Select
+              value={addForm.unitId}
+              label="Unit (Optional)"
+              onChange={(e) =>
+                setAddForm((f) => ({ ...f, unitId: e.target.value }))
+              }
+            >
+              <MenuItem value="">-- No Unit --</MenuItem>
+              {addFormCourseUnits.map((u) => (
+                <MenuItem key={u._id} value={u._id}>
+                  {u.title}
                 </MenuItem>
               ))}
             </Select>

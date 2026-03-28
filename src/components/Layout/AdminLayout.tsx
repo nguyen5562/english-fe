@@ -39,6 +39,7 @@ import {
   Logout as LogoutIcon,
   Person as PersonIcon,
   Lock as LockIcon,
+  Folder as FolderIcon,
 } from '@mui/icons-material';
 import axios from 'axios';
 import { useAuthStore } from '../../store/auth.store';
@@ -52,6 +53,7 @@ const drawerWidth = 260;
 const adminMenuItems = [
   { text: 'Dashboard', icon: <DashboardIcon />, path: '/admin' },
   { text: 'Manage courses', icon: <SchoolIcon />, path: '/admin/content' },
+  { text: 'Manage units', icon: <FolderIcon />, path: '/admin/units' },
   {
     text: 'Manage exercises',
     icon: <AssignmentIcon />,
