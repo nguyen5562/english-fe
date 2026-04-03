@@ -16,6 +16,7 @@ import {
   Chip,
   CircularProgress,
   Divider,
+  Button,
 } from '@mui/material';
 import {
   Assessment as AssessmentIcon,
@@ -23,7 +24,9 @@ import {
   School as SchoolIcon,
   Assignment as AssignmentIcon,
   Quiz as QuizIcon,
+  FileDownload as FileDownloadIcon,
 } from '@mui/icons-material';
+import * as XLSX from 'xlsx';
 import axios from 'axios';
 import { courseService } from '../services/course.service';
 import { exerciseService } from '../services/exercise.service';
@@ -392,6 +395,41 @@ export default function Progress() {
   );
   const recentActivities = getRecentActivities();
 
+  // ── Excel export ───────────────────────────────────────────────
+  const handleExportExcel = () => {
+    const wb = XLSX.utils.book_new();
+
+    // Sheet 1: Course Progress
+    const courseRows = courseProgresses.map((p) => ({
+      'Course': p.courseName,
+      'Code': p.courseCode,
+      'Sections Completed': p.completedExercises,
+      'Total Sections': p.totalExercises,
+      'Quizzes Completed': p.completedQuizzes,
+      'Total Quizzes': p.totalQuizzes,
+      'Completion %': `${Math.round(p.completionPercent)}%`,
+      'Average Score %': p.averageScore > 0 ? `${p.averageScore.toFixed(1)}%` : 'N/A',
+    }));
+    XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(courseRows), 'Course Progress');
+
+    // Sheet 2: Recent Activities
+    const activityRows = recentActivities.map((a) => {
+      const course = courses.find((c) => c._id === a.courseId);
+      return {
+        'Type': a.type === 'exercise' ? 'Exercise' : 'Quiz',
+        'Title': a.title,
+        'Course': course?.name ?? '',
+        'Score': a.score,
+        'Max Score': a.maxScore,
+        'Percentage': a.maxScore > 0 ? `${((a.score / a.maxScore) * 100).toFixed(0)}%` : 'Completed',
+        'Completed At': a.completedAt.toLocaleString('vi-VN'),
+      };
+    });
+    XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(activityRows), 'Recent Activities');
+
+    XLSX.writeFile(wb, `progress_${user?.username ?? 'student'}.xlsx`);
+  };
+
   // Count total sections across all exercises
   const totalSections = exercises.reduce(
     (sum, ex) => sum + (ex.sections ?? []).length,
@@ -420,9 +458,18 @@ export default function Progress() {
 
   return (
     <Box>
-      <Typography variant="h4" gutterBottom>
-        Progress
-      </Typography>
+      <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 1 }}>
+        <Typography variant="h4">Progress</Typography>
+        <Button
+          variant="contained"
+          color="success"
+          startIcon={<FileDownloadIcon />}
+          onClick={handleExportExcel}
+          disabled={recentActivities.length === 0 && courseProgresses.length === 0}
+        >
+          Export Excel
+        </Button>
+      </Box>
       <Typography variant="body2" color="text.secondary" paragraph>
         Track your results and progress
       </Typography>

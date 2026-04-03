@@ -17,7 +17,9 @@ import {
   CheckCircle as CheckCircleIcon,
   Cancel as CancelIcon,
   Info as InfoIcon,
+  FileDownload as FileDownloadIcon,
 } from '@mui/icons-material';
+import * as XLSX from 'xlsx';
 import { userService } from '../services/user.service';
 import { exerciseService } from '../services/exercise.service';
 import { quizService } from '../services/quiz.service';
@@ -260,17 +262,86 @@ export default function StudentAttemptDetail() {
     );
   }
 
+  // ── Excel export ──────────────────────────────────────────────────────
+  const handleExportExcel = () => {
+    if (attemptType === 'exercise' && exercise && exerciseAttempts.length > 0) {
+      // Collect section scores from all attempts (use last/best per section)
+      const sectionScoreMap: Record<string, { section: string; score: number; maxScore: number; tries: number }> = {};
+
+      exerciseAttempts.forEach((attempt) => {
+        (attempt.sectionAttempts ?? []).forEach((sa) => {
+          const sectionId =
+            typeof sa.sectionId === 'object' ? (sa.sectionId as any)._id : sa.sectionId;
+          const section = exercise.sections.find((s: any) => String(s._id) === String(sectionId));
+          if (!section) return;
+          const maxScore = (section.questions ?? []).reduce((sum: number, q: any) => sum + (q.point ?? 0), 0);
+          const existing = sectionScoreMap[sectionId];
+          if (!existing || (sa.tries ?? 0) >= existing.tries) {
+            sectionScoreMap[sectionId] = {
+              section: section.title || sectionId,
+              score: sa.score ?? 0,
+              maxScore,
+              tries: sa.tries ?? 0,
+            };
+          }
+        });
+      });
+
+      const rows = Object.values(sectionScoreMap).map((r) => ({
+        'Exercise': exercise.title,
+        'Section': r.section,
+        'Score': r.score,
+        'Max Score': r.maxScore,
+        'Percentage': r.maxScore > 0 ? `${Math.round((r.score / r.maxScore) * 100)}%` : 'N/A',
+        'Attempts': r.tries,
+      }));
+
+      const ws = XLSX.utils.json_to_sheet(rows);
+      const wb = XLSX.utils.book_new();
+      XLSX.utils.book_append_sheet(wb, ws, 'Scores');
+      XLSX.writeFile(wb, `${student?.username ?? 'student'}_${exercise.title}_scores.xlsx`);
+    } else if (attemptType === 'quiz' && quiz && quizAttempt) {
+      const maxScore = (quiz.sections ?? []).reduce((sum, section) => {
+        if (['pronunciation', 'video-recording', 'writing'].includes(section.questionType)) return sum;
+        return sum + (section.questions ?? []).reduce((s, q) => s + (q.point ?? 0), 0);
+      }, 0);
+
+      const rows = [{
+        'Quiz': quiz.title,
+        'Score': quizAttempt.totalScore ?? 0,
+        'Max Score': maxScore,
+        'Percentage': maxScore > 0 ? `${Math.round(((quizAttempt.totalScore ?? 0) / maxScore) * 100)}%` : 'Completed',
+        'Submitted At': quizAttempt.submittedAt ? new Date(quizAttempt.submittedAt).toLocaleString('vi-VN') : 'N/A',
+      }];
+
+      const ws = XLSX.utils.json_to_sheet(rows);
+      const wb = XLSX.utils.book_new();
+      XLSX.utils.book_append_sheet(wb, ws, 'Scores');
+      XLSX.writeFile(wb, `${student?.username ?? 'student'}_${quiz.title}_scores.xlsx`);
+    }
+  };
+
   return (
     <Box sx={{ p: 3 }}>
       {/* Header */}
       <Box sx={{ mb: 3 }}>
-        <Button
-          startIcon={<ArrowBackIcon />}
-          onClick={() => navigate(-1)}
-          sx={{ mb: 2 }}
-        >
-          Back
-        </Button>
+        <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', mb: 2 }}>
+          <Button startIcon={<ArrowBackIcon />} onClick={() => navigate(-1)}>
+            Back
+          </Button>
+          <Button
+            variant="contained"
+            color="success"
+            startIcon={<FileDownloadIcon />}
+            onClick={handleExportExcel}
+            disabled={
+              (attemptType === 'exercise' && exerciseAttempts.length === 0) ||
+              (attemptType === 'quiz' && !quizAttempt)
+            }
+          >
+            Export Excel
+          </Button>
+        </Box>
         <Typography variant="h4" sx={{ fontWeight: 700, mb: 1 }}>
           Attempt details
         </Typography>

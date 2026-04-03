@@ -19,6 +19,7 @@ import {
   Alert,
   Autocomplete,
   TextField,
+  Button,
 } from '@mui/material';
 import {
   People as PeopleIcon,
@@ -27,7 +28,9 @@ import {
   TrendingUp as TrendingUpIcon,
   CheckCircle as CheckCircleIcon,
   Cancel as CancelIcon,
+  FileDownload as FileDownloadIcon,
 } from '@mui/icons-material';
+import * as XLSX from 'xlsx';
 import axios from 'axios';
 import { userService } from '../services/user.service';
 import { exerciseService } from '../services/exercise.service';
@@ -397,6 +400,106 @@ export default function Statistics() {
     ? getActivitiesForStudent(selectedStudentId)
     : null;
 
+  // ── Excel export helpers ───────────────────────────────────────
+  const exportExerciseTab = () => {
+    if (!selectedExerciseData || !selectedExerciseId) return;
+    const exercise = exercises.find((e) => e._id === selectedExerciseId);
+    const rows = [
+      ...selectedExerciseData.completed.map(({ student, sectionsCompleted, totalSections }) => ({
+        'Student': student.username,
+        'Email': student.email,
+        'Exercise': exercise?.title ?? '',
+        'Sections Completed': sectionsCompleted,
+        'Total Sections': totalSections,
+        'Status': 'Started',
+      })),
+      ...selectedExerciseData.notStarted.map(({ student }) => ({
+        'Student': student.username,
+        'Email': student.email,
+        'Exercise': exercise?.title ?? '',
+        'Sections Completed': 0,
+        'Total Sections': exercise?.sections.length ?? 0,
+        'Status': 'Not started',
+      })),
+    ];
+    const ws = XLSX.utils.json_to_sheet(rows);
+    const wb = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(wb, ws, 'Exercise');
+    XLSX.writeFile(wb, `exercise_${exercise?.title ?? 'report'}.xlsx`);
+  };
+
+  const exportQuizTab = () => {
+    if (!selectedQuizData || !selectedQuizId) return;
+    const quiz = quizzes.find((q) => q._id === selectedQuizId);
+    const maxScore = quiz
+      ? (quiz.sections ?? []).reduce((sum, section) => {
+          if (['pronunciation', 'video-recording', 'writing'].includes(section.questionType)) return sum;
+          return sum + (section.questions ?? []).reduce((s, q) => s + (q.point ?? 0), 0);
+        }, 0)
+      : 0;
+    const rows = [
+      ...selectedQuizData.completed.map(({ student, attempt }) => ({
+        'Student': student.username,
+        'Email': student.email,
+        'Quiz': quiz?.title ?? '',
+        'Score': attempt?.totalScore ?? 0,
+        'Max Score': maxScore,
+        'Percentage': maxScore > 0 ? `${Math.round(((attempt?.totalScore ?? 0) / maxScore) * 100)}%` : 'Completed',
+        'Status': 'Completed',
+      })),
+      ...selectedQuizData.notStarted.map(({ student }) => ({
+        'Student': student.username,
+        'Email': student.email,
+        'Quiz': quiz?.title ?? '',
+        'Score': '',
+        'Max Score': maxScore,
+        'Percentage': '',
+        'Status': 'Not started',
+      })),
+    ];
+    const ws = XLSX.utils.json_to_sheet(rows);
+    const wb = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(wb, ws, 'Quiz');
+    XLSX.writeFile(wb, `quiz_${quiz?.title ?? 'report'}.xlsx`);
+  };
+
+  const exportStudentTab = () => {
+    if (!selectedStudentData || !selectedStudentId) return;
+    const student = students.find((s) => s._id === selectedStudentId);
+    const exerciseRows = selectedStudentData.exercises.map(({ exercise, sectionsCompleted, totalSections }) => {
+      const course = courses.find((c) => c._id === exercise.courseId);
+      return {
+        'Type': 'Exercise',
+        'Title': exercise.title,
+        'Course': course?.name ?? '',
+        'Sections Completed': sectionsCompleted,
+        'Total Sections': totalSections,
+        'Score': '',
+        'Max Score': '',
+      };
+    });
+    const quizRows = selectedStudentData.quizzes.map(({ quiz, attempt }) => {
+      const course = courses.find((c) => c._id === quiz.courseId);
+      const maxScore = (quiz.sections ?? []).reduce((sum, section) => {
+        if (['pronunciation', 'video-recording', 'writing'].includes(section.questionType)) return sum;
+        return sum + (section.questions ?? []).reduce((s, q) => s + (q.point ?? 0), 0);
+      }, 0);
+      return {
+        'Type': 'Quiz',
+        'Title': quiz.title,
+        'Course': course?.name ?? '',
+        'Sections Completed': '',
+        'Total Sections': '',
+        'Score': attempt?.totalScore ?? 0,
+        'Max Score': maxScore,
+      };
+    });
+    const ws = XLSX.utils.json_to_sheet([...exerciseRows, ...quizRows]);
+    const wb = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(wb, ws, 'Student');
+    XLSX.writeFile(wb, `student_${student?.username ?? 'report'}.xlsx`);
+  };
+
   return (
     <Box>
       <Typography variant="h4" gutterBottom>
@@ -521,28 +624,39 @@ export default function Statistics() {
           {/* Exercise Tab */}
           {tab === 'exercises' && (
             <Box>
-              <Autocomplete
-                options={exercises}
-                getOptionLabel={(option) => {
-                  const course = courses.find((c) => c._id === option.courseId);
-                  return `${option.title} (${course?.name || 'Unknown'})`;
-                }}
-                value={
-                  exercises.find((ex) => ex._id === selectedExerciseId) || null
-                }
-                onChange={(_, newValue) => {
-                  setSelectedExerciseId(newValue?._id || '');
-                }}
-                renderInput={(params) => (
-                  <TextField
-                    {...params}
-                    label="Select exercise"
-                    placeholder="Search exercise..."
-                  />
-                )}
-                sx={{ mb: 3 }}
-                noOptionsText="No exercises found"
-              />
+              <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3 }}>
+                <Autocomplete
+                  options={exercises}
+                  getOptionLabel={(option) => {
+                    const course = courses.find((c) => c._id === option.courseId);
+                    return `${option.title} (${course?.name || 'Unknown'})`;
+                  }}
+                  value={
+                    exercises.find((ex) => ex._id === selectedExerciseId) || null
+                  }
+                  onChange={(_, newValue) => {
+                    setSelectedExerciseId(newValue?._id || '');
+                  }}
+                  renderInput={(params) => (
+                    <TextField
+                      {...params}
+                      label="Select exercise"
+                      placeholder="Search exercise..."
+                    />
+                  )}
+                  sx={{ flex: 1, mr: 2 }}
+                  noOptionsText="No exercises found"
+                />
+                <Button
+                  variant="contained"
+                  color="success"
+                  startIcon={<FileDownloadIcon />}
+                  onClick={exportExerciseTab}
+                  disabled={!selectedExerciseData}
+                >
+                  Export Excel
+                </Button>
+              </Box>
 
               {selectedExerciseData && (
                 <Box>
@@ -665,26 +779,37 @@ export default function Statistics() {
           {/* Quiz Tab */}
           {tab === 'quizzes' && (
             <Box>
-              <Autocomplete
-                options={quizzes}
-                getOptionLabel={(option) => {
-                  const course = courses.find((c) => c._id === option.courseId);
-                  return `${option.title} (${course?.name || 'Unknown'})`;
-                }}
-                value={quizzes.find((q) => q._id === selectedQuizId) || null}
-                onChange={(_, newValue) => {
-                  setSelectedQuizId(newValue?._id || '');
-                }}
-                renderInput={(params) => (
-                  <TextField
-                    {...params}
-                    label="Select quiz"
-                    placeholder="Search quiz..."
-                  />
-                )}
-                sx={{ mb: 3 }}
-                noOptionsText="No quizzes found"
-              />
+              <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3 }}>
+                <Autocomplete
+                  options={quizzes}
+                  getOptionLabel={(option) => {
+                    const course = courses.find((c) => c._id === option.courseId);
+                    return `${option.title} (${course?.name || 'Unknown'})`;
+                  }}
+                  value={quizzes.find((q) => q._id === selectedQuizId) || null}
+                  onChange={(_, newValue) => {
+                    setSelectedQuizId(newValue?._id || '');
+                  }}
+                  renderInput={(params) => (
+                    <TextField
+                      {...params}
+                      label="Select quiz"
+                      placeholder="Search quiz..."
+                    />
+                  )}
+                  sx={{ flex: 1, mr: 2 }}
+                  noOptionsText="No quizzes found"
+                />
+                <Button
+                  variant="contained"
+                  color="success"
+                  startIcon={<FileDownloadIcon />}
+                  onClick={exportQuizTab}
+                  disabled={!selectedQuizData}
+                >
+                  Export Excel
+                </Button>
+              </Box>
 
               {selectedQuizData && (
                 <Box>
@@ -835,27 +960,38 @@ export default function Statistics() {
           {/* Student Tab */}
           {tab === 'students' && (
             <Box>
-              <Autocomplete
-                options={students}
-                getOptionLabel={(option) =>
-                  `${option.username} (${option.email})`
-                }
-                value={
-                  students.find((s) => s._id === selectedStudentId) || null
-                }
-                onChange={(_, newValue) => {
-                  setSelectedStudentId(newValue?._id || '');
-                }}
-                renderInput={(params) => (
-                  <TextField
-                    {...params}
-                    label="Select student"
-                    placeholder="Search student..."
-                  />
-                )}
-                sx={{ mb: 3 }}
-                noOptionsText="No students found"
-              />
+              <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3 }}>
+                <Autocomplete
+                  options={students}
+                  getOptionLabel={(option) =>
+                    `${option.username} (${option.email})`
+                  }
+                  value={
+                    students.find((s) => s._id === selectedStudentId) || null
+                  }
+                  onChange={(_, newValue) => {
+                    setSelectedStudentId(newValue?._id || '');
+                  }}
+                  renderInput={(params) => (
+                    <TextField
+                      {...params}
+                      label="Select student"
+                      placeholder="Search student..."
+                    />
+                  )}
+                  sx={{ flex: 1, mr: 2 }}
+                  noOptionsText="No students found"
+                />
+                <Button
+                  variant="contained"
+                  color="success"
+                  startIcon={<FileDownloadIcon />}
+                  onClick={exportStudentTab}
+                  disabled={!selectedStudentData}
+                >
+                  Export Excel
+                </Button>
+              </Box>
 
               {selectedStudentData && (
                 <Box>
