@@ -220,7 +220,7 @@ export default function AdminExercises() {
         </Card>
       ) : (
         <Grid container spacing={3}>
-          {exercises.map((exercise) => (
+          {[...exercises].sort((a,b) => (a.order || 0) - (b.order || 0)).map((exercise) => (
             <Grid size={{ xs: 12, sm: 6, md: 4 }} key={exercise._id}>
               <Card
                 sx={{
@@ -290,6 +290,7 @@ export default function AdminExercises() {
                         {courses.find((c) => c._id === exercise.courseId)
                           ?.name ?? 'N/A'} 
                         {exercise.unitId && ` - ${units.find(u => u._id === exercise.unitId)?.title}`}
+                        {` (Order: ${exercise.order || 0})`}
                       </Typography>
                     </Box>
                   </Box>

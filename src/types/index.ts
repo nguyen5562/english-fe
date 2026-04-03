@@ -99,6 +99,7 @@ export type Exercise = {
   unitId?: string;
   title: string;
   description: string | null;
+  order?: number;
   sections: Section[];
 };
 

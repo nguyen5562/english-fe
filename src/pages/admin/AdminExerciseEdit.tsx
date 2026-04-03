@@ -52,6 +52,7 @@ export default function AdminExerciseEdit() {
     description: '',
     courseId: '',
     unitId: '',
+    order: 0,
   });
   const [saving, setSaving] = useState(false);
 
@@ -74,6 +75,7 @@ export default function AdminExerciseEdit() {
             description: exData.description || '',
             courseId: exData.courseId,
             unitId: exData.unitId || '',
+            order: exData.order || 0,
           });
         }
       })
@@ -323,6 +325,16 @@ export default function AdminExerciseEdit() {
               onChange={(e) =>
                 setEditData({ ...editData, description: e.target.value })
               }
+            />
+            <TextField
+              label="Display Order"
+              type="number"
+              fullWidth
+              value={editData.order}
+              onChange={(e) =>
+                setEditData({ ...editData, order: Number(e.target.value) })
+              }
+              helperText="Lower numbers appear first"
             />
             <FormControl fullWidth>
               <InputLabel>Course</InputLabel>

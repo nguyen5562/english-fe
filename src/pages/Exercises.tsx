@@ -451,14 +451,14 @@ export default function Exercises() {
         unit,
         exercises: courseExercises.filter(
           (ex) => ex.unitId && String(ex.unitId) === String(unit._id),
-        ),
+        ).sort((a, b) => (a.order || 0) - (b.order || 0)),
       }));
 
       const unassignedExercises = courseExercises.filter(
         (ex) =>
           !ex.unitId ||
           !courseUnits.some((u) => String(u._id) === String(ex.unitId)),
-      );
+      ).sort((a, b) => (a.order || 0) - (b.order || 0));
 
       return { course, unitGroups, unassignedExercises };
     })
