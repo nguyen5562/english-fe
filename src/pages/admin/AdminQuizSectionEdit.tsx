@@ -762,8 +762,9 @@ export default function AdminQuizSectionEdit() {
                   }
                 >
                   <ListItemText
-                    primary={q.title || '(No title)'}
+                    primary={<div dangerouslySetInnerHTML={{ __html: q.title || '(No title)' }} />}
                     secondary={`Points: ${q.point}`}
+                    sx={{ '& p': { margin: 0 } }}
                   />
                 </ListItem>
               ))}
