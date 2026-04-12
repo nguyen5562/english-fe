@@ -831,7 +831,7 @@ export default function ExerciseDetail() {
                   currentOptions = question.options ?? [];
                 }
                 return (
-                  <FormControl size="small" sx={{ minWidth: 120 }} key={blankIndex}>
+                  <FormControl size="small" sx={{ minWidth: 160, mx: 0.5 }} key={blankIndex}>
                     <Select
                       key={`${question._id}-${blankIndex}-${retryKey}`}
                       value={answerArray[blankIndex] || ''}
@@ -1241,7 +1241,8 @@ export default function ExerciseDetail() {
                     }));
                   }}
                   sx={{
-                    width: 100,
+                    width: 160,
+                    mx: 0.5,
                     '& .MuiOutlinedInput-root': {
                       bgcolor:
                         viewingSaved && checkedResults[question._id]?.graded
@@ -1531,7 +1532,8 @@ export default function ExerciseDetail() {
                         handleAnswerChange(q._id, e.target.value)
                       }
                       sx={{
-                        width: 120,
+                        width: 160,
+                        mx: 0.5,
                         '& input': { py: 0.5 },
                         '& .MuiOutlinedInput-root': {
                           bgcolor: isCorrect

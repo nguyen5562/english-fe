@@ -538,7 +538,8 @@ export default function QuizDetail() {
                     handleAnswerChange(question._id, next);
                   }}
                   sx={{
-                    width: 100,
+                    width: 160,
+                    mx: 0.5,
                     '& .MuiOutlinedInput-root': {
                       bgcolor:
                         showResult && (question.correctAnswer?.length ?? 0) > 0
@@ -693,7 +694,7 @@ export default function QuizDetail() {
                   currentOptions = question.options ?? [];
                 }
                 return (
-                  <FormControl size="small" sx={{ minWidth: 120 }} key={blankIndex}>
+                  <FormControl size="small" sx={{ minWidth: 160, mx: 0.5 }} key={blankIndex}>
                     <Select
                       value={answerArray[blankIndex] || ''}
                       onChange={(e) => {
@@ -1153,7 +1154,8 @@ export default function QuizDetail() {
                           value={val}
                           onChange={(e) => handleAnswerChange(q._id, e.target.value)}
                           sx={{
-                            width: 120,
+                            width: 160,
+                            mx: 0.5,
                             '& input': { py: 0.5 },
                             '& .MuiOutlinedInput-root': {
                               bgcolor: isCorrect
