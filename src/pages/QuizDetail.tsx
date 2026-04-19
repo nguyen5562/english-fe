@@ -35,6 +35,7 @@ import {
 import axios from 'axios';
 import { quizService } from '../services/quiz.service';
 import { quizAttemptService } from '../services/quiz-attempt.service';
+import { uploadService } from '../services/upload.service';
 import { useAuthStore } from '../store/auth.store';
 import type { Quiz, Question, QuestionType, Section } from '../types';
 import {
@@ -74,6 +75,14 @@ export default function QuizDetail() {
   const [submitting, setSubmitting] = useState(false);
   const [exitDialogOpen, setExitDialogOpen] = useState(false);
   const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
+
+  const [recordingStatus, setRecordingStatus] = useState<
+    Record<string, 'idle' | 'recording' | 'recorded'>
+  >({});
+  const [recordings, setRecordings] = useState<Record<string, string | null>>(
+    {},
+  );
+  const mediaRecordersRef = useRef<Record<string, MediaRecorder | null>>({});
 
   useEffect(() => {
     if (!id || !userId) return;
@@ -209,11 +218,142 @@ export default function QuizDetail() {
     setAnswers((prev) => ({ ...prev, [questionId]: value }));
   };
 
+  const startRecording = async (questionId: string, isVideo = false) => {
+    try {
+      if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+        toast.error('Your browser does not support audio or video recording.');
+        return;
+      }
+
+      const constraints = isVideo
+        ? { audio: true, video: true }
+        : { audio: true };
+      const stream = await navigator.mediaDevices.getUserMedia(constraints);
+
+      // For video recording, we want to show a live preview
+      if (isVideo) {
+        const previewEl = document.getElementById(
+          `preview-${questionId}`,
+        ) as HTMLVideoElement;
+        if (previewEl) {
+          previewEl.srcObject = stream;
+          previewEl.muted = true; // Avoid feedback loop
+          previewEl.play().catch(() => {});
+        }
+      }
+
+      const mediaRecorder = new MediaRecorder(stream, {
+        mimeType: isVideo ? 'video/webm;codecs=vp8,opus' : 'audio/webm',
+      });
+      mediaRecordersRef.current[questionId] = mediaRecorder;
+
+      const chunks: BlobPart[] = [];
+      mediaRecorder.ondataavailable = (event) => {
+        if (event.data.size > 0) {
+          chunks.push(event.data);
+        }
+      };
+
+      mediaRecorder.onstop = () => {
+        const blob = new Blob(chunks, {
+          type: isVideo ? 'video/webm' : 'audio/webm',
+        });
+        const url = URL.createObjectURL(blob);
+
+        // Stop all tracks to release camera/mic
+        stream.getTracks().forEach((track) => track.stop());
+
+        // Clear preview srcObject
+        if (isVideo) {
+          const previewEl = document.getElementById(
+            `preview-${questionId}`,
+          ) as HTMLVideoElement;
+          if (previewEl) previewEl.srcObject = null;
+        }
+
+        setRecordings((prev) => ({ ...prev, [questionId]: url }));
+        setRecordingStatus((prev) => ({ ...prev, [questionId]: 'recorded' }));
+      };
+
+      mediaRecorder.start();
+      setRecordingStatus((prev) => ({ ...prev, [questionId]: 'recording' }));
+    } catch (error) {
+      console.error(error);
+      toast.error(
+        'Unable to start recording. Please check microphone/camera access.',
+      );
+    }
+  };
+
+  const stopRecording = (questionId: string) => {
+    const recorder = mediaRecordersRef.current[questionId];
+    if (recorder && recorder.state === 'recording') {
+      recorder.stop();
+    }
+  };
+
   const handleSubmit = async () => {
     if (!quiz || !userId || submitting) return;
     setSubmitting(true);
+    const uploadedAnswers = { ...answers };
+    let hasUploadError = false;
+
+    // Identify questions that might have recordings
+    const mediaQuestions = allQuestions.filter((q) => {
+      const qType = (q as any).type as QuestionType | undefined;
+      const sectionType = quiz.sections?.find((s) =>
+        s.questions?.some((sq) => sq._id === q._id),
+      )?.questionType;
+      return (
+        qType === 'pronunciation' ||
+        qType === 'video-recording' ||
+        sectionType === 'pronunciation' ||
+        sectionType === 'video-recording'
+      );
+    });
+
+    for (const q of mediaQuestions) {
+      const recordingUrl = recordings[q._id];
+      if (recordingUrl && recordingUrl.startsWith('blob:')) {
+        try {
+          const blobResponse = await fetch(recordingUrl);
+          const blob = await blobResponse.blob();
+
+          const isVideo = blob.type.startsWith('video/');
+          const mediaTypeFolder = isVideo ? 'video' : 'audio';
+          const now = new Date();
+          const folderDate = `${now.getFullYear()}-${String(
+            now.getMonth() + 1,
+          ).padStart(2, '0')}`;
+          const studentFolder = userId || 'guest';
+          const targetPath = `/submissions/${mediaTypeFolder}/${folderDate}/${studentFolder}`;
+
+          const filename = `${q._id}_${Date.now()}.${isVideo ? 'webm' : 'webm'}`;
+
+          const { id: uploadedPath } = await uploadService.uploadFile(
+            blob,
+            targetPath,
+            filename,
+          );
+
+          uploadedAnswers[q._id] = uploadedPath;
+        } catch (error) {
+          console.error('Upload failed for question', q._id, error);
+          hasUploadError = true;
+        }
+      }
+    }
+
+    if (hasUploadError) {
+      toast.error('Failed to upload audio/video file. Please try again.');
+      setSubmitting(false);
+      return;
+    }
+
+    setAnswers(uploadedAnswers);
+
     const answersPayload = allQuestions.map((q) => {
-      const a = answers[q._id];
+      const a = uploadedAnswers[q._id];
       const arr = Array.isArray(a) ? a : a != null ? [String(a)] : [];
       return {
         questionId: q._id,
@@ -223,7 +363,7 @@ export default function QuizDetail() {
 
     const { score: totalScore, maxScore } = calculateScore(
       allQuestions,
-      answers,
+      uploadedAnswers,
     );
     const percentage = maxScore > 0 ? (totalScore / maxScore) * 100 : 0;
 
@@ -767,8 +907,26 @@ export default function QuizDetail() {
           </Box>
         );
       }
-      case 'pronunciation':
-      case 'video-recording':
+      case 'pronunciation': {
+        const status = recordingStatus[question._id] ?? 'idle';
+        const savedUrl = answers[question._id] as string | undefined;
+        const displayUrl =
+          recordings[question._id] ?? (savedUrl ? resolveUrl(savedUrl) : null);
+
+        const handlePlayRecording = () => {
+          if (!displayUrl) return;
+          const audioEl = document.getElementById(
+            `audio-${question._id}`,
+          ) as HTMLAudioElement;
+          if (audioEl) {
+            audioEl.currentTime = 0;
+            audioEl.play().catch((e) => console.error('Play error:', e));
+          } else {
+            const audio = new Audio(displayUrl);
+            audio.play().catch((e) => console.error('Play error:', e));
+          }
+        };
+
         return (
           <Box sx={{ mb: 3 }}>
             {questionNumber}
@@ -783,19 +941,159 @@ export default function QuizDetail() {
               {parseHTML(question.title)}
             </Typography>
             <Typography variant="body2" color="text.secondary" sx={{ mb: 1 }}>
-              Enter your answer (description or content)
+              Listen to the sample and record your pronunciation again.
             </Typography>
-            <TextField
-              fullWidth
-              multiline
-              rows={4}
-              value={value}
-              onChange={(e) => handleAnswerChange(question._id, e.target.value)}
-              placeholder="Enter your answer"
-              disabled={disabled}
-            />
+            <Box sx={{ display: 'flex', gap: 1, flexWrap: 'wrap', mb: 1 }}>
+              <Button
+                variant="contained"
+                size="small"
+                disabled={status === 'recording' || disabled}
+                onClick={() => startRecording(question._id)}
+              >
+                {status === 'recording' ? 'Recording...' : 'Record'}
+              </Button>
+              <Button
+                variant="outlined"
+                size="small"
+                color="error"
+                disabled={status !== 'recording' || disabled}
+                onClick={() => stopRecording(question._id)}
+              >
+                Stop
+              </Button>
+              <Button
+                variant="outlined"
+                size="small"
+                color="info"
+                disabled={!displayUrl || status === 'recording'}
+                onClick={handlePlayRecording}
+              >
+                Listen again
+              </Button>
+            </Box>
+            {displayUrl && (
+              <Box sx={{ mt: 1 }}>
+                <Typography variant="body2" sx={{ mb: 0.5 }}>
+                  Your recording:
+                </Typography>
+                <audio
+                  id={`audio-${question._id}`}
+                  controls
+                  src={displayUrl}
+                  style={{ width: '100%', maxWidth: '300px' }}
+                />
+              </Box>
+            )}
           </Box>
         );
+      }
+
+      case 'video-recording': {
+        const status = recordingStatus[question._id] ?? 'idle';
+        const savedUrl = answers[question._id] as string | undefined;
+        const displayUrl =
+          recordings[question._id] ?? (savedUrl ? resolveUrl(savedUrl) : null);
+
+        const handlePlayVideo = () => {
+          if (!displayUrl) return;
+          const videoEl = document.getElementById(
+            `video-${question._id}`,
+          ) as HTMLVideoElement;
+          if (videoEl) {
+            videoEl.currentTime = 0;
+            videoEl.play().catch((e) => console.error('Play error:', e));
+          }
+        };
+
+        return (
+          <Box sx={{ mb: 3 }}>
+            {questionNumber}
+            {renderQuestionMedia(question)}
+            {renderQuestionWordBank(question)}
+            <Typography
+              component="div"
+              variant="body1"
+              gutterBottom
+              sx={{ mb: 1 }}
+            >
+              {parseHTML(question.title)}
+            </Typography>
+            <Typography variant="body2" color="text.secondary" sx={{ mb: 1 }}>
+              Record your video answer.
+            </Typography>
+
+            <Box
+              sx={{
+                width: '100%',
+                maxWidth: '500px',
+                aspectRatio: '16/9',
+                bgcolor: 'black',
+                borderRadius: 2,
+                overflow: 'hidden',
+                mb: 2,
+                position: 'relative',
+              }}
+            >
+              {status === 'recording' ? (
+                <video
+                  id={`preview-${question._id}`}
+                  autoPlay
+                  muted
+                  style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+                />
+              ) : displayUrl ? (
+                <video
+                  id={`video-${question._id}`}
+                  src={displayUrl}
+                  controls
+                  style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+                />
+              ) : (
+                <Box
+                  sx={{
+                    height: '100%',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    color: 'white',
+                  }}
+                >
+                  <Typography variant="body2">No video</Typography>
+                </Box>
+              )}
+            </Box>
+
+            <Box sx={{ display: 'flex', gap: 1, flexWrap: 'wrap', mb: 1 }}>
+              <Button
+                variant="contained"
+                size="small"
+                disabled={status === 'recording' || disabled}
+                onClick={() => startRecording(question._id, true)}
+              >
+                {status === 'recording' ? 'Recording...' : 'Start recording'}
+              </Button>
+              <Button
+                variant="outlined"
+                size="small"
+                color="error"
+                disabled={status !== 'recording' || disabled}
+                onClick={() => stopRecording(question._id)}
+              >
+                Stop
+              </Button>
+              <Button
+                variant="outlined"
+                size="small"
+                color="info"
+                disabled={!displayUrl || status === 'recording'}
+                onClick={handlePlayVideo}
+              >
+                Listen again
+              </Button>
+            </Box>
+          </Box>
+        );
+      }
       default:
         return (
           <Box sx={{ mb: 3 }}>
