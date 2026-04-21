@@ -44,10 +44,22 @@ const getExerciseAttemptById = async (id: string): Promise<ExerciseAttempt> => {
   return response.data;
 };
 
+const manualGrade = async (
+  attemptId: string,
+  dto: { grades: { questionId: string; score: number; feedback?: string }[] },
+): Promise<ExerciseAttempt> => {
+  const response = await api.patch(
+    `${API_ROUTES.EXERCISE_ATTEMPT}/${attemptId}/grade`,
+    dto,
+  );
+  return response.data;
+};
+
 export const exerciseAttemptService = {
   createExerciseAttempt,
   submitSection,
   getExerciseAttemptByUserId,
   getExerciseAttemptByExerciseId,
   getExerciseAttemptById,
+  manualGrade,
 };

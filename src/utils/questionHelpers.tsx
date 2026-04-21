@@ -63,6 +63,7 @@ export const renderQuestionMedia = (question: Question) => (
           component="img"
           src={resolveUrl(question.imageUrl)}
           alt={question.title}
+          onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }}
           sx={{ 
             maxWidth: '100%', 
             maxHeight: '400px',
@@ -171,6 +172,7 @@ export const renderSectionMedia = (section: Section) => {
             component="img"
             src={resolveUrl(section.imageUrl)}
             alt={section.title}
+            onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }}
             sx={{ maxWidth: '100%', maxHeight: '400px', borderRadius: 3, boxShadow: '0 8px 24px rgba(0,0,0,0.12)', objectFit: 'contain' }}
           />
         </Box>

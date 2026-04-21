@@ -38,10 +38,22 @@ const getQuizAttemptById = async (id: string): Promise<QuizAttempt> => {
   return response.data;
 };
 
+const manualGrade = async (
+  attemptId: string,
+  dto: { grades: { questionId: string; score: number; feedback?: string }[] },
+): Promise<QuizAttempt> => {
+  const response = await api.patch(
+    `${API_ROUTES.QUIZ_ATTEMPT}/${attemptId}/grade`,
+    dto,
+  );
+  return response.data;
+};
+
 export const quizAttemptService = {
   createQuizAttempt,
   submitQuiz,
   getQuizAttemptByUserId,
   getQuizAttemptByQuizId,
   getQuizAttemptById,
+  manualGrade,
 };

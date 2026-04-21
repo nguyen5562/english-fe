@@ -11,6 +11,7 @@ import {
   Alert,
   Divider,
   Link,
+  TextField,
 } from '@mui/material';
 import {
   ArrowBack as ArrowBackIcon,
@@ -18,6 +19,7 @@ import {
   Cancel as CancelIcon,
   Info as InfoIcon,
   FileDownload as FileDownloadIcon,
+  RateReview as RateReviewIcon,
 } from '@mui/icons-material';
 import * as XLSX from 'xlsx';
 import { userService } from '../services/user.service';
@@ -31,6 +33,7 @@ import {
   renderSectionMedia,
   resolveUrl,
 } from '../utils/questionHelpers';
+import { parseHTML } from '../utils/htmlParser';
 import type {
   User,
   Exercise,
@@ -170,6 +173,51 @@ export default function StudentAttemptDetail() {
     [],
   );
   const [quizAttempt, setQuizAttempt] = useState<QuizAttempt | null>(null);
+
+  const [manualGrades, setManualGrades] = useState<Record<string, { score: number | ''; feedback: string }>>({});
+  const [savingGrades, setSavingGrades] = useState(false);
+
+  const handleGradeChange = (questionId: string, field: 'score' | 'feedback', value: any) => {
+    setManualGrades((prev) => ({
+      ...prev,
+      [questionId]: {
+        ...(prev[questionId] || { score: '', feedback: '' }),
+        [field]: value
+      }
+    }));
+  };
+
+  const handleSaveGrades = async () => {
+    const payload = Object.entries(manualGrades)
+      .filter(([_, grade]) => grade.score !== '')
+      .map(([questionId, grade]) => ({
+        questionId,
+        score: Number(grade.score),
+        feedback: grade.feedback,
+      }));
+
+    if (payload.length === 0) {
+      toast.info('No grades to save');
+      return;
+    }
+
+    try {
+      setSavingGrades(true);
+      if (attemptType === 'exercise' && exerciseAttempts.length > 0) {
+        const attemptId = exerciseAttempts[0]._id;
+        await exerciseAttemptService.manualGrade(attemptId as any, { grades: payload });
+      } else if (attemptType === 'quiz' && quizAttempt) {
+        await quizAttemptService.manualGrade(quizAttempt._id as any, { grades: payload });
+      }
+
+      toast.success('Scores updated successfully!');
+      window.location.reload();
+    } catch (err: any) {
+      toast.error(err.response?.data?.message || 'Failed to save scores');
+    } finally {
+      setSavingGrades(false);
+    }
+  };
 
   useEffect(() => {
     if (!studentId || !id) {
@@ -329,18 +377,27 @@ export default function StudentAttemptDetail() {
           <Button startIcon={<ArrowBackIcon />} onClick={() => navigate(-1)}>
             Back
           </Button>
-          <Button
-            variant="contained"
-            color="success"
-            startIcon={<FileDownloadIcon />}
-            onClick={handleExportExcel}
-            disabled={
-              (attemptType === 'exercise' && exerciseAttempts.length === 0) ||
-              (attemptType === 'quiz' && !quizAttempt)
-            }
-          >
-            Export Excel
-          </Button>
+          <Box sx={{ display: 'flex', gap: 2 }}>
+            <Button
+              variant="contained"
+              onClick={handleSaveGrades}
+              disabled={savingGrades || Object.keys(manualGrades).length === 0}
+            >
+              {savingGrades ? 'Saving...' : 'Save Manual Grades'}
+            </Button>
+            <Button
+              variant="contained"
+              color="success"
+              startIcon={<FileDownloadIcon />}
+              onClick={handleExportExcel}
+              disabled={
+                (attemptType === 'exercise' && exerciseAttempts.length === 0) ||
+                (attemptType === 'quiz' && !quizAttempt)
+              }
+            >
+              Export Excel
+            </Button>
+          </Box>
         </Box>
         <Typography variant="h4" sx={{ fontWeight: 700, mb: 1 }}>
           Attempt details
@@ -511,10 +568,11 @@ export default function StudentAttemptDetail() {
 
                                 {/* Question Content */}
                                 <Typography
+                                  component="div"
                                   variant="body1"
-                                  sx={{ mb: 2, whiteSpace: 'pre-wrap' }}
+                                  sx={{ mb: 2 }}
                                 >
-                                  {question.title}
+                                  {parseHTML(question.title)}
                                 </Typography>
 
                                 {/* Options */}
@@ -685,6 +743,39 @@ export default function StudentAttemptDetail() {
                                       not automatically graded
                                     </Typography>
                                   )}
+
+                                  {isNonGradable && (
+                                      <Card variant="outlined" sx={{ mt: 3, border: 'none', boxShadow: '0 4px 12px rgba(0,0,0,0.08)', borderRadius: 2, overflow: 'hidden' }}>
+                                        <Box sx={{ p: 1.5, px: 2, display: 'flex', alignItems: 'center', gap: 1, bgcolor: 'primary.main', color: 'primary.contrastText' }}>
+                                          <RateReviewIcon fontSize="small" />
+                                          <Typography variant="subtitle2" sx={{ fontWeight: 600, letterSpacing: '0.5px' }}>
+                                            TEACHER GRADING
+                                          </Typography>
+                                        </Box>
+                                        <Box sx={{ p: 2, display: 'flex', gap: 2, alignItems: 'flex-start', flexWrap: 'wrap', bgcolor: 'rgba(25, 118, 210, 0.04)' }}>
+                                          <TextField
+                                            label={`Score (Max: ${question.point})`}
+                                            type="number"
+                                            size="small"
+                                            value={manualGrades[question._id]?.score ?? (studentAnswer as any)?.teacherScore ?? ''}
+                                            onChange={(e) => handleGradeChange(question._id, 'score', e.target.value)}
+                                            sx={{ minWidth: 140, bgcolor: 'background.paper', borderRadius: 1 }}
+                                            InputProps={{ inputProps: { min: 0, max: question.point } }}
+                                          />
+                                          <TextField
+                                            label="Teacher Feedback (optional)"
+                                            size="small"
+                                            fullWidth
+                                            multiline
+                                            rows={2}
+                                            value={manualGrades[question._id]?.feedback ?? (studentAnswer as any)?.teacherFeedback ?? ''}
+                                            onChange={(e) => handleGradeChange(question._id, 'feedback', e.target.value)}
+                                            sx={{ bgcolor: 'background.paper', borderRadius: 1, flex: 1 }}
+                                            placeholder="Awesome effort!"
+                                          />
+                                        </Box>
+                                      </Card>
+                                    )}
                                 </Box>
                               </Box>
                             );
@@ -831,10 +922,11 @@ export default function StudentAttemptDetail() {
 
                               {/* Question Content */}
                               <Typography
+                                component="div"
                                 variant="body1"
-                                sx={{ mb: 2, whiteSpace: 'pre-wrap' }}
+                                sx={{ mb: 2 }}
                               >
-                                {question.title}
+                                {parseHTML(question.title)}
                               </Typography>
 
                               {/* Options */}
@@ -1004,6 +1096,39 @@ export default function StudentAttemptDetail() {
                                     * Question type {section.questionType} is
                                     not automatically graded
                                   </Typography>
+                                )}
+
+                                {isNonGradable && (
+                                  <Card variant="outlined" sx={{ mt: 3, border: 'none', boxShadow: '0 4px 12px rgba(0,0,0,0.08)', borderRadius: 2, overflow: 'hidden' }}>
+                                    <Box sx={{ p: 1.5, px: 2, display: 'flex', alignItems: 'center', gap: 1, bgcolor: 'primary.main', color: 'primary.contrastText' }}>
+                                      <RateReviewIcon fontSize="small" />
+                                      <Typography variant="subtitle2" sx={{ fontWeight: 600, letterSpacing: '0.5px' }}>
+                                        TEACHER GRADING
+                                      </Typography>
+                                    </Box>
+                                    <Box sx={{ p: 2, display: 'flex', gap: 2, alignItems: 'flex-start', flexWrap: 'wrap', bgcolor: 'rgba(25, 118, 210, 0.04)' }}>
+                                      <TextField
+                                        label={`Score (Max: ${question.point})`}
+                                        type="number"
+                                        size="small"
+                                        value={manualGrades[question._id]?.score ?? (studentAnswer as any)?.teacherScore ?? ''}
+                                        onChange={(e) => handleGradeChange(question._id, 'score', e.target.value)}
+                                        sx={{ minWidth: 140, bgcolor: 'background.paper', borderRadius: 1 }}
+                                        InputProps={{ inputProps: { min: 0, max: question.point } }}
+                                      />
+                                      <TextField
+                                        label="Teacher Feedback (optional)"
+                                        size="small"
+                                        fullWidth
+                                        multiline
+                                        rows={2}
+                                        value={manualGrades[question._id]?.feedback ?? (studentAnswer as any)?.teacherFeedback ?? ''}
+                                        onChange={(e) => handleGradeChange(question._id, 'feedback', e.target.value)}
+                                        sx={{ bgcolor: 'background.paper', borderRadius: 1, flex: 1 }}
+                                        placeholder="Awesome effort!"
+                                      />
+                                    </Box>
+                                  </Card>
                                 )}
                               </Box>
                             </Box>

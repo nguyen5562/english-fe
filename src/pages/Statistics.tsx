@@ -522,81 +522,77 @@ export default function Statistics() {
           mb: 4,
         }}
       >
-        <Card sx={{ height: '100%' }}>
-          <CardContent>
-            <Box sx={{ display: 'flex', alignItems: 'center', mb: 1 }}>
-              <PeopleIcon sx={{ color: 'primary.main', mr: 1 }} />
-              <Typography variant="h6" sx={{ fontWeight: 600 }}>
+        <Card sx={{ height: '100%', borderRadius: 3, boxShadow: '0 8px 24px rgba(0,0,0,0.05)', border: '1px solid rgba(0,0,0,0.04)', transition: 'transform 0.2s', '&:hover': { transform: 'translateY(-4px)', boxShadow: '0 12px 28px rgba(0,0,0,0.1)' } }}>
+          <CardContent sx={{ p: 3 }}>
+            <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
+              <Box sx={{ p: 1.2, borderRadius: 2, bgcolor: 'rgba(25, 118, 210, 0.1)', display: 'flex' }}>
+                <PeopleIcon sx={{ color: 'primary.main' }} />
+              </Box>
+              <Typography variant="h6" sx={{ fontWeight: 600, ml: 1.5, color: 'text.primary' }}>
                 Students
               </Typography>
             </Box>
-            <Typography
-              variant="h4"
-              sx={{ fontWeight: 700, color: 'primary.main' }}
-            >
+            <Typography variant="h3" sx={{ fontWeight: 800, color: 'primary.main', mb: 0.5 }}>
               {students.length}
             </Typography>
-            <Typography variant="body2" color="text.secondary">
+            <Typography variant="body2" color="text.secondary" sx={{ fontWeight: 500 }}>
               Total students
             </Typography>
           </CardContent>
         </Card>
 
-        <Card sx={{ height: '100%' }}>
-          <CardContent>
-            <Box sx={{ display: 'flex', alignItems: 'center', mb: 1 }}>
-              <AssignmentIcon sx={{ color: 'secondary.main', mr: 1 }} />
-              <Typography variant="h6" sx={{ fontWeight: 600 }}>
+        <Card sx={{ height: '100%', borderRadius: 3, boxShadow: '0 8px 24px rgba(0,0,0,0.05)', border: '1px solid rgba(0,0,0,0.04)', transition: 'transform 0.2s', '&:hover': { transform: 'translateY(-4px)', boxShadow: '0 12px 28px rgba(0,0,0,0.1)' } }}>
+          <CardContent sx={{ p: 3 }}>
+            <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
+              <Box sx={{ p: 1.2, borderRadius: 2, bgcolor: 'rgba(156, 39, 176, 0.1)', display: 'flex' }}>
+                <AssignmentIcon sx={{ color: 'secondary.main' }} />
+              </Box>
+              <Typography variant="h6" sx={{ fontWeight: 600, ml: 1.5, color: 'text.primary' }}>
                 Exercises
               </Typography>
             </Box>
-            <Typography
-              variant="h4"
-              sx={{ fontWeight: 700, color: 'secondary.main' }}
-            >
+            <Typography variant="h3" sx={{ fontWeight: 800, color: 'secondary.main', mb: 0.5 }}>
               {avgSectionCompletionRate.toFixed(1)}%
             </Typography>
-            <Typography variant="body2" color="text.secondary">
+            <Typography variant="body2" color="text.secondary" sx={{ fontWeight: 500 }}>
               Average completion rate
             </Typography>
           </CardContent>
         </Card>
 
-        <Card sx={{ height: '100%' }}>
-          <CardContent>
-            <Box sx={{ display: 'flex', alignItems: 'center', mb: 1 }}>
-              <QuizIcon sx={{ color: 'success.main', mr: 1 }} />
-              <Typography variant="h6" sx={{ fontWeight: 600 }}>
-                Quiz
+        <Card sx={{ height: '100%', borderRadius: 3, boxShadow: '0 8px 24px rgba(0,0,0,0.05)', border: '1px solid rgba(0,0,0,0.04)', transition: 'transform 0.2s', '&:hover': { transform: 'translateY(-4px)', boxShadow: '0 12px 28px rgba(0,0,0,0.1)' } }}>
+          <CardContent sx={{ p: 3 }}>
+            <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
+              <Box sx={{ p: 1.2, borderRadius: 2, bgcolor: 'rgba(46, 125, 50, 0.1)', display: 'flex' }}>
+                <QuizIcon sx={{ color: 'success.main' }} />
+              </Box>
+              <Typography variant="h6" sx={{ fontWeight: 600, ml: 1.5, color: 'text.primary' }}>
+                Quizzes
               </Typography>
             </Box>
-            <Typography
-              variant="h4"
-              sx={{ fontWeight: 700, color: 'success.main' }}
-            >
+            <Typography variant="h3" sx={{ fontWeight: 800, color: 'success.main', mb: 0.5 }}>
               {avgQuizCompletionRate.toFixed(1)}%
             </Typography>
-            <Typography variant="body2" color="text.secondary">
+            <Typography variant="body2" color="text.secondary" sx={{ fontWeight: 500 }}>
               Average completion rate
             </Typography>
           </CardContent>
         </Card>
 
-        <Card sx={{ height: '100%' }}>
-          <CardContent>
-            <Box sx={{ display: 'flex', alignItems: 'center', mb: 1 }}>
-              <TrendingUpIcon sx={{ color: 'warning.main', mr: 1 }} />
-              <Typography variant="h6" sx={{ fontWeight: 600 }}>
-                Average score
+        <Card sx={{ height: '100%', borderRadius: 3, boxShadow: '0 8px 24px rgba(0,0,0,0.05)', border: '1px solid rgba(0,0,0,0.04)', transition: 'transform 0.2s', '&:hover': { transform: 'translateY(-4px)', boxShadow: '0 12px 28px rgba(0,0,0,0.1)' } }}>
+          <CardContent sx={{ p: 3 }}>
+            <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
+              <Box sx={{ p: 1.2, borderRadius: 2, bgcolor: 'rgba(237, 108, 2, 0.1)', display: 'flex' }}>
+                <TrendingUpIcon sx={{ color: 'warning.main' }} />
+              </Box>
+              <Typography variant="h6" sx={{ fontWeight: 600, ml: 1.5, color: 'text.primary' }}>
+                Overall Score
               </Typography>
             </Box>
-            <Typography
-              variant="h4"
-              sx={{ fontWeight: 700, color: 'warning.main' }}
-            >
+            <Typography variant="h3" sx={{ fontWeight: 800, color: 'warning.main', mb: 0.5 }}>
               {averageScore.toFixed(1)}%
             </Typography>
-            <Typography variant="body2" color="text.secondary">
+            <Typography variant="body2" color="text.secondary" sx={{ fontWeight: 500 }}>
               Average score
             </Typography>
           </CardContent>
@@ -706,17 +702,18 @@ export default function Statistics() {
                                 />
                               </TableCell>
                               <TableCell>
-                                <Chip
-                                  label="View details"
-                                  color="primary"
+                                <Button
+                                  variant="contained"
                                   size="small"
+                                  sx={{ textTransform: 'none', borderRadius: 2, boxShadow: 'none' }}
                                   onClick={() =>
                                     navigate(
                                       `/attempt/exercise/${selectedExerciseId}?studentId=${student._id}`,
                                     )
                                   }
-                                  sx={{ cursor: 'pointer' }}
-                                />
+                                >
+                                  View details
+                                </Button>
                               </TableCell>
                             </TableRow>
                           ),
@@ -886,17 +883,18 @@ export default function Statistics() {
                                   )}
                                 </TableCell>
                                 <TableCell>
-                                  <Chip
-                                    label="View details"
-                                    color="primary"
+                                  <Button
+                                    variant="contained"
                                     size="small"
+                                    sx={{ textTransform: 'none', borderRadius: 2, boxShadow: 'none' }}
                                     onClick={() =>
                                       navigate(
                                         `/attempt/quiz/${selectedQuizId}?studentId=${student._id}`,
                                       )
                                     }
-                                    sx={{ cursor: 'pointer' }}
-                                  />
+                                  >
+                                    View details
+                                  </Button>
                                 </TableCell>
                               </TableRow>
                             );
@@ -1044,17 +1042,18 @@ export default function Statistics() {
                                   />
                                 </TableCell>
                                 <TableCell>
-                                  <Chip
-                                    label="View details"
-                                    color="primary"
+                                  <Button
+                                    variant="contained"
                                     size="small"
+                                    sx={{ textTransform: 'none', borderRadius: 2, boxShadow: 'none' }}
                                     onClick={() =>
                                       navigate(
                                         `/attempt/exercise/${exercise._id}?studentId=${selectedStudentId}`,
                                       )
                                     }
-                                    sx={{ cursor: 'pointer' }}
-                                  />
+                                  >
+                                    View details
+                                  </Button>
                                 </TableCell>
                               </TableRow>
                             );
@@ -1140,17 +1139,18 @@ export default function Statistics() {
                                   )}
                                 </TableCell>
                                 <TableCell>
-                                  <Chip
-                                    label="View details"
-                                    color="primary"
+                                  <Button
+                                    variant="contained"
                                     size="small"
+                                    sx={{ textTransform: 'none', borderRadius: 2, boxShadow: 'none' }}
                                     onClick={() =>
                                       navigate(
                                         `/attempt/quiz/${quiz._id}?studentId=${selectedStudentId}`,
                                       )
                                     }
-                                    sx={{ cursor: 'pointer' }}
-                                  />
+                                  >
+                                    View details
+                                  </Button>
                                 </TableCell>
                               </TableRow>
                             );
